@@ -1,19 +1,28 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+/**
+ * Navigation + legacy bridge. Product surfaces use FastCoachPalette.
+ */
+import type { ColorSchemeName } from '@/constants/FastCoachTheme';
+import { FastCoachPalette } from '@/constants/FastCoachTheme';
 
 export default {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    text: FastCoachPalette.light.onSurface,
+    background: FastCoachPalette.light.background,
+    tint: FastCoachPalette.light.primary,
+    tabIconDefault: FastCoachPalette.light.outline,
+    tabIconSelected: FastCoachPalette.light.primary,
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    text: FastCoachPalette.dark.onSurface,
+    background: FastCoachPalette.dark.background,
+    tint: FastCoachPalette.dark.primary,
+    tabIconDefault: FastCoachPalette.dark.outlineVariant,
+    tabIconSelected: FastCoachPalette.dark.primary,
   },
-};
+} satisfies Record<ColorSchemeName, {
+  text: string;
+  background: string;
+  tint: string;
+  tabIconDefault: string;
+  tabIconSelected: string;
+}>;
