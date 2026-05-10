@@ -1,20 +1,18 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-  <!-- Adaptive icon FOREGROUND: must keep important content within the inner 67% safe zone (~342px from center) -->
-  <!-- Background is provided by app.json adaptiveIcon.backgroundColor (#34c759) -->
-  <!-- Outer 33% may be cropped depending on launcher mask (circle, squircle, rounded) -->
+  <!-- Adaptive icon FOREGROUND. Safe zone: inner 67% (radius ≤ 342px from center). -->
+  <!-- Background is provided by app.json adaptiveIcon.backgroundColor (#34c759). -->
   <defs>
     <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0.55"/>
     </linearGradient>
   </defs>
-  <!-- Track ring: keep within safe zone (radius ≤ 280) -->
+  <!-- Track ring inside safe zone -->
   <circle cx="512" cy="512" r="270" fill="none" stroke="#ffffff" stroke-opacity="0.24" stroke-width="48"/>
-  <!-- Progress arc: 270deg -->
+  <!-- 75% progress arc -->
   <path d="M 512 242 A 270 270 0 1 1 242 512" fill="none" stroke="url(#ring)" stroke-width="48" stroke-linecap="round"/>
-  <!-- Inner leaf glyph -->
-  <g transform="translate(512 512) scale(11.2) translate(-12 -12)" fill="#ffffff">
-    <path d="M9.5 18c6.218 0 10.5 -3.288 11 -12v-2h-4.014c-9 0 -11.986 4 -12 9c0 1 0 3 2 5h3z" stroke="none"/>
-    <path d="M5 21c.5 -4.5 2.5 -8 7 -10" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+  <!-- Phosphor hourglass-medium (MIT) -->
+  <g transform="translate(512 512) scale(1.18) translate(-128 -128)" fill="#ffffff">
+    <path d="M204 75.64V40a20 20 0 0 0-20-20H72a20 20 0 0 0-20 20v36a20.1 20.1 0 0 0 8 16l48 36l-48 36a20.1 20.1 0 0 0-8 16v36a20 20 0 0 0 20 20h112a20 20 0 0 0 20-20v-35.64a20.13 20.13 0 0 0-7.94-16L147.9 128l48.16-36.4A20.13 20.13 0 0 0 204 75.64M180 44v28H76V44Zm-52 69l-22.67-17h45.1Zm52 99H76v-30l40-30v16a12 12 0 0 0 24 0v-15.89l40 30.24Z"/>
   </g>
 </svg>
