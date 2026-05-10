@@ -13,9 +13,9 @@ import {
 import { Inter_300Light, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { Redirect, Stack, useSegments } from 'expo-router';
 import { useEffect, useMemo } from 'react';
-import 'react-native-reanimated';
 
 import {
   FastCoachFonts,
@@ -33,7 +33,7 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function navigationThemeFor(scheme: ColorSchemeName): Theme {
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -56,24 +56,12 @@ function navigationThemeFor(scheme: ColorSchemeName): Theme {
 
 function NavigationGuard({ storeHydrated }: { storeHydrated: boolean }) {
   const segments = useSegments();
-  const router = useRouter();
   const hasCompletedOnboarding = useAppStore((s) => s.hasCompletedOnboarding);
-
-  useEffect(() => {
-    if (!storeHydrated) return;
-    if (!segments?.length) return;
-    const first = segments[0];
-    const inOnboarding = first === 'onboarding';
-
-    if (!hasCompletedOnboarding && !inOnboarding) {
-      router.replace('/onboarding');
-      return;
-    }
-    if (hasCompletedOnboarding && inOnboarding) {
-      router.replace('/');
-    }
-  }, [hasCompletedOnboarding, storeHydrated, router, segments]);
-
+  if (!storeHydrated) return null;
+  const first = segments?.[0];
+  const inOnboarding = first === 'onboarding';
+  if (!hasCompletedOnboarding && !inOnboarding) return <Redirect href="/onboarding" />;
+  if (hasCompletedOnboarding && inOnboarding) return <Redirect href="/" />;
   return null;
 }
 
@@ -86,17 +74,26 @@ export default function RootLayout() {
     HankenGrotesk_600SemiBold,
     HankenGrotesk_700Bold,
     HankenGrotesk_800ExtraBold,
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
 
   useEffect(() => {
-    if (fontError) throw fontError;
+    if (fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+      throw fontError;
+    }
   }, [fontError]);
 
   useEffect(() => {
+    const id = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 6000);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
     if (fontsLoaded && hydrated) {
-      void SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, hydrated]);
 
@@ -129,6 +126,7 @@ function RootLayoutNav({ storeHydrated }: { storeHydrated: boolean }) {
 
   return (
     <ThemeProvider value={navTheme}>
+      <StatusBar style="auto" />
       <PersistErrorBanner />
       <NavigationGuard storeHydrated={storeHydrated} />
       <Stack screenOptions={stackHeader}>

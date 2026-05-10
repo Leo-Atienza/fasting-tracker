@@ -331,6 +331,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.28,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
   heroCtaText: {
     fontSize: 17,

@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -26,7 +26,9 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const skipOnboarding = useAppStore((s) => s.skipOnboarding);
-  const [selectedDiet, setSelectedDiet] = useState<DietPreferenceId>('omnivore');
+  const [selectedDiet, setSelectedDiet] = useState<DietPreferenceId>(
+    () => useAppStore.getState().dietPreferenceId ?? 'omnivore',
+  );
 
   const heroIcon = useMemo(() => {
     if (selectedDiet === 'vegan' || selectedDiet === 'vegetarian') return 'leaf';
@@ -51,7 +53,7 @@ export default function OnboardingScreen() {
 
   return (
     <ScreenBackground palette={palette}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
         <View style={styles.topBar}>
           <View style={styles.brand}>
             <FontAwesome name="leaf" size={18} color={palette.primary} />
@@ -130,7 +132,7 @@ export default function OnboardingScreen() {
             </View>
           </ScalePressable>
           <Text style={[styles.step, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            Step 2 of 4 · Dietary Profile
+            Dietary Profile
           </Text>
         </View>
       </SafeAreaView>

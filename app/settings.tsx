@@ -3,12 +3,12 @@ import React, { useCallback, useState } from 'react';
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
 
   return (
     <ScreenBackground palette={palette}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.pad} showsVerticalScrollIndicator={false}>
           <StackTopBar title="Settings" palette={palette} onBack={() => router.back()} />
 
@@ -170,6 +170,20 @@ export default function SettingsScreen() {
                   accessibilityState={{ checked: waterUnit === u }}
                   accessibilityLabel={u === 'ml' ? 'Milliliters unit' : 'Ounces unit'}
                   onPress={() => {
+                    const draftNum = Number(draftGoal);
+                    if (Number.isFinite(draftNum) && draftNum >= 0) {
+                      let nextDisplay: number;
+                      if (u === waterUnit) {
+                        nextDisplay = Math.round(draftNum);
+                      } else if (u === 'oz') {
+                        nextDisplay = Math.round(mlToOz(draftNum));
+                      } else {
+                        nextDisplay = ozToMl(draftNum);
+                      }
+                      setWaterUnit(u);
+                      setDraftGoal(String(nextDisplay));
+                      return;
+                    }
                     const canonicalMl = useAppStore.getState().waterDailyGoalMl;
                     setWaterUnit(u);
                     setDraftGoal(String(u === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl)));

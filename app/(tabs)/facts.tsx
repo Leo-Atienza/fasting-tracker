@@ -27,12 +27,12 @@ const THEME_TAG: Record<FactTheme, string> = {
 
 function groupCounts() {
   let focus = 0;
-  let vitality = 0;
+  let other = 0;
   for (const f of FACTS) {
     if (f.theme === 'cognition') focus += 1;
-    else vitality += 1;
+    else other += 1;
   }
-  return { focus, vitality };
+  return { focus, other };
 }
 
 export default function FactsScreen() {
@@ -50,7 +50,7 @@ export default function FactsScreen() {
     return FACTS[idx]!;
   }, [shuffle]);
 
-  const { focus, vitality } = useMemo(() => groupCounts(), []);
+  const { focus, other } = useMemo(() => groupCounts(), []);
   const favorites = useMemo(
     () => FACTS.filter((f) => favoriteFactIds.includes(f.id)),
     [favoriteFactIds],
@@ -147,8 +147,8 @@ export default function FactsScreen() {
             </GlassCard>
             <GlassCard palette={palette} style={[styles.bentoCard, styles.bentoGlow]}>
               <MaterialCommunityIcons name="heart-pulse" color={palette.tertiary} size={27} />
-              <Text style={[styles.bentoMuted, { color: palette.outline }]}>Vitality stack</Text>
-              <Text style={[styles.bentoStat, { color: palette.onSurface }]}>{vitality} facts</Text>
+              <Text style={[styles.bentoMuted, { color: palette.outline }]}>Other facts</Text>
+              <Text style={[styles.bentoStat, { color: palette.onSurface }]}>{other} facts</Text>
             </GlassCard>
           </View>
 

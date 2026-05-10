@@ -45,3 +45,6 @@ debug-*.log
 
 # Claude Code
 .claude/
+
+# Project-local trash (mv targets; intentionally not tracked)
+TRASH/

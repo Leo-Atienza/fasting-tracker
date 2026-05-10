@@ -27,7 +27,7 @@ import {
   presetsByPrimaryThenRest,
 } from '@/src/features/water/presets';
 import { dayKeyForIso, formatTimeOnly } from '@/src/lib/time';
-import { formatVolume } from '@/src/lib/units';
+import { formatVolume, ozToMl } from '@/src/lib/units';
 import { selectWaterTodayMl } from '@/src/store/selectors';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -76,7 +76,7 @@ export default function WaterScreen() {
       Alert.alert('Hmm', `Enter a positive amount in ${unit}.`);
       return;
     }
-    const ml = Math.round(unit === 'oz' ? n * 29.5735 : n);
+    const ml = unit === 'oz' ? ozToMl(n) : Math.round(n);
     addWater(ml);
     setCustomOpen(false);
     setCustomDraft('');
@@ -347,6 +347,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.24,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
   customCtaText: { fontSize: 17, fontWeight: '800', letterSpacing: -0.2 },
   logHeadingRow: {
