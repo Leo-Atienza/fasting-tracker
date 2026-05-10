@@ -26,7 +26,9 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const skipOnboarding = useAppStore((s) => s.skipOnboarding);
-  const [selectedDiet, setSelectedDiet] = useState<DietPreferenceId>('omnivore');
+  const [selectedDiet, setSelectedDiet] = useState<DietPreferenceId>(
+    () => useAppStore.getState().dietPreferenceId ?? 'omnivore',
+  );
 
   const heroIcon = useMemo(() => {
     if (selectedDiet === 'vegan' || selectedDiet === 'vegetarian') return 'leaf';
@@ -130,7 +132,7 @@ export default function OnboardingScreen() {
             </View>
           </ScalePressable>
           <Text style={[styles.step, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            Step 2 of 4 · Dietary Profile
+            Dietary Profile
           </Text>
         </View>
       </SafeAreaView>

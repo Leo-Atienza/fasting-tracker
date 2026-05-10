@@ -168,6 +168,20 @@ export default function SettingsScreen() {
                   key={u}
                   accessibilityRole="button"
                   onPress={() => {
+                    const draftNum = Number(draftGoal);
+                    if (Number.isFinite(draftNum) && draftNum >= 0) {
+                      let nextDisplay: number;
+                      if (u === waterUnit) {
+                        nextDisplay = Math.round(draftNum);
+                      } else if (u === 'oz') {
+                        nextDisplay = Math.round(mlToOz(draftNum));
+                      } else {
+                        nextDisplay = ozToMl(draftNum);
+                      }
+                      setWaterUnit(u);
+                      setDraftGoal(String(nextDisplay));
+                      return;
+                    }
                     const canonicalMl = useAppStore.getState().waterDailyGoalMl;
                     setWaterUnit(u);
                     setDraftGoal(String(u === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl)));
