@@ -20,6 +20,7 @@ import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { EatSuggestionsCard } from '@/src/components/EatSuggestionsCard';
 import type { EatPhase } from '@/src/domain/types';
 import { pickEatSuggestions } from '@/src/features/eat/selectSuggestions';
+import { computeElapsedMs, computeRingProgress } from '@/src/features/fast/elapsed';
 import { getFastingStage } from '@/src/features/fast/fastingStage';
 import { formatElapsed, formatElapsedShort, formatTargetHm } from '@/src/lib/time';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -64,10 +65,10 @@ export default function FastHomeScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const elapsedMs = useMemo(() => {
-    if (!activeFast) return 0;
-    return now - Date.parse(activeFast.startedAt);
-  }, [activeFast, now]);
+  const elapsedMs = useMemo(
+    () => (activeFast ? computeElapsedMs(now, activeFast.startedAt) : 0),
+    [activeFast, now],
+  );
 
   const eats = useMemo(() => {
     const phases: EatPhase[] =
@@ -78,8 +79,7 @@ export default function FastHomeScreen() {
   const targetMs =
     activeFast?.targetDurationMinutes != null ? activeFast.targetDurationMinutes * 60 * 1000 : null;
 
-  const ringProgress =
-    targetMs != null && targetMs > 0 ? Math.min(1, elapsedMs / targetMs) : activeFast ? 0 : 0;
+  const ringProgress = computeRingProgress(elapsedMs, activeFast?.targetDurationMinutes ?? null);
 
   const stage = getFastingStage(elapsedMs, Boolean(activeFast));
   const eatTitle = activeFast != null ? 'Next meal ideas' : 'Ideas between fasts';
