@@ -15,7 +15,6 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useMemo } from 'react';
-import 'react-native-reanimated';
 
 import {
   FastCoachFonts,
@@ -33,7 +32,7 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function navigationThemeFor(scheme: ColorSchemeName): Theme {
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -91,12 +90,22 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontError) throw fontError;
+    if (fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+      throw fontError;
+    }
   }, [fontError]);
 
   useEffect(() => {
+    const id = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 6000);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
     if (fontsLoaded && hydrated) {
-      void SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, hydrated]);
 
