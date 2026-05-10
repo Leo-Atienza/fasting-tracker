@@ -107,7 +107,7 @@ export default function FastHomeScreen() {
     <ScreenBackground palette={palette}>
       <SafeAreaView style={[styles.flex, { backgroundColor: 'transparent' }]} edges={['top']}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 132 }}>
-          <FastCoachHeader title="Fasting Tracker" palette={palette} />
+          <FastCoachHeader title="Fast Coach" palette={palette} />
 
           {/* Timer */}
           <View style={styles.ringWrap}>

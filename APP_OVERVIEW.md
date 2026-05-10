@@ -58,3 +58,17 @@ All core data (fasts, water log, settings, favorites) is stored **locally on the
 ## Disclaimer
 
 Content in the app (facts, suggestions, copy) is for **general wellness context**, not diagnosis or treatment. Users with health conditions or questions should rely on qualified professionals.
+
+---
+
+## How the timer behaves in the background
+
+The fasting timer is **wall-clock-derived**, not interval-driven. The on-screen value is recomputed every second from `Date.now() − startedAt` while the screen is mounted, and the only persistent state is `activeFast.startedAt` (an ISO timestamp). Practical consequences:
+
+- When the OS suspends the JS thread (screen off, app backgrounded, low-memory swap), the displayed counter does not advance — but the underlying *truth* is the timestamp, so the next time you open the app the value snaps to the correct elapsed time.
+- The 1 s `setInterval` is owned by `useEffect` cleanup, so it cannot leak across remounts.
+- If the device clock jumps **backward** (manual change, NTP correction), `computeElapsedMs` clamps to 0 rather than going negative.
+- If the clock jumps **forward**, the timer follows the clock — by design, since the start time is the fixed anchor.
+- Fasts that cross midnight do **not** relocate water log entries; both selectors are scoped to the device's local-day key at lookup time, not at write time.
+
+There is no Android foreground-service notification keeping the JS thread alive while the app is closed. That was a deliberate tradeoff: fasting is asynchronous from the app's perspective, and the timestamp anchor is correct without it. If push reminders or a persistent notification become a requirement, that is a separate epic (would need `expo-notifications` + a background task).

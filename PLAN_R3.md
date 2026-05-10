@@ -171,18 +171,34 @@ The design consistently uses "Fast Coach" as the brand. Current code uses "Fasti
 
 ## Final acceptance for "round-3 ready"
 
-- Test count > 50 (Phase A + B target).
+- Test count > 50 (Phase A + B target). **Landed: 111 tests across 13 files.**
 - All screens render with current mock data without runtime errors (manual sweep on emulator/device).
-- ErrorBoundary verified by a forced-throw test.
-- a11y label grep returns zero gaps in `app/`, `src/components/`.
-- Dead `Colors`/`Pressable` imports gone.
-- One coherent commit per phase (A.1, A.2, ... E.x).
-- This file (`PLAN_R3.md`) updated as items land.
+- ErrorBoundary verified by a forced-throw test. **Landed: `app/error.test.tsx`.**
+- a11y label grep returns zero gaps in `app/`, `src/components/`. **Landed: water modal submit, facts star icon both got labels.**
+- Dead `Colors`/`Pressable` imports gone. **Landed.**
+- One coherent commit per phase (A.1, A.2, ... E.x). **Landed.**
+- This file (`PLAN_R3.md`) updated as items land. **Now updated.**
+
+## Round-3 final deltas (this commit)
+
+- **D3** — title rename "Fasting Tracker" → "Fast Coach" applied to home + water headers and to the settings profile-card placeholder ("FT" → "FC", "Fasting Tracker User" → "Fast Coach User"). App display name in `app.json` left as "Fasting Tracker" (changing it would change the launcher install name on existing devices).
+- **W7.5** — background-thread behavior of the timer documented in `APP_OVERVIEW.md` (timestamp anchor, clock-jump safety, no foreground service).
+- **W10.3** — confirmed: only stray `console.warn` is in `src/storage/persistWriteErrors.ts` and is `__DEV__`-gated. No action needed.
+- **W11.4** — confirmed: all 4 PNGs in `assets/images/` are referenced by `app.json`. No orphans.
+- **W11.5** — `eas.json` profiles (`development` / `preview` / `production`) align with how cloud builds are commissioned. Local Gradle builds bypass EAS profiles; nothing to change.
+- **W12.1** — replaced default Expo template artwork with brand-green progress-ring + leaf design. Source SVGs under `assets/source/` (idempotent — re-render with `npx sharp-cli --input ... --output ...`). Adaptive-icon foreground is transparent + the launcher mask composites it over the brand-green background declared in `app.json`.
+- **W12.2** — Android permissions trimmed from default 5 (INTERNET, READ_EXTERNAL_STORAGE, SYSTEM_ALERT_WINDOW, VIBRATE, WRITE_EXTERNAL_STORAGE) to just `INTERNET`. Updated both `app.json` (next-prebuild source of truth) and the live `android/app/src/main/AndroidManifest.xml` (next-Gradle-build truth, since `android/` is gitignored).
+- **W12.5** — `scripts/bump-version.mjs` syncs `package.json#version`, `app.json#expo.version`, `app.json#expo.android.versionCode`, and `android/app/build.gradle` versionCode/versionName atomically. npm scripts: `npm run bump:patch | bump:minor | bump:major`. First bump applied: 1.0.0 → 1.0.1 (versionCode 10001).
+
+## Deferred (per user instruction this round)
+
+- **W6.4 manual UI sweep** — user will check after the new APK lands. The wiring is locked in tests; visual confirmation is the last step.
+- **W10.2 (Sentry)** — explicitly skipped: app stays fully local, no telemetry.
+- **W12.3 / W12.4** — bundle-size measurement and Play-Store privacy listing are pre-publish steps; defer until the user is ready to publish.
 
 ## Out of scope for this plan
 
 - Auth, accounts, profile system, IAP / Pro tier, push notifications.
-- Sentry / crash reporter (deferred — needs DSN decision).
-- Branded icon / splash artwork.
+- Sentry / crash reporter (deferred — user wants device-local app).
 - Migrating `ScalePressable` off the legacy `Animated` API.
 - Localisation beyond English.

@@ -1,7 +1,7 @@
 {
   "name": "fasting-tracker",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "start": "expo start --port 8089",
     "start:tunnel": "expo start --port 8089 --tunnel",
@@ -10,7 +10,10 @@
     "web": "expo start --port 8089 --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "bump:patch": "node scripts/bump-version.mjs patch",
+    "bump:minor": "node scripts/bump-version.mjs minor",
+    "bump:major": "node scripts/bump-version.mjs major"
   },
   "dependencies": {
     "@expo-google-fonts/hanken-grotesk": "^0.4.3",

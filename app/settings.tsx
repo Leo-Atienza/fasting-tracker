@@ -70,12 +70,12 @@ export default function SettingsScreen() {
           <GlassCard palette={palette} style={styles.profileCard}>
             <View style={[styles.avatar, { backgroundColor: palette.primaryContainer }]}>
               <Text style={[styles.avatarText, { color: palette.onPrimaryContainer, fontFamily: FastCoachFonts.headlineMd }]}>
-                FT
+                FC
               </Text>
             </View>
             <View style={styles.profileText}>
               <Text style={[styles.profileName, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-                Fasting Tracker User
+                Fast Coach User
               </Text>
               <Text style={[styles.profilePlan, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 Personalized fasting profile

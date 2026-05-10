@@ -108,7 +108,7 @@ export default function WaterScreen() {
     <ScreenBackground palette={palette}>
       <SafeAreaView style={styles.flex} edges={['top']}>
         <ScrollView contentContainerStyle={styles.pad}>
-          <FastCoachHeader title="Fasting Tracker" palette={palette} />
+          <FastCoachHeader title="Fast Coach" palette={palette} />
 
           {/* Progress */}
           <View style={styles.centerCol}>

@@ -1,0 +1,22 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#53e16f"/>
+      <stop offset="1" stop-color="#006e28"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+  <!-- Track: full ring at low opacity -->
+  <circle cx="512" cy="512" r="312" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="56"/>
+  <!-- Progress arc: ~75% of the ring (270 deg), starting at 12 o'clock -->
+  <path d="M 512 200 A 312 312 0 1 1 200 512" fill="none" stroke="url(#ring)" stroke-width="56" stroke-linecap="round"/>
+  <!-- Inner leaf glyph (simplified Tabler-style leaf, scaled+centered) -->
+  <g transform="translate(512 512) scale(13.9) translate(-12 -12)" fill="#ffffff">
+    <path d="M9.5 18c6.218 0 10.5 -3.288 11 -12v-2h-4.014c-9 0 -11.986 4 -12 9c0 1 0 3 2 5h3z" stroke="none"/>
+    <path d="M5 21c.5 -4.5 2.5 -8 7 -10" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
