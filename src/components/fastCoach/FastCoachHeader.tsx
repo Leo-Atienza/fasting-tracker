@@ -23,7 +23,7 @@ export function FastCoachHeader({ title, palette, showHistory = true, rightAcces
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open fast history"
-            style={styles.iconHit}
+            style={({ pressed }) => [styles.iconHit, { opacity: pressed ? 0.7 : 1 }]}
             hitSlop={8}>
             <MaterialCommunityIcons name="history" size={24} color={palette.onSurfaceVariant} />
           </Pressable>
@@ -46,7 +46,7 @@ export function FastCoachHeader({ title, palette, showHistory = true, rightAcces
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Open settings"
-            style={styles.iconHit}
+            style={({ pressed }) => [styles.iconHit, { opacity: pressed ? 0.7 : 1 }]}
             hitSlop={8}>
             <MaterialCommunityIcons name="cog-outline" size={24} color={palette.onSurfaceVariant} />
           </Pressable>

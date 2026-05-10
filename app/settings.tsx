@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   Alert,
@@ -7,19 +7,24 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
-import Colors from '@/constants/Colors';
+import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
+import { GlassCard } from '@/src/components/fastCoach/GlassCard';
+import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
+import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
+import { StackTopBar } from '@/src/components/fastCoach/StackTopBar';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import { formatVolume, mlToOz, ozToMl } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
 export default function SettingsScreen() {
-  const theme = useColorScheme() ?? 'light';
-  const palette = Colors[theme];
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const scheme = (colorScheme === 'dark' ? 'dark' : 'light') as ColorSchemeName;
+  const palette = FastCoachPalette[scheme];
 
   const dietPreferenceId = useAppStore((s) => s.dietPreferenceId);
   const setDiet = useAppStore((s) => s.setDietPreferenceId);
@@ -41,159 +46,232 @@ export default function SettingsScreen() {
     }, []),
   );
 
-  function commitGoal() {
-    const n = Number(draftGoal);
-    if (Number.isNaN(n)) {
+  function commitGoal(nextGoalMl?: number) {
+    const parsed = nextGoalMl ?? (() => {
+      const n = Number(draftGoal);
+      return Number.isNaN(n) ? NaN : (waterUnit === 'oz' ? ozToMl(n) : Math.round(n));
+    })();
+    if (Number.isNaN(parsed)) {
       Alert.alert('Invalid goal', 'Enter numbers only.');
       return;
     }
-    const ml = waterUnit === 'oz' ? ozToMl(n) : Math.round(n);
+    const ml = Math.round(parsed);
     setGoal(ml);
-    setDraftGoal(String(waterUnit === 'oz' ? Math.round(n) : ml));
+    setDraftGoal(String(waterUnit === 'oz' ? Math.round(mlToOz(ml)) : ml));
     Alert.alert('Saved', `Goal set to ${formatVolume(ml, waterUnit)} per day`);
   }
 
+  const goalInCurrentUnit =
+    waterUnit === 'oz' ? Math.round(mlToOz(waterDailyGoalMl)) : waterDailyGoalMl;
+  const draftGoalNumber = Number(draftGoal);
+  const currentDraft = Number.isFinite(draftGoalNumber) ? Math.max(0, Math.round(draftGoalNumber)) : goalInCurrentUnit;
+  const step = waterUnit === 'oz' ? 1 : 50;
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }}>
-      <ScrollView contentContainerStyle={styles.pad}>
-        <Text style={[styles.h, { color: palette.text }]} accessibilityRole="header">
-          Diet preference
-        </Text>
-        <Text style={[styles.help, { color: palette.tabIconDefault }]}>
-          Changes apply to meal suggestion filters only.
-        </Text>
-        <View style={{ gap: 10, marginBottom: 20 }}>
-          {DIET_OPTIONS.map((opt) => {
-            const selected = dietPreferenceId === opt.id;
-            return (
-              <Pressable
-                key={opt.id}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                onPress={() => setDiet(opt.id)}
-                style={[
-                  styles.card,
-                  selected && { borderColor: palette.tint },
-                  {
-                    borderColor: palette.tabIconDefault,
-                  },
-                ]}>
-                <Text style={[styles.optionTitle, { color: palette.text }]}>{opt.label}</Text>
-                <Text style={[styles.help, { color: palette.tabIconDefault }]}>{opt.description}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+    <ScreenBackground palette={palette}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.pad} showsVerticalScrollIndicator={false}>
+          <StackTopBar title="Settings" palette={palette} onBack={() => router.back()} />
 
-        <Text style={[styles.h, { color: palette.text }]}>Hydration defaults</Text>
-        <Text style={[styles.help, { color: palette.tabIconDefault }]}>
-          Daily target for the Water tab progress bar (local only).
-        </Text>
-
-        <View style={styles.row}>
-          {( ['ml','oz'] as WaterUnit[]).map((u) => (
-            <Pressable
-              key={u}
-              accessibilityRole="button"
-              accessibilityLabel={`Water unit ${u}`}
-              onPress={() => {
-                const canonicalMl = useAppStore.getState().waterDailyGoalMl;
-                setWaterUnit(u);
-                setDraftGoal(
-                  String(u === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl)),
-                );
-              }}
-              style={[
-                styles.unitChip,
-                { borderColor: palette.tabIconDefault },
-                waterUnit === u && { borderColor: palette.tint },
-              ]}>
-              <Text
-                style={[styles.unitChipText, { color: palette.text }]}>
-                {u.toUpperCase()}
+          <GlassCard palette={palette} style={styles.profileCard}>
+            <View style={[styles.avatar, { backgroundColor: palette.primaryContainer }]}>
+              <Text style={[styles.avatarText, { color: palette.onPrimaryContainer, fontFamily: FastCoachFonts.headlineMd }]}>
+                FT
               </Text>
-            </Pressable>
-          ))}
-        </View>
+            </View>
+            <View style={styles.profileText}>
+              <Text style={[styles.profileName, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                Fasting Tracker User
+              </Text>
+              <Text style={[styles.profilePlan, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                Personalized fasting profile
+              </Text>
+            </View>
+          </GlassCard>
 
-        <Text style={[styles.label, { color: palette.tabIconDefault }]}>Daily goal ({waterUnit})</Text>
-        <TextInput
-          value={draftGoal}
-          accessibilityLabel={`Daily goal in ${waterUnit}`}
-          onChangeText={setDraftGoal}
-          keyboardType="decimal-pad"
-          placeholder={waterUnit === 'oz' ? 'e.g. 84' : 'e.g. 2500'}
-          placeholderTextColor={palette.tabIconDefault}
-          style={[styles.input, { color: palette.text, borderColor: palette.tabIconDefault }]}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Save hydration goal"
-          onPress={commitGoal}
-          style={[styles.saveBtn, { backgroundColor: palette.tint }]}>
-          <Text style={styles.saveText}>Save goal</Text>
-        </Pressable>
+          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+            Preferences
+          </Text>
+          <GlassCard palette={palette} style={styles.sectionCard}>
+            {DIET_OPTIONS.map((opt, index) => {
+              const selected = dietPreferenceId === opt.id;
+              return (
+                <View key={opt.id}>
+                  <ScalePressable
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    onPress={() => setDiet(opt.id)}
+                    containerStyle={styles.row}
+                    scaleTo={0.99}>
+                    <View style={[styles.iconChip, { backgroundColor: selected ? palette.primaryContainer : palette.surfaceContainerLow }]}>
+                      <Text style={{ color: selected ? palette.onPrimaryContainer : palette.onSurfaceVariant }}>
+                        {selected ? '✓' : '•'}
+                      </Text>
+                    </View>
+                    <View style={styles.rowText}>
+                      <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                        {opt.label}
+                      </Text>
+                      <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                        {opt.description}
+                      </Text>
+                    </View>
+                  </ScalePressable>
+                  {index < DIET_OPTIONS.length - 1 ? <View style={[styles.divider, { backgroundColor: palette.outlineVariant }]} /> : null}
+                </View>
+              );
+            })}
+          </GlassCard>
 
-        <Text style={[styles.disclaimer, { color: palette.tabIconDefault }]}>
-          This screen does not diagnose or treat medical conditions.
-        </Text>
-      </ScrollView>
-    </SafeAreaView>
+          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+            Hydration
+          </Text>
+          <GlassCard palette={palette} style={styles.sectionCard}>
+            <View style={styles.rowTop}>
+              <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                Daily Water Goal
+              </Text>
+              <Text style={[styles.goalValue, { color: palette.secondary, fontFamily: FastCoachFonts.headlineMd }]}>
+                {goalInCurrentUnit} {waterUnit}
+              </Text>
+            </View>
+            <View style={styles.goalAdjustRow}>
+              <ScalePressable
+                accessibilityRole="button"
+                accessibilityLabel="Decrease water goal"
+                onPress={() => setDraftGoal(String(Math.max(0, currentDraft - step)))}
+                scaleTo={0.96}>
+                <View style={[styles.adjustBtn, { backgroundColor: palette.surfaceContainerLow }]}>
+                <Text style={[styles.adjustLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+                  -{step}
+                </Text>
+                </View>
+              </ScalePressable>
+              <Text style={[styles.goalDraft, { color: palette.secondary, fontFamily: FastCoachFonts.display }]}>
+                {currentDraft}
+              </Text>
+              <ScalePressable
+                accessibilityRole="button"
+                accessibilityLabel="Increase water goal"
+                onPress={() => setDraftGoal(String(currentDraft + step))}
+                scaleTo={0.96}>
+                <View style={[styles.adjustBtn, { backgroundColor: palette.surfaceContainerLow }]}>
+                <Text style={[styles.adjustLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+                  +{step}
+                </Text>
+                </View>
+              </ScalePressable>
+            </View>
+            <View style={styles.segment}>
+              {(['ml', 'oz'] as WaterUnit[]).map((u) => (
+                <ScalePressable
+                  key={u}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    const canonicalMl = useAppStore.getState().waterDailyGoalMl;
+                    setWaterUnit(u);
+                    setDraftGoal(String(u === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl)));
+                  }}
+                  scaleTo={0.985}
+                  containerStyle={[
+                    styles.segmentItem,
+                    waterUnit === u && { backgroundColor: palette.surfaceContainerLowest },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.segmentLabel,
+                      {
+                        color: waterUnit === u ? palette.secondary : palette.onSurfaceVariant,
+                        fontFamily: FastCoachFonts.label,
+                      },
+                    ]}>
+                    {u === 'ml' ? 'Milliliters (ml)' : 'Ounces (oz)'}
+                  </Text>
+                </ScalePressable>
+              ))}
+            </View>
+          </GlassCard>
+
+          <ScalePressable
+            accessibilityRole="button"
+            accessibilityLabel="Save hydration goal"
+            onPress={() => commitGoal()}
+            scaleTo={0.985}>
+            <View style={[styles.saveBtn, { backgroundColor: palette.primary }]}>
+              <Text style={[styles.saveText, { color: palette.onPrimary, fontFamily: FastCoachFonts.label }]}>
+                Save hydration goal
+              </Text>
+            </View>
+          </ScalePressable>
+        </ScrollView>
+      </SafeAreaView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   pad: {
-    padding: 18,
+    padding: 20,
     paddingBottom: 40,
-    gap: 12,
+    gap: 14,
   },
-  h: { fontSize: 20, fontWeight: '700' },
-  help: {
-    fontSize: 13,
-    lineHeight: 18,
+  profileCard: { padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: { width: 52, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 20 },
+  profileText: { flex: 1 },
+  profileName: { fontSize: 18 },
+  profilePlan: { fontSize: 13, marginTop: 2 },
+  sectionLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 6 },
+  sectionCard: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
+  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, paddingBottom: 4 },
+  iconChip: { width: 28, height: 28, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  rowText: { flex: 1 },
+  rowTitle: { fontSize: 15, lineHeight: 20 },
+  rowSub: { fontSize: 13, lineHeight: 18, marginTop: 1 },
+  goalValue: { fontSize: 22 },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: 6,
   },
-  card: {
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  optionTitle: { fontWeight: '700', fontSize: 15 },
-  row: {
+  goalAdjustRow: {
+    marginTop: 8,
+    marginBottom: 10,
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 6,
-    marginBottom: 4,
-  },
-  unitChip: {
-    flex: 1,
     alignItems: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: 10,
-    borderRadius: 8,
+    justifyContent: 'space-between',
   },
-  unitChipText: { fontWeight: '700', letterSpacing: 1 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: {
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 14,
-    fontSize: 16,
-    marginTop: 6,
-    fontVariant: ['tabular-nums'],
+  adjustBtn: {
+    minWidth: 72,
+    borderRadius: 999,
+    paddingVertical: 9,
+    alignItems: 'center',
   },
+  adjustLabel: { fontSize: 13 },
+  goalDraft: { fontSize: 30 },
+  segment: {
+    marginTop: 4,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.52)',
+    borderRadius: 999,
+    padding: 4,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  segmentItem: {
+    flex: 1,
+    borderRadius: 999,
+    paddingVertical: 9,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  segmentLabel: { fontSize: 12 },
   saveBtn: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 12,
+    minHeight: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
   },
-  saveText: { color: '#fff', fontWeight: '700' },
-  disclaimer: {
-    marginTop: 26,
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: '500',
-  },
+  saveText: { fontSize: 15 },
 });

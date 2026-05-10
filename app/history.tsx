@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +12,9 @@ import {
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
+import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
+import { StackTopBar } from '@/src/components/fastCoach/StackTopBar';
 import type { FastSession } from '@/src/domain/types';
 import { formatElapsedShort, formatTimeOnly, relativeDayHeading } from '@/src/lib/time';
 import { sortedSessionsDescending } from '@/src/store/selectors';
@@ -71,6 +74,7 @@ function durationMinutes(durMs: number): number {
 }
 
 export default function HistoryScreen() {
+  const router = useRouter();
   const sessions = useAppStore((s) => s.sessions);
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
@@ -146,7 +150,8 @@ export default function HistoryScreen() {
 
   return (
     <ScreenBackground palette={palette}>
-      <SafeAreaView style={styles.flex} edges={[]}>
+      <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
+        <StackTopBar title="History" palette={palette} onBack={() => router.back()} />
         {sessions.length === 0 ? (
           <View style={styles.empty}>
             <MaterialCommunityIcons name="calendar-clock" size={46} color={palette.outline} />
@@ -160,31 +165,24 @@ export default function HistoryScreen() {
             contentContainerStyle={styles.list}
             ListHeaderComponent={
               <View style={{ marginBottom: 16, gap: 8 }}>
-                <Text style={[styles.headline, { color: palette.primary, fontFamily: FastCoachFonts.display }]}>
-                  History
-                </Text>
                 <Text style={[styles.sub, { color: palette.onSurfaceVariant }]}>
-                  Your recent fasting milestones — tap the back arrow to return to coaching.
+                  Your recent fasting milestones.
                 </Text>
               </View>
             }
             renderItem={renderRow}
             ListFooterComponent={
               hasMore ? (
-                <Pressable
+                <ScalePressable
                   accessibilityRole="button"
                   accessibilityLabel="Load older fasts"
                   onPress={() => setVisibleCount((c) => c + PAGE)}
-                  style={({ pressed }) => [
-                    styles.loadMore,
-                    {
-                      backgroundColor: `${palette.surfaceContainerHigh}EE`,
-                      opacity: pressed ? 0.9 : 1,
-                    },
-                  ]}>
-                  <Text style={[styles.loadMoreText, { color: palette.primary }]}>Load more</Text>
-                  <MaterialCommunityIcons name="chevron-down" size={22} color={palette.primary} />
-                </Pressable>
+                  scaleTo={0.985}>
+                  <View style={[styles.loadMore, { backgroundColor: `${palette.surfaceContainerHigh}EE` }]}>
+                    <Text style={[styles.loadMoreText, { color: palette.primary }]}>Load more</Text>
+                    <MaterialCommunityIcons name="chevron-down" size={22} color={palette.primary} />
+                  </View>
+                </ScalePressable>
               ) : (
                 <View style={{ height: 18 }} />
               )
@@ -218,7 +216,6 @@ function Metric({
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: 'transparent' },
   list: { paddingHorizontal: 22, paddingBottom: 36, paddingTop: 8 },
-  headline: { fontSize: 36, letterSpacing: -1.4, lineHeight: 40 },
   sub: { fontSize: 16, lineHeight: 24, fontFamily: FastCoachFonts.bodyLight },
   card: {
     padding: 20,

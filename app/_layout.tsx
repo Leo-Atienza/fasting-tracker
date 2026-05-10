@@ -134,8 +134,8 @@ function RootLayoutNav({ storeHydrated }: { storeHydrated: boolean }) {
       <Stack screenOptions={stackHeader}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="history" options={{ title: 'Fasting Tracker', headerBackTitle: '' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+        <Stack.Screen name="history" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );
