@@ -167,6 +167,7 @@ export default function FactsScreen() {
                   <GlassCard palette={palette} key={fact.id} style={[styles.miniFav]}>
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={`Remove "${fact.title}" from favorites`}
                       onPress={() => toggleFavoriteFact(fact.id)}
                       style={styles.favTap}>
                       <MaterialCommunityIcons name="star" color={palette.primary} size={22} />

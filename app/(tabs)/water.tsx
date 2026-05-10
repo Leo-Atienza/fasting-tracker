@@ -275,7 +275,11 @@ export default function WaterScreen() {
                   },
                 ]}
               />
-              <Pressable onPress={() => submitCustomPour()} style={[styles.sheetBtn, { backgroundColor: palette.primary }]}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Add custom pour to today's log"
+                onPress={() => submitCustomPour()}
+                style={[styles.sheetBtn, { backgroundColor: palette.primary }]}>
                 <Text style={[styles.sheetBtnText, { color: palette.onPrimary }]}>Add to log</Text>
               </Pressable>
             </Pressable>

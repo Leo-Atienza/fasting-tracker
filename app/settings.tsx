@@ -1,13 +1,7 @@
+import Constants from 'expo-constants';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
@@ -219,6 +213,12 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </ScalePressable>
+
+          <Text
+            accessibilityRole="text"
+            style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
+            Fast Coach v{Constants.expoConfig?.version ?? '1.0.0'}
+          </Text>
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
@@ -289,4 +289,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   saveText: { fontSize: 15 },
+  versionFooter: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 28,
+    marginBottom: 8,
+    letterSpacing: 0.4,
+  },
 });
