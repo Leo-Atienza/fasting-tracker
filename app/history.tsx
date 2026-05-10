@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -76,9 +76,21 @@ function durationMinutes(durMs: number): number {
 export default function HistoryScreen() {
   const router = useRouter();
   const sessions = useAppStore((s) => s.sessions);
+  const removeFastSession = useAppStore((s) => s.removeFastSession);
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const [visibleCount, setVisibleCount] = useState(PAGE);
+
+  function confirmRemove(item: FastSession) {
+    Alert.alert(
+      'Remove this fast?',
+      'It will disappear from history. This cannot be undone.',
+      [
+        { text: 'Keep', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: () => removeFastSession(item.id) },
+      ],
+    );
+  }
 
   const sorted = sortedSessionsDescending(sessions);
   const viewport = sorted.slice(0, visibleCount);
@@ -105,6 +117,12 @@ export default function HistoryScreen() {
     const subdued = badge.label === 'Missed goal' ? { opacity: 0.92 } : undefined;
 
     return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${badge.label} fast, ${formatElapsedShort(dur)}, ${heading}`}
+        accessibilityHint="Long-press to remove this fast from history."
+        onLongPress={() => confirmRemove(item)}
+        delayLongPress={350}>
       <GlassCard
         palette={palette}
         style={[styles.card, subdued]}>
@@ -145,6 +163,7 @@ export default function HistoryScreen() {
           />
         </View>
       </GlassCard>
+      </Pressable>
     );
   }
 

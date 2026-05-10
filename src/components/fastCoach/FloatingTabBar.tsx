@@ -10,7 +10,7 @@ import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/consta
 
 type MciName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-const ICONS: readonly [MciName, MciName, MciName] = ['timer', 'water', 'lightbulb-outline'];
+const ICONS: readonly MciName[] = ['timer', 'water', 'chart-line-variant', 'lightbulb-outline'];
 
 /** Custom glass tab bar wired from `(tabs)/_layout` with explicit color scheme from the host screen. */
 export function FloatingTabBar({

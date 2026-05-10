@@ -44,12 +44,15 @@ interface AppActions {
   setDietPreferenceId: (pref: DietPreferenceId) => void;
   startFast: (opts?: { targetDurationMinutes?: number | null }) => void;
   endFast: () => void;
+  removeFastSession: (id: string) => void;
   addWaterMl: (ml: number, meta?: { presetId?: string }) => void;
   removeWaterEntry: (id: string) => void;
   setWaterDailyGoalMl: (ml: number) => void;
   setWaterUnit: (u: WaterUnit) => void;
   toggleFavoriteFact: (id: string) => void;
   bumpSuggestionShuffle: () => void;
+  /** Hard reset to initial state. Wipes persist on next write. */
+  clearAllData: () => void;
 }
 
 export type AppStore = AppSlice & AppActions;
@@ -99,6 +102,10 @@ export const useAppStore = create<AppStore>()(
           sessions: trimSessionsNewestFirst([session, ...state.sessions]),
         }));
       },
+      removeFastSession: (id) =>
+        set((state) => ({
+          sessions: state.sessions.filter((s) => s.id !== id),
+        })),
       addWaterMl: (ml, meta) => {
         const v = Math.max(0, Math.min(ml, MAX_WATER_ADD_ML));
         if (!v) return;
@@ -128,6 +135,18 @@ export const useAppStore = create<AppStore>()(
         })),
       bumpSuggestionShuffle: () =>
         set((s) => ({ eatShuffleNonce: s.eatShuffleNonce + 1 })),
+      clearAllData: () =>
+        set({
+          hasCompletedOnboarding: false,
+          dietPreferenceId: 'omnivore',
+          eatShuffleNonce: 0,
+          activeFast: null,
+          sessions: [],
+          waterEntries: [],
+          waterDailyGoalMl: 2500,
+          waterUnit: 'ml',
+          favoriteFactIds: [],
+        }),
     }),
     {
       name: APP_STORAGE_KEY,

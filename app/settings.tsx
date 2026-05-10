@@ -27,6 +27,41 @@ export default function SettingsScreen() {
   const waterUnit = useAppStore((s) => s.waterUnit);
   const setGoal = useAppStore((s) => s.setWaterDailyGoalMl);
   const setWaterUnit = useAppStore((s) => s.setWaterUnit);
+  const clearAllData = useAppStore((s) => s.clearAllData);
+
+  function confirmClearAll() {
+    // First dialog: are you sure?
+    Alert.alert(
+      'Clear all data?',
+      'This wipes your fast history, water log, favorites, and preferences. Onboarding will restart.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            // Second dialog: type the word? Use a second confirm step instead
+            // (Alert can't render an input on Android pre-API 28 reliably).
+            Alert.alert(
+              'Are you absolutely sure?',
+              'This cannot be undone.',
+              [
+                { text: 'No, keep my data', style: 'cancel' },
+                {
+                  text: 'Yes, wipe everything',
+                  style: 'destructive',
+                  onPress: () => {
+                    clearAllData();
+                    Alert.alert('Cleared', 'All data has been reset. Restart the app to re-run onboarding.');
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  }
 
   const [draftGoal, setDraftGoal] = useState(String(Math.round(waterDailyGoalMl)));
 
@@ -214,6 +249,26 @@ export default function SettingsScreen() {
             </View>
           </ScalePressable>
 
+          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+            Danger zone
+          </Text>
+          <ScalePressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear all data, restarts onboarding"
+            accessibilityHint="Double-confirm dialog will follow."
+            onPress={confirmClearAll}
+            scaleTo={0.985}>
+            <View
+              style={[
+                styles.dangerBtn,
+                { backgroundColor: `${palette.error}18`, borderColor: `${palette.error}55` },
+              ]}>
+              <Text style={[styles.dangerText, { color: palette.error, fontFamily: FastCoachFonts.label }]}>
+                Clear all data
+              </Text>
+            </View>
+          </ScalePressable>
+
           <Text
             accessibilityRole="text"
             style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
@@ -289,6 +344,20 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   saveText: { fontSize: 15 },
+  dangerBtn: {
+    minHeight: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 4,
+  },
+  dangerText: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+  },
   versionFooter: {
     fontSize: 12,
     textAlign: 'center',

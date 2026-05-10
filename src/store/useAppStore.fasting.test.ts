@@ -113,6 +113,74 @@ describe('useAppStore — water (W8.3 removeWater preserves siblings)', () => {
   });
 });
 
+describe('useAppStore — fasting history mutation (W14.1)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('removeFastSession on an unknown id is a no-op', () => {
+    useAppStore.getState().startFast({ targetDurationMinutes: 60 });
+    useAppStore.getState().endFast();
+    const before = useAppStore.getState().sessions;
+    expect(before.length).toBe(1);
+    useAppStore.getState().removeFastSession('id-that-does-not-exist');
+    expect(useAppStore.getState().sessions).toEqual(before);
+  });
+
+  it('removeFastSession removes only the matched id and preserves siblings + order', () => {
+    useAppStore.getState().startFast({ targetDurationMinutes: 60 });
+    useAppStore.getState().endFast();
+    useAppStore.getState().startFast({ targetDurationMinutes: 120 });
+    useAppStore.getState().endFast();
+    useAppStore.getState().startFast({ targetDurationMinutes: 180 });
+    useAppStore.getState().endFast();
+    const sessions = useAppStore.getState().sessions;
+    expect(sessions.length).toBe(3);
+    const middleId = sessions[1]!.id;
+    const expectedOrder = [sessions[0]!.id, sessions[2]!.id];
+    useAppStore.getState().removeFastSession(middleId);
+    const after = useAppStore.getState().sessions;
+    expect(after.length).toBe(2);
+    expect(after.map((s) => s.id)).toEqual(expectedOrder);
+  });
+});
+
+describe('useAppStore — clearAllData (W18.1)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('resets every persisted field to its initial default', () => {
+    useAppStore.setState({
+      hasCompletedOnboarding: true,
+      dietPreferenceId: 'vegan',
+      eatShuffleNonce: 42,
+      activeFast: { startedAt: new Date().toISOString(), targetDurationMinutes: 16 * 60 },
+      sessions: [],
+      waterEntries: [],
+      waterDailyGoalMl: 999,
+      waterUnit: 'oz',
+      favoriteFactIds: ['x', 'y'],
+    });
+    useAppStore.getState().addWaterMl(500);
+    expect(useAppStore.getState().waterEntries.length).toBe(1);
+
+    useAppStore.getState().clearAllData();
+    const s = useAppStore.getState();
+    expect(s.hasCompletedOnboarding).toBe(false);
+    expect(s.dietPreferenceId).toBe('omnivore');
+    expect(s.eatShuffleNonce).toBe(0);
+    expect(s.activeFast).toBeNull();
+    expect(s.sessions).toEqual([]);
+    expect(s.waterEntries).toEqual([]);
+    expect(s.waterDailyGoalMl).toBe(2500);
+    expect(s.waterUnit).toBe('ml');
+    expect(s.favoriteFactIds).toEqual([]);
+  });
+});
+
 describe('selectWaterTodayMl — cross-midnight (W7.2 + W8.2)', () => {
   beforeEach(() => {
     vi.useFakeTimers();

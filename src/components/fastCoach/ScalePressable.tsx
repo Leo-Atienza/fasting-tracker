@@ -8,13 +8,19 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useReduceMotion } from '@/src/hooks/useReduceMotion';
+
 type Props = PressableProps & {
   children: React.ReactNode;
   scaleTo?: number;
   containerStyle?: StyleProp<ViewStyle>;
 };
 
-/** Lightweight tactile press effect for buttons/cards. */
+/**
+ * Lightweight tactile press effect for buttons/cards. Honors the OS-level
+ * "reduce motion" accessibility flag: when on, the press doesn't scale at all
+ * (instant identity transform) so motion-sensitive users aren't shaken.
+ */
 export function ScalePressable({
   children,
   scaleTo = 0.98,
@@ -24,8 +30,13 @@ export function ScalePressable({
   ...rest
 }: Props) {
   const scale = useRef(new Animated.Value(1)).current;
+  const reduceMotion = useReduceMotion();
 
   function animate(toValue: number) {
+    if (reduceMotion) {
+      scale.setValue(1);
+      return;
+    }
     Animated.timing(scale, {
       toValue,
       duration: 120,

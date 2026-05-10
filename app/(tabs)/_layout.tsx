@@ -14,6 +14,7 @@ export default function TabLayout() {
       screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ title: 'Fast', tabBarLabel: 'Fast' }} />
       <Tabs.Screen name="water" options={{ title: 'Water', tabBarLabel: 'Water' }} />
+      <Tabs.Screen name="insights" options={{ title: 'Insights', tabBarLabel: 'Insights' }} />
       <Tabs.Screen name="facts" options={{ title: 'Facts', tabBarLabel: 'Facts' }} />
     </Tabs>
   );
