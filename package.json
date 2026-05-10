@@ -1,7 +1,7 @@
 {
   "name": "fasting-tracker",
   "main": "expo-router/entry",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "start": "expo start --port 8089",
     "start:tunnel": "expo start --port 8089 --tunnel",
