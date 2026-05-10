@@ -99,7 +99,7 @@ export default function SettingsScreen() {
                 <View key={opt.id}>
                   <ScalePressable
                     accessibilityRole="radio"
-                    accessibilityState={{ selected }}
+                    accessibilityState={{ checked: selected }}
                     onPress={() => setDiet(opt.id)}
                     containerStyle={styles.row}
                     scaleTo={0.99}>
@@ -162,11 +162,13 @@ export default function SettingsScreen() {
                 </View>
               </ScalePressable>
             </View>
-            <View style={styles.segment}>
+            <View style={[styles.segment, { backgroundColor: palette.glassFill }]}>
               {(['ml', 'oz'] as WaterUnit[]).map((u) => (
                 <ScalePressable
                   key={u}
-                  accessibilityRole="button"
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: waterUnit === u }}
+                  accessibilityLabel={u === 'ml' ? 'Milliliters unit' : 'Ounces unit'}
                   onPress={() => {
                     const canonicalMl = useAppStore.getState().waterDailyGoalMl;
                     setWaterUnit(u);
@@ -252,7 +254,6 @@ const styles = StyleSheet.create({
   segment: {
     marginTop: 4,
     marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.52)',
     borderRadius: 999,
     padding: 4,
     flexDirection: 'row',

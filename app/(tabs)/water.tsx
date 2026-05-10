@@ -248,8 +248,15 @@ export default function WaterScreen() {
         </ScrollView>
 
         <Modal transparent visible={customOpen} animationType="fade" onRequestClose={() => setCustomOpen(false)}>
-          <Pressable style={styles.modalBackdrop} onPress={() => setCustomOpen(false)}>
-            <Pressable style={[styles.sheet, { backgroundColor: palette.surfaceContainerLowest }]} onPress={() => undefined}>
+          <Pressable
+            style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}
+            onPress={() => setCustomOpen(false)}>
+            <Pressable
+              style={[
+                styles.sheet,
+                { backgroundColor: palette.surfaceContainerLowest, borderColor: palette.glassBorder },
+              ]}
+              onPress={() => undefined}>
               <Text style={[styles.sheetTitle, { color: palette.onSurface }]}>Custom pour</Text>
               <Text style={{ color: palette.onSurfaceVariant, marginBottom: 10 }}>
                 Enter amount in <Text style={{ fontWeight: '800' }}>{unit}</Text>, rounded for quick logging.
@@ -366,7 +373,6 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(15,21,48,0.35)',
     padding: 22,
     paddingBottom: 40,
   },
@@ -375,7 +381,6 @@ const styles = StyleSheet.create({
     padding: 22,
     gap: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#fff4',
     shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,

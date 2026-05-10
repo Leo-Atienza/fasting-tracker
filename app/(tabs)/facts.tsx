@@ -186,10 +186,11 @@ export default function FactsScreen() {
                     accessibilityLabel={
                       expandFavorites ? 'Show fewer saved facts' : 'Show every saved fact'
                     }
+                    accessibilityState={{ expanded: expandFavorites }}
                     onPress={() => setExpandFavorites((x) => !x)}
                     style={[
                       styles.viewAllChip,
-                      { backgroundColor: `${palette.surfaceContainerHigh}BB` },
+                      { backgroundColor: `${palette.surfaceContainerHigh}BB`, borderColor: palette.glassBorder },
                     ]}>
                     <Text style={[styles.viewAllChipText, { color: palette.onSurface }]}>
                       {expandFavorites ? 'Collapse list' : 'View all favorites'}
@@ -301,7 +302,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginTop: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#fff4',
   },
   viewAllChipText: { fontWeight: '700', letterSpacing: 0.06 * 12 },
   banner: {

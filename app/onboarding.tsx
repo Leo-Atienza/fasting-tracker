@@ -86,7 +86,7 @@ export default function OnboardingScreen() {
                 <ScalePressable
                   key={opt.id}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected }}
+                  accessibilityState={{ checked: selected }}
                   accessibilityLabel={`${opt.label}: ${opt.description}`}
                   onPress={() => choose(opt.id)}
                   scaleTo={0.985}>
