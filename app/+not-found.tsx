@@ -1,17 +1,24 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { Text, View } from '@/components/Themed';
+import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
+import { useColorScheme } from '@/components/useColorScheme';
 
 export default function NotFoundScreen() {
+  const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
+  const palette = FastCoachPalette[scheme];
+
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
-      <View style={styles.container}>
-        <Text style={styles.title}>This screen doesn't exist.</Text>
-
+      <View style={[styles.container, { backgroundColor: palette.background }]}>
+        <Text style={[styles.title, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+          This screen doesn&apos;t exist.
+        </Text>
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen!</Text>
+          <Text style={[styles.linkText, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+            Go to home screen
+          </Text>
         </Link>
       </View>
     </>
@@ -27,7 +34,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   link: {
     marginTop: 15,
@@ -35,6 +42,5 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 14,
-    color: '#2e78b7',
   },
 });
