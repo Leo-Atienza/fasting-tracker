@@ -1,0 +1,127 @@
+[
+  {
+    "id": "e-d1",
+    "phase": "during_fast",
+    "title": "Hydration first",
+    "bullets": [
+      "Plain water is the default foundation during a fast.",
+      "If plain water feels flat, sparkling water (unflavored) is a common choice for people who tolerate it."
+    ]
+  },
+  {
+    "id": "e-d2",
+    "phase": "during_fast",
+    "title": "Electrolytes (carefully)",
+    "bullets": [
+      "Some people add a pinch of salt to water if they feel lightheaded (not universal—stop if it doesn’t feel right).",
+      "Sweetened electrolyte drinks break a strict fast because of calories and often sugar."
+    ]
+  },
+  {
+    "id": "e-d3",
+    "phase": "during_fast",
+    "title": "Tea and coffee (choose your rules)",
+    "bullets": [
+      "Many fasting styles allow plain tea or black coffee without milk or sugar.",
+      "If you’re unsure what counts as “still fasting” for your goals, pick the stricter line: water only."
+    ]
+  },
+  {
+    "id": "e-d4",
+    "phase": "during_fast",
+    "title": "When to pause",
+    "bullets": [
+      "If you feel faint, confused, or unwell, end the fast and eat something gentle.",
+      "Don’t treat discomfort as a badge—safety comes first."
+    ]
+  },
+  {
+    "id": "e-b1",
+    "phase": "break_fast",
+    "title": "Gentle refeed (plant-forward basics)",
+    "dietIncludes": ["vegetarian", "vegan", "pescatarian", "omnivore", "meat_forward"],
+    "bullets": [
+      "Start with something small you tolerate well: broth, soup, toast, rice, fruit, or a modest snack.",
+      "Add a fuller meal later if you’re hungry—ease in instead of slamming calories all at once."
+    ]
+  },
+  {
+    "id": "e-b2",
+    "phase": "break_fast",
+    "title": "Gentle refeed (vegan)",
+    "dietIncludes": ["vegan"],
+    "bullets": [
+      "Try miso soup, fruit, or a small grain bowl with vegetables.",
+      "Add protein (tofu, lentils) in the next meal if you want more staying power."
+    ]
+  },
+  {
+    "id": "e-b3",
+    "phase": "break_fast",
+    "title": "Gentle refeed (pescatarian)",
+    "dietIncludes": ["pescatarian", "omnivore"],
+    "bullets": [
+      "Fish with mild seasoning can be easy to digest after a long fast for some people.",
+      "Pair it with cooked vegetables or rice for balance."
+    ]
+  },
+  {
+    "id": "e-b4",
+    "phase": "break_fast",
+    "title": "Gentle refeed (meat-forward)",
+    "dietIncludes": ["meat_forward", "omnivore"],
+    "dietExcludes": ["vegan", "vegetarian"],
+    "bullets": [
+      "Some people prefer a small portion of eggs or lean meat after fasting—others feel better with broth first.",
+      "Listen to your gut: volume matters as much as the food choice."
+    ]
+  },
+  {
+    "id": "e-b5",
+    "phase": "break_fast",
+    "title": "Watch the sugar spike",
+    "bullets": [
+      "Huge doses of refined sugar right after fasting can feel rough for some people.",
+      "Fiber + protein tends to mellow the spike—when your diet allows it."
+    ]
+  },
+  {
+    "id": "e-w1",
+    "phase": "eating_window",
+    "title": "Vegetarian balance",
+    "dietIncludes": ["vegetarian", "vegan"],
+    "bullets": [
+      "Aim for protein across the window: beans, lentils, tofu, dairy/eggs (if vegetarian).",
+      "Add colorful vegetables for fiber and micronutrients."
+    ]
+  },
+  {
+    "id": "e-w2",
+    "phase": "eating_window",
+    "title": "Meat-forward balance",
+    "dietIncludes": ["meat_forward"],
+    "bullets": [
+      "If meals skew animal protein, consider adding bone broth-derived minerals or vegetables if you tolerate them.",
+      "Variety across the week reduces “same meal every day” fatigue."
+    ]
+  },
+  {
+    "id": "e-w3",
+    "phase": "eating_window",
+    "title": "Omnivore template",
+    "dietIncludes": ["omnivore", "pescatarian"],
+    "bullets": [
+      "Plate method: protein + carb + veg is a durable default.",
+      "Fish days and plant-forward days both fit—consistency beats labeling."
+    ]
+  },
+  {
+    "id": "e-w4",
+    "phase": "eating_window",
+    "title": "Snack strategy",
+    "bullets": [
+      "Mini snacks beat going from “zero to feast” if your energy crashes mid-window.",
+      "Pair carbs with protein when you want steadier fullness."
+    ]
+  }
+]

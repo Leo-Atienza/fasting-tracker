@@ -1,0 +1,74 @@
+[
+  {
+    "id": "f1",
+    "theme": "metabolic",
+    "title": "Insulin quiet hours",
+    "body": "Research suggests that longer gaps between meals may give insulin signaling more time to settle, which some people find helpful for steady energy (individual responses vary)."
+  },
+  {
+    "id": "f2",
+    "theme": "metabolic",
+    "title": "Fat burning isn’t a light switch",
+    "body": "Your body is always using a mix of fuels. Fasting windows may shift that mix over time, but there is no single moment when “fat burning turns on.”"
+  },
+  {
+    "id": "f3",
+    "theme": "cognition",
+    "title": "Focus and distraction",
+    "body": "Some people report clearer focus during short fasts. Others feel foggy. Hydration, sleep, and caffeine timing often matter as much as the fast itself."
+  },
+  {
+    "id": "f4",
+    "theme": "longevity",
+    "title": "Autophagy buzzword",
+    "body": "Autophagy is a normal cellular cleanup process. It’s exciting science, but human evidence tying specific fasting lengths to measurable autophagy outcomes is still developing."
+  },
+  {
+    "id": "f5",
+    "theme": "general",
+    "title": "One size does not fit all",
+    "body": "Fasting can be fine for some people and unwise for others (for example with certain medications, pregnancy, diabetes, or a history of eating disorders). When in doubt, ask a clinician."
+  },
+  {
+    "id": "f6",
+    "theme": "metabolic",
+    "title": "Calories still count",
+    "body": "Time-restricted eating changes when you eat, not whether energy balance matters. Overall patterns across the week still drive most weight change."
+  },
+  {
+    "id": "f7",
+    "theme": "cognition",
+    "title": "Hydration and headaches",
+    "body": "Many fasting headaches are dehydration or caffeine withdrawal. Water and electrolytes (if appropriate for you) can be the simplest fix."
+  },
+  {
+    "id": "f8",
+    "theme": "longevity",
+    "title": "Consistency beats perfection",
+    "body": "A sustainable schedule you can keep for months often teaches you more about your body than an extreme plan you abandon after a week."
+  },
+  {
+    "id": "f9",
+    "theme": "general",
+    "title": "Break the fast gently",
+    "body": "After a long fast, many people feel better starting with a smaller, easy-to-digest meal rather than a huge celebratory feast."
+  },
+  {
+    "id": "f10",
+    "theme": "metabolic",
+    "title": "Muscle maintenance",
+    "body": "Protein and resistance training across the week may matter more for muscle than any single fasting window."
+  },
+  {
+    "id": "f11",
+    "theme": "cognition",
+    "title": "Sleep is part of the stack",
+    "body": "Short sleep can mimic “fasting brain fog.” If your fast makes sleep worse, it may be worth adjusting timing or length."
+  },
+  {
+    "id": "f12",
+    "theme": "general",
+    "title": "Not a medical treatment",
+    "body": "This app shares general education, not medical advice. Use it as a tracker and conversation starter with professionals you trust."
+  }
+]
