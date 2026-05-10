@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#4f4ccd",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-primary-fixed": "#002107",
+                    "surface-container-high": "#e8e8ed",
+                    "outline": "#6d7b6b",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#006e28",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#fefcff",
+                    "tertiary-container": "#a6a5ff",
+                    "surface": "#f9f9fe",
+                    "on-primary-fixed-variant": "#00531c",
+                    "secondary": "#0058bc",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f3f8",
+                    "surface-container": "#ededf2",
+                    "surface-variant": "#e2e2e7",
+                    "primary-container": "#34c759",
+                    "tertiary-fixed-dim": "#c2c1ff",
+                    "secondary-container": "#0070eb",
+                    "on-secondary-fixed-variant": "#004493",
+                    "on-primary-container": "#004d1a",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#53e16f",
+                    "primary-fixed": "#72fe88",
+                    "on-surface-variant": "#3d4a3c",
+                    "on-tertiary-container": "#302aaf",
+                    "on-surface": "#1a1c1f",
+                    "surface-dim": "#d9dade",
+                    "on-tertiary-fixed-variant": "#3631b4",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#53e16f",
+                    "on-secondary-fixed": "#001a41",
+                    "on-background": "#1a1c1f",
+                    "surface-bright": "#f9f9fe",
+                    "inverse-on-surface": "#f0f0f5",
+                    "primary": "#006e28",
+                    "background": "#f9f9fe",
+                    "tertiary-fixed": "#e2dfff",
+                    "on-tertiary-fixed": "#0c006a",
+                    "inverse-surface": "#2e3034",
+                    "surface-container-highest": "#e2e2e7",
+                    "outline-variant": "#bccbb8",
+                    "secondary-fixed": "#d8e2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "stack-gap-lg": "40px",
+                    "stack-gap-sm": "12px",
+                    "stack-gap-md": "24px",
+                    "glass-padding": "20px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Hanken Grotesk"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["44px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300"}],
+                    "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f9f9fe;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+        }
+        .ios-toggle:checked + .ios-toggle-label {
+            background-color: #34c759;
+        }
+        .ios-toggle:checked + .ios-toggle-label::after {
+            transform: translateX(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface antialiased pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/60 dark:bg-on-surface/10 backdrop-blur-xl border-b border-white/20 shadow-sm flex justify-between items-center h-16 px-container-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiQb1vz8PAkSJjhHBRHWivmkTXCOi1RFuAmNa968MrV4dD1J-Q6W1U5ixDSHuvwg_0-zQMWSqW6L0ig_eZhYTXlF0pckP81WELDwpi38LJpErtxfmcATUjdsh97KXYyNUKkmZekQkI0fxVt4U0b9BZ6q66D6PIbZUjKg2wxjz_NljtM66_xPhHfcfQFft6NwBL_6QaZfNucgUPrSN85Z4UQw148hr-7cuTJxMnfrCqtkv662OIC1sz8pRBAW38to1mfelAxx3xKok"/>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Settings</h1>
+</div>
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<main class="pt-24 px-container-padding space-y-stack-gap-lg">
+<!-- Profile Overview (Mini) -->
+<section class="glass-card rounded-lg p-glass-padding flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-primary/10">
+                JD
+            </div>
+<div>
+<h2 class="font-headline-md text-headline-md">Jane Doe</h2>
+<p class="font-body-md text-on-surface-variant/70">Pro Fasting Coach Member</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant/40">chevron_right</span>
+</section>
+<!-- Preferences Section -->
+<section class="space-y-stack-gap-sm">
+<h3 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant px-unit">Preferences</h3>
+<div class="glass-card rounded-lg overflow-hidden">
+<!-- Diet Preference -->
+<div class="flex items-center justify-between p-glass-padding hover:bg-white/20 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-body-md font-semibold">Diet Preference</p>
+<p class="text-sm text-on-surface-variant/60">Keto Friendly</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40">chevron_right</span>
+</div>
+<div class="h-[0.5px] bg-on-surface-variant/10 mx-glass-padding"></div>
+<!-- Notifications -->
+<div class="flex items-center justify-between p-glass-padding">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<p class="font-body-md font-semibold">Fasting Reminders</p>
+</div>
+<div class="relative inline-block w-11 h-6">
+<input checked="" class="sr-only ios-toggle" id="reminders" type="checkbox"/>
+<label class="ios-toggle-label absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-surface-variant rounded-full transition-all duration-300 before:absolute before:content-[''] before:h-5 before:w-5 before:left-[2px] before:bottom-[2px] before:bg-white before:rounded-full before:transition-all before:duration-300 after:content-[''] after:absolute after:transition-all after:duration-300" for="reminders"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Hydration Section -->
+<section class="space-y-stack-gap-sm">
+<h3 class="font-label-caps text-label-caps uppercase tracking-widest text-on-surface-variant px-unit">Hydration</h3>
+<div class="glass-card rounded-lg overflow-hidden">
+<!-- Water Goal -->
+<div class="p-glass-padding space-y-stack-gap-sm">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-weight="fill">water_drop</span>
+</div>
+<p class="font-body-md font-semibold">Daily Water Goal</p>
+</div>
+<span class="font-headline-md text-secondary font-bold">2400 ml</span>
+</div>
+<input class="w-full h-1.5 bg-secondary/20 rounded-full appearance-none accent-secondary cursor-pointer" max="5000" min="1000" step="100" type="range" value="2400"/>
+</div>
+<div class="h-[0.5px] bg-on-surface-variant/10 mx-glass-padding"></div>
+<!-- Unit Selection -->
+<div class="p-glass-padding space-y-stack-gap-sm">
+<p class="font-body-md font-semibold text-sm text-on-surface-variant/70 mb-2">Display Units</p>
+<div class="bg-surface-container-low p-1 rounded-full flex">
+<button class="flex-1 py-2 text-sm font-semibold rounded-full bg-white shadow-sm text-secondary transition-all">Milliliters (ml)</button>
+<button class="flex-1 py-2 text-sm font-semibold rounded-full text-on-surface-variant transition-all">Ounces (oz)</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Premium Subscription Hero -->
+<section class="relative overflow-hidden rounded-lg aspect-[16/9] bg-primary group cursor-pointer shadow-xl shadow-primary/20">
+<img alt="Healthy Living" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay group-hover:scale-110 transition-transform duration-700" data-alt="A cinematic, top-down photograph of a vibrant, healthy meal bowl filled with fresh vegetables, quinoa, and avocado. The lighting is bright and high-key, creating a clean wellness retreat atmosphere. The colors are dominated by rich greens and earthy tones, aligning with the ZenFast brand palette. The shot is captured with a shallow depth of field, emphasizing the crisp freshness of the ingredients." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT6l2JbMCtcJfoSMAdugedpRWPua4_c0HcTXIx8hf-of1L87mATAMhHOU5patdoSKdpfvm21zkfMMR_2mIrAfCIv4BjQfv1PuOkjHA7xTRT_UmRSmx31xHJRZDPF4y21HrWZ88clvHW6s8xHoQ76MvuqSP0okcgcqwUeD3ZvXjSkWiXRRhoPV3J2Y1be2rdqrthrZLPFMlZLdLBJbCrM2Bf9kAQ5wnvBswRhfbJPdYtt5QBWP17VNy3FOBe8pmWQKdDg-IbnE5XMo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-glass-padding">
+<span class="bg-white/20 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-bold mb-2 inline-block">PRO MEMBER</span>
+<h4 class="text-white font-headline-md leading-tight">Unlock Personalized<br/>Fast Insights</h4>
+</div>
+<div class="absolute bottom-4 right-4">
+<button class="bg-white text-primary font-bold py-2 px-4 rounded-full text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform">View Plans</button>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="space-y-stack-gap-sm">
+<div class="glass-card rounded-lg overflow-hidden">
+<div class="flex items-center justify-between p-glass-padding text-error active:opacity-60 transition-opacity cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">logout</span>
+<p class="font-body-md font-semibold">Sign Out</p>
+</div>
+</div>
+</div>
+<p class="text-center text-xs text-on-surface-variant/40 mt-8">ZenFast v2.4.1 (Build 890)<br/>Made with 🧘 for a healthier you.</p>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-6 left-6 right-6 rounded-full bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/40 shadow-[0_10px_20px_rgba(0,0,0,0.05)] flex justify-around items-center h-20 px-4 z-50">
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-surface-variant/70 hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest mt-1">Fast</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-surface-variant/70 hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest mt-1">Insights</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/70 dark:text-surface-variant/70 hover:text-on-surface transition-colors cursor-pointer">
+<span class="material-symbols-outlined">water_drop</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest mt-1">Hydrate</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed bg-white/50 dark:bg-white/10 rounded-full px-4 py-2 cursor-pointer transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-label-caps uppercase tracking-widest mt-1">Profile</span>
+</div>
+</nav>
+</body></html>
