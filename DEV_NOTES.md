@@ -49,6 +49,27 @@ If a future screen needs visual / interactive coverage, revisit
 `vitest.config.ts` to add `environmentMatchGlobs` for `*.tsx.test.ts` and
 `setupFiles` that stub the native-only modules listed above.
 
+### Meal preset medical facts — sourcing caveat
+
+The R6 plan asked for medical facts researched from the open web first
+and bundled offline. During the round, WebSearch and WebFetch returned
+`400` / `403` / `404` for major medical-institution URLs (Cleveland
+Clinic, Hopkins, Harvard Health, eatright.org, nia.nih.gov), so the
+final facts in [assets/data/eat-suggestions.json](assets/data/eat-suggestions.json)
+were composed from widely-accepted, citation-traceable claims in
+mainstream clinical nutrition literature (NEJM 2019 de Cabo & Mattson
+IF review, NASEM 2005 water DRIs, USDA Dietary Guidelines 2020–2025,
+AHA fish/dietary statements, FDA FDA/EPA fish advisories, EFSA caffeine
+opinion, Academy of Nutrition and Dietetics position papers, USDA
+FoodData Central). Sources are attributed by institution name only —
+no URLs are stored — so a future round with working web access can
+swap in canonical citation URLs without changing the displayed text.
+
+Each fact is wrapped in an `EatSuggestion.medicalNote` with `text`,
+`source`, and optional `sourceUrl` fields. The home-screen meal detail
+sheet renders all three. The app's existing "Educational copy only —
+not medical advice" disclaimer applies to these notes too.
+
 ## Build gotchas (Windows host)
 
 - `assembleRelease` is blocked by the Windows long-path limit — `ninja.exe`

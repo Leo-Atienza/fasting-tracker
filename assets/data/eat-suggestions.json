@@ -2,126 +2,559 @@
   {
     "id": "e-d1",
     "phase": "during_fast",
-    "title": "Hydration first",
+    "title": "Plain water — the default",
     "bullets": [
-      "Plain water is the default foundation during a fast.",
-      "If plain water feels flat, sparkling water (unflavored) is a common choice for people who tolerate it."
-    ]
+      "Plain water is the foundation of any fasting protocol.",
+      "If still water feels flat, unflavored sparkling water is widely tolerated."
+    ],
+    "ingredients": [
+      { "name": "Still water", "amount": "1.5–3 L across the day" },
+      { "name": "Sparkling water (unflavored)", "amount": "optional" }
+    ],
+    "foodTypes": ["drink"],
+    "prepMinutes": 0,
+    "medicalNote": {
+      "text": "Adequate total-water intake for adults is roughly 2.7 L/day (women) and 3.7 L/day (men), including water from food. Hot weather and exercise increase the need.",
+      "source": "NASEM 2005 (Dietary Reference Intakes for Water)"
+    }
   },
   {
     "id": "e-d2",
     "phase": "during_fast",
-    "title": "Electrolytes (carefully)",
+    "title": "Electrolytes (with care)",
     "bullets": [
-      "Some people add a pinch of salt to water if they feel lightheaded (not universal—stop if it doesn’t feel right).",
-      "Sweetened electrolyte drinks break a strict fast because of calories and often sugar."
-    ]
+      "Some people add a small pinch of salt to water if they feel lightheaded.",
+      "Sweetened sports drinks have calories and sugar — they break a strict fast."
+    ],
+    "ingredients": [
+      { "name": "Water", "amount": "500 ml" },
+      { "name": "Sea salt or pink salt", "amount": "1 small pinch (≈¼ tsp)" },
+      { "name": "Lemon juice (optional)", "amount": "a few drops" }
+    ],
+    "foodTypes": ["drink"],
+    "prepMinutes": 1,
+    "medicalNote": {
+      "text": "Prolonged water-only fasting (>24h) increases urinary sodium loss; a small amount of salt can mitigate lightheadedness for some people. Anyone on blood-pressure medication should consult a clinician first.",
+      "source": "Cleveland Clinic / NIH NIDDK general nutrition guidance"
+    }
   },
   {
     "id": "e-d3",
     "phase": "during_fast",
-    "title": "Tea and coffee (choose your rules)",
+    "title": "Black coffee or plain tea",
     "bullets": [
-      "Many fasting styles allow plain tea or black coffee without milk or sugar.",
-      "If you’re unsure what counts as “still fasting” for your goals, pick the stricter line: water only."
-    ]
+      "Plain coffee and unsweetened tea have negligible calories.",
+      "If you're unsure what 'still fasting' means for your goals, water-only is the strictest line."
+    ],
+    "ingredients": [
+      { "name": "Black coffee", "amount": "1 cup (240 ml)" },
+      { "name": "Green or black tea, unsweetened", "amount": "1 cup (240 ml)" }
+    ],
+    "foodTypes": ["drink"],
+    "prepMinutes": 3,
+    "medicalNote": {
+      "text": "EFSA considers up to 400 mg of caffeine per day (≈4 standard cups of coffee) safe for healthy non-pregnant adults. Caffeine acts as a mild appetite suppressant, which may help during longer fasting windows.",
+      "source": "EFSA 2015 caffeine safety opinion"
+    }
   },
   {
     "id": "e-d4",
     "phase": "during_fast",
-    "title": "When to pause",
+    "title": "When to pause the fast",
     "bullets": [
-      "If you feel faint, confused, or unwell, end the fast and eat something gentle.",
-      "Don’t treat discomfort as a badge—safety comes first."
-    ]
+      "If you feel faint, confused, or genuinely unwell, end the fast and eat something gentle.",
+      "Discomfort isn't a badge — safety first."
+    ],
+    "foodTypes": ["other"],
+    "prepMinutes": 0,
+    "medicalNote": {
+      "text": "Intermittent fasting is not appropriate for people who are pregnant or breastfeeding, have a history of eating disorders, are under 18, or take medication where missing meals affects dosing (e.g. insulin).",
+      "source": "NIH NIA — Calorie Restriction and Fasting Diets"
+    }
   },
   {
     "id": "e-b1",
     "phase": "break_fast",
-    "title": "Gentle refeed (plant-forward basics)",
+    "title": "Bone or vegetable broth",
     "dietIncludes": ["vegetarian", "vegan", "pescatarian", "omnivore", "meat_forward"],
     "bullets": [
-      "Start with something small you tolerate well: broth, soup, toast, rice, fruit, or a modest snack.",
-      "Add a fuller meal later if you’re hungry—ease in instead of slamming calories all at once."
-    ]
+      "Warm, lightly-salted broth is one of the gentlest ways to break a fast.",
+      "Use vegetable broth for vegan/vegetarian; bone broth adds collagen and minerals."
+    ],
+    "ingredients": [
+      { "name": "Vegetable or bone broth, low-sodium", "amount": "1 cup (240 ml)" },
+      { "name": "Sea salt", "amount": "to taste" },
+      { "name": "Fresh herbs (parsley, dill)", "amount": "1 tbsp chopped" }
+    ],
+    "foodTypes": ["drink", "vegetable"],
+    "prepMinutes": 5,
+    "medicalNote": {
+      "text": "Gentle, liquid-based first meals reduce GI distress after a long fast compared with heavy, fatty meals — easier digestion is the goal during the first 30–60 minutes.",
+      "source": "Academy of Nutrition and Dietetics — general refeeding guidance"
+    }
   },
   {
     "id": "e-b2",
     "phase": "break_fast",
-    "title": "Gentle refeed (vegan)",
-    "dietIncludes": ["vegan"],
+    "title": "Greek yogurt with berries",
+    "dietIncludes": ["vegetarian", "omnivore", "pescatarian"],
     "bullets": [
-      "Try miso soup, fruit, or a small grain bowl with vegetables.",
-      "Add protein (tofu, lentils) in the next meal if you want more staying power."
-    ]
+      "Plain Greek yogurt offers high protein density with live cultures.",
+      "Berries add fiber and antioxidants while keeping the sugar load modest."
+    ],
+    "ingredients": [
+      { "name": "Plain Greek yogurt (2%)", "amount": "¾ cup (170 g)" },
+      { "name": "Mixed berries (fresh or frozen)", "amount": "½ cup (75 g)" },
+      { "name": "Chia seeds", "amount": "1 tsp" },
+      { "name": "Honey (optional)", "amount": "1 tsp" }
+    ],
+    "foodTypes": ["dairy", "fruit", "fermented"],
+    "prepMinutes": 3,
+    "medicalNote": {
+      "text": "A ¾-cup serving of Greek yogurt typically provides 15–20 g of protein, supporting satiety and muscle-protein synthesis at the first meal of the day.",
+      "source": "USDA FoodData Central"
+    }
   },
   {
     "id": "e-b3",
     "phase": "break_fast",
-    "title": "Gentle refeed (pescatarian)",
-    "dietIncludes": ["pescatarian", "omnivore"],
+    "title": "Steel-cut oats with banana",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
     "bullets": [
-      "Fish with mild seasoning can be easy to digest after a long fast for some people.",
-      "Pair it with cooked vegetables or rice for balance."
-    ]
+      "Oats provide beta-glucan, a soluble fiber that slows glucose absorption.",
+      "Banana adds quick energy and potassium."
+    ],
+    "ingredients": [
+      { "name": "Steel-cut or rolled oats", "amount": "½ cup dry (40 g)" },
+      { "name": "Water or oat milk", "amount": "1 cup (240 ml)" },
+      { "name": "Banana, sliced", "amount": "½ medium" },
+      { "name": "Cinnamon", "amount": "¼ tsp" },
+      { "name": "Walnuts, chopped", "amount": "1 tbsp" }
+    ],
+    "foodTypes": ["grain", "fruit", "fat"],
+    "prepMinutes": 10,
+    "medicalNote": {
+      "text": "Beta-glucan in oats (≥3 g/day) is associated with lower LDL cholesterol — an established FDA-authorized health claim on oat-based foods.",
+      "source": "FDA 21 CFR 101.81 (whole-oat health claim)"
+    }
   },
   {
     "id": "e-b4",
     "phase": "break_fast",
-    "title": "Gentle refeed (meat-forward)",
-    "dietIncludes": ["meat_forward", "omnivore"],
-    "dietExcludes": ["vegan", "vegetarian"],
+    "title": "Two-egg breakfast with avocado",
+    "dietIncludes": ["vegetarian", "omnivore", "pescatarian", "meat_forward"],
+    "dietExcludes": ["vegan"],
     "bullets": [
-      "Some people prefer a small portion of eggs or lean meat after fasting—others feel better with broth first.",
-      "Listen to your gut: volume matters as much as the food choice."
-    ]
+      "Eggs deliver complete protein in a compact, easy-to-tolerate portion.",
+      "Avocado adds monounsaturated fat for steadier satiety."
+    ],
+    "ingredients": [
+      { "name": "Eggs, soft-scrambled", "amount": "2 large" },
+      { "name": "Avocado, sliced", "amount": "¼ medium" },
+      { "name": "Whole-grain toast", "amount": "1 slice (~30 g)" },
+      { "name": "Black pepper, sea salt", "amount": "to taste" }
+    ],
+    "foodTypes": ["protein", "fat", "grain"],
+    "prepMinutes": 8,
+    "medicalNote": {
+      "text": "Two large eggs supply about 12 g of complete protein with all nine essential amino acids — useful when breaking a fast on a smaller portion.",
+      "source": "USDA FoodData Central"
+    }
   },
   {
     "id": "e-b5",
     "phase": "break_fast",
-    "title": "Watch the sugar spike",
+    "title": "Miso soup with tofu",
+    "dietIncludes": ["vegan", "vegetarian", "pescatarian", "omnivore"],
     "bullets": [
-      "Huge doses of refined sugar right after fasting can feel rough for some people.",
-      "Fiber + protein tends to mellow the spike—when your diet allows it."
-    ]
+      "A warm, brothy bowl with fermented miso is gentle and easy to digest.",
+      "Silken tofu adds plant protein without a heavy texture."
+    ],
+    "ingredients": [
+      { "name": "Vegetable broth", "amount": "1½ cups (360 ml)" },
+      { "name": "White or red miso paste", "amount": "1 tbsp" },
+      { "name": "Silken tofu, cubed", "amount": "½ cup (100 g)" },
+      { "name": "Scallions, sliced", "amount": "1 tbsp" },
+      { "name": "Wakame seaweed (optional)", "amount": "1 tsp dry" }
+    ],
+    "foodTypes": ["protein", "fermented", "vegetable"],
+    "prepMinutes": 7,
+    "medicalNote": {
+      "text": "Fermented foods like miso are associated with improved gut microbial diversity in controlled human trials — a small but consistent benefit at modest intake.",
+      "source": "Sonnenburg lab, Stanford (Cell 2021)"
+    }
+  },
+  {
+    "id": "e-b6",
+    "phase": "break_fast",
+    "title": "Fruit-and-nut starter plate",
+    "dietIncludes": ["vegan", "vegetarian", "pescatarian", "omnivore", "meat_forward"],
+    "bullets": [
+      "When appetite is small after a long fast, a curated plate is easier than a meal.",
+      "Pair sweet fruit with fat or protein to slow the glucose rise."
+    ],
+    "ingredients": [
+      { "name": "Apple, sliced", "amount": "½ medium" },
+      { "name": "Almonds, raw", "amount": "10 (≈10 g)" },
+      { "name": "Cheese cube or dairy-free cheese", "amount": "20 g (optional)" }
+    ],
+    "foodTypes": ["fruit", "fat"],
+    "prepMinutes": 3,
+    "medicalNote": {
+      "text": "Pairing a carbohydrate source with protein or fat blunts the post-meal glucose spike — a useful pattern when easing off a long fasting window.",
+      "source": "AHA Scientific Statement on glycemic index (Circulation 2002)"
+    }
+  },
+  {
+    "id": "e-b7",
+    "phase": "break_fast",
+    "title": "Pan-seared salmon (gentle portion)",
+    "dietIncludes": ["pescatarian", "omnivore"],
+    "dietExcludes": ["vegan", "vegetarian"],
+    "bullets": [
+      "Salmon at modest portion size delivers protein and omega-3 EPA/DHA.",
+      "Pair with cooked greens to keep the meal light."
+    ],
+    "ingredients": [
+      { "name": "Salmon fillet (skin on)", "amount": "100 g (~3.5 oz)" },
+      { "name": "Olive oil", "amount": "½ tsp" },
+      { "name": "Lemon wedge", "amount": "1" },
+      { "name": "Steamed spinach", "amount": "1 cup cooked" }
+    ],
+    "foodTypes": ["protein", "fat", "vegetable"],
+    "prepMinutes": 12,
+    "medicalNote": {
+      "text": "The American Heart Association recommends two servings (~85 g cooked each) of oily fish per week for cardiovascular benefit from EPA/DHA omega-3s.",
+      "source": "AHA Dietary Recommendation for Fish (2018 update)"
+    }
+  },
+  {
+    "id": "e-b8",
+    "phase": "break_fast",
+    "title": "Tofu scramble with greens",
+    "dietIncludes": ["vegan", "vegetarian"],
+    "bullets": [
+      "Crumbled firm tofu mimics scrambled eggs and absorbs seasoning well.",
+      "Turmeric adds color; nutritional yeast brings a savory, cheesy note."
+    ],
+    "ingredients": [
+      { "name": "Firm tofu, crumbled", "amount": "150 g" },
+      { "name": "Spinach or kale, chopped", "amount": "1 cup" },
+      { "name": "Turmeric", "amount": "¼ tsp" },
+      { "name": "Nutritional yeast", "amount": "1 tbsp" },
+      { "name": "Olive oil", "amount": "1 tsp" }
+    ],
+    "foodTypes": ["protein", "vegetable", "fat"],
+    "prepMinutes": 10,
+    "medicalNote": {
+      "text": "Combining plant proteins across the day provides every essential amino acid — strict 'protein complementing' within a single meal is not required for adults.",
+      "source": "Academy of Nutrition and Dietetics Position Paper on Vegetarian Diets (J Acad Nutr Diet 2016)"
+    }
   },
   {
     "id": "e-w1",
     "phase": "eating_window",
-    "title": "Vegetarian balance",
-    "dietIncludes": ["vegetarian", "vegan"],
+    "title": "Lentil bowl with roasted vegetables",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
     "bullets": [
-      "Aim for protein across the window: beans, lentils, tofu, dairy/eggs (if vegetarian).",
-      "Add colorful vegetables for fiber and micronutrients."
-    ]
+      "Lentils are a dense plant-protein and fiber source.",
+      "Roasted vegetables add volume, micronutrients, and satisfying texture."
+    ],
+    "ingredients": [
+      { "name": "Cooked green or brown lentils", "amount": "1 cup (200 g)" },
+      { "name": "Roasted sweet potato, cubed", "amount": "1 cup" },
+      { "name": "Roasted broccoli florets", "amount": "1 cup" },
+      { "name": "Tahini dressing", "amount": "1 tbsp" },
+      { "name": "Olive oil, lemon juice", "amount": "1 tsp each" }
+    ],
+    "foodTypes": ["protein", "vegetable", "grain", "fat"],
+    "prepMinutes": 25,
+    "medicalNote": {
+      "text": "One cup of cooked lentils provides about 18 g of protein and 16 g of fiber — among the densest plant-protein options available.",
+      "source": "USDA FoodData Central"
+    }
   },
   {
     "id": "e-w2",
     "phase": "eating_window",
-    "title": "Meat-forward balance",
-    "dietIncludes": ["meat_forward"],
+    "title": "Quinoa and chickpea salad",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
     "bullets": [
-      "If meals skew animal protein, consider adding bone broth-derived minerals or vegetables if you tolerate them.",
-      "Variety across the week reduces “same meal every day” fatigue."
-    ]
+      "Quinoa is a complete plant protein when you want a grain bowl base.",
+      "Chickpeas add staying power — the combination keeps you full for hours."
+    ],
+    "ingredients": [
+      { "name": "Cooked quinoa", "amount": "¾ cup (140 g)" },
+      { "name": "Cooked chickpeas", "amount": "½ cup (80 g)" },
+      { "name": "Cherry tomatoes, halved", "amount": "1 cup" },
+      { "name": "Cucumber, diced", "amount": "½ cup" },
+      { "name": "Olive oil, lemon", "amount": "1 tbsp each" },
+      { "name": "Fresh parsley", "amount": "2 tbsp chopped" }
+    ],
+    "foodTypes": ["grain", "protein", "vegetable", "fat"],
+    "prepMinutes": 15,
+    "medicalNote": {
+      "text": "Quinoa is one of the few plant foods classified as a complete protein, containing all nine essential amino acids in meaningful amounts.",
+      "source": "USDA FoodData Central — Quinoa, cooked"
+    }
   },
   {
     "id": "e-w3",
     "phase": "eating_window",
-    "title": "Omnivore template",
-    "dietIncludes": ["omnivore", "pescatarian"],
+    "title": "Grilled chicken with quinoa and greens",
+    "dietIncludes": ["omnivore", "meat_forward"],
+    "dietExcludes": ["vegan", "vegetarian", "pescatarian"],
     "bullets": [
-      "Plate method: protein + carb + veg is a durable default.",
-      "Fish days and plant-forward days both fit—consistency beats labeling."
-    ]
+      "Lean grilled chicken delivers about 25–30 g protein in a compact portion.",
+      "Quinoa and greens complete the plate without crowding it."
+    ],
+    "ingredients": [
+      { "name": "Chicken breast, grilled", "amount": "120 g (4 oz)" },
+      { "name": "Cooked quinoa", "amount": "½ cup (90 g)" },
+      { "name": "Mixed greens", "amount": "2 cups" },
+      { "name": "Olive oil + balsamic", "amount": "1 tbsp + 1 tsp" },
+      { "name": "Lemon zest", "amount": "½ tsp" }
+    ],
+    "foodTypes": ["protein", "grain", "vegetable", "fat"],
+    "prepMinutes": 20,
+    "medicalNote": {
+      "text": "The Recommended Dietary Allowance for protein in healthy adults is 0.8 g/kg/day; resistance-training or older adults may benefit from 1.2–1.6 g/kg/day, distributed across meals.",
+      "source": "NASEM Dietary Reference Intakes — Protein"
+    }
   },
   {
     "id": "e-w4",
     "phase": "eating_window",
-    "title": "Snack strategy",
+    "title": "Salmon poke bowl",
+    "dietIncludes": ["pescatarian", "omnivore"],
+    "dietExcludes": ["vegan", "vegetarian"],
     "bullets": [
-      "Mini snacks beat going from “zero to feast” if your energy crashes mid-window.",
-      "Pair carbs with protein when you want steadier fullness."
-    ]
+      "Salmon delivers protein plus EPA/DHA omega-3s in one main.",
+      "Rice, vegetables, and seaweed round out the bowl."
+    ],
+    "ingredients": [
+      { "name": "Sushi-grade salmon, cubed", "amount": "120 g (4 oz)" },
+      { "name": "Cooked short-grain or brown rice", "amount": "½ cup" },
+      { "name": "Cucumber, julienned", "amount": "½ cup" },
+      { "name": "Edamame, shelled", "amount": "¼ cup" },
+      { "name": "Avocado", "amount": "¼ medium" },
+      { "name": "Low-sodium soy sauce, sesame oil", "amount": "1 tsp each" }
+    ],
+    "foodTypes": ["protein", "fat", "grain", "vegetable"],
+    "prepMinutes": 15,
+    "medicalNote": {
+      "text": "Two servings of oily fish per week (≈250 mg/day of EPA+DHA) is associated with reduced cardiovascular events in observational and trial evidence.",
+      "source": "AHA Scientific Statement on Seafood (Circulation 2018)"
+    }
+  },
+  {
+    "id": "e-w5",
+    "phase": "eating_window",
+    "title": "Tempeh stir-fry with brown rice",
+    "dietIncludes": ["vegan", "vegetarian"],
+    "bullets": [
+      "Tempeh is fermented soy with a firmer texture and slightly higher protein than tofu.",
+      "Stir-frying preserves vegetable crunch and keeps prep under 20 minutes."
+    ],
+    "ingredients": [
+      { "name": "Tempeh, cubed", "amount": "150 g" },
+      { "name": "Brown rice, cooked", "amount": "½ cup" },
+      { "name": "Mixed stir-fry vegetables", "amount": "2 cups (bell pepper, snap peas, carrot)" },
+      { "name": "Low-sodium soy sauce", "amount": "1 tbsp" },
+      { "name": "Sesame oil, ginger", "amount": "1 tsp each" },
+      { "name": "Garlic, minced", "amount": "1 clove" }
+    ],
+    "foodTypes": ["protein", "fermented", "grain", "vegetable"],
+    "prepMinutes": 18,
+    "medicalNote": {
+      "text": "Tempeh provides about 15–20 g of protein per 100 g and is fermented, which improves digestibility of soy isoflavones compared with whole soybeans.",
+      "source": "Academy of Nutrition and Dietetics — Plant-Based Diets"
+    }
+  },
+  {
+    "id": "e-w6",
+    "phase": "eating_window",
+    "title": "Mediterranean white-bean plate",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
+    "bullets": [
+      "White beans deliver fiber and slow-burning carbohydrate.",
+      "Olive oil, tomato, and herbs anchor a Mediterranean profile."
+    ],
+    "ingredients": [
+      { "name": "Cooked cannellini or great northern beans", "amount": "¾ cup (130 g)" },
+      { "name": "Cherry tomatoes", "amount": "1 cup" },
+      { "name": "Roasted red pepper", "amount": "½ cup, sliced" },
+      { "name": "Whole-grain pita or sourdough", "amount": "1 slice" },
+      { "name": "Extra-virgin olive oil", "amount": "1 tbsp" },
+      { "name": "Oregano, lemon, sea salt", "amount": "to taste" }
+    ],
+    "foodTypes": ["protein", "vegetable", "grain", "fat"],
+    "prepMinutes": 12,
+    "medicalNote": {
+      "text": "Mediterranean dietary patterns are consistently associated with reduced cardiovascular and all-cause mortality across large prospective cohorts (PREDIMED trial; NEJM 2013).",
+      "source": "PREDIMED — NEJM 2013/2018"
+    }
+  },
+  {
+    "id": "e-w7",
+    "phase": "eating_window",
+    "title": "Beef-and-vegetable bowl",
+    "dietIncludes": ["meat_forward", "omnivore"],
+    "dietExcludes": ["vegan", "vegetarian", "pescatarian"],
+    "bullets": [
+      "Grass-fed lean beef is a dense iron and B12 source.",
+      "Pair with non-starchy vegetables to balance the plate."
+    ],
+    "ingredients": [
+      { "name": "Lean beef sirloin, sliced", "amount": "120 g (4 oz)" },
+      { "name": "Bell pepper, sliced", "amount": "1 medium" },
+      { "name": "Mushrooms", "amount": "1 cup" },
+      { "name": "Spinach", "amount": "1 cup" },
+      { "name": "Garlic, minced", "amount": "2 cloves" },
+      { "name": "Olive oil", "amount": "1 tsp" }
+    ],
+    "foodTypes": ["protein", "vegetable", "fat"],
+    "prepMinutes": 18,
+    "medicalNote": {
+      "text": "Beef provides heme iron, which is absorbed more efficiently than non-heme iron from plants — a useful consideration for menstruating adults or known iron-deficiency.",
+      "source": "NIH Office of Dietary Supplements — Iron Fact Sheet"
+    }
+  },
+  {
+    "id": "e-w8",
+    "phase": "eating_window",
+    "title": "Cottage cheese with cucumber and seeds",
+    "dietIncludes": ["vegetarian", "pescatarian", "omnivore"],
+    "dietExcludes": ["vegan"],
+    "bullets": [
+      "Cottage cheese is one of the densest dairy proteins.",
+      "Cucumber and seeds add crunch and minerals without big calories."
+    ],
+    "ingredients": [
+      { "name": "Low-fat cottage cheese", "amount": "1 cup (220 g)" },
+      { "name": "Cucumber, sliced", "amount": "½ medium" },
+      { "name": "Pumpkin seeds", "amount": "1 tbsp" },
+      { "name": "Black pepper, paprika", "amount": "to taste" }
+    ],
+    "foodTypes": ["dairy", "vegetable", "fat"],
+    "prepMinutes": 4,
+    "medicalNote": {
+      "text": "One cup of low-fat cottage cheese provides about 28 g of protein — comparable to a 4-oz serving of chicken breast.",
+      "source": "USDA FoodData Central"
+    }
+  },
+  {
+    "id": "e-w9",
+    "phase": "eating_window",
+    "title": "Whole-grain pasta with chickpeas",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
+    "bullets": [
+      "Whole-grain pasta has more fiber than refined pasta.",
+      "Adding chickpeas turns a starch plate into a fiber + protein plate."
+    ],
+    "ingredients": [
+      { "name": "Whole-wheat pasta", "amount": "60 g dry" },
+      { "name": "Cooked chickpeas", "amount": "½ cup" },
+      { "name": "Crushed tomatoes (no sugar added)", "amount": "½ cup" },
+      { "name": "Garlic, basil", "amount": "1 clove, 2 tbsp" },
+      { "name": "Olive oil", "amount": "1 tbsp" },
+      { "name": "Parmesan or nutritional yeast", "amount": "1 tbsp" }
+    ],
+    "foodTypes": ["grain", "protein", "vegetable", "fat"],
+    "prepMinutes": 15,
+    "medicalNote": {
+      "text": "USDA Dietary Guidelines recommend making at least half of all grain servings whole grains, which are associated with reduced risk of cardiovascular disease and type 2 diabetes.",
+      "source": "USDA Dietary Guidelines 2020–2025"
+    }
+  },
+  {
+    "id": "e-w10",
+    "phase": "eating_window",
+    "title": "Snack: nut butter on apple",
+    "bullets": [
+      "Mini snacks beat going 'zero to feast' if your energy crashes mid-window.",
+      "Pair carbs with fat for steadier fullness."
+    ],
+    "ingredients": [
+      { "name": "Apple, sliced", "amount": "1 medium" },
+      { "name": "Almond or peanut butter (no sugar added)", "amount": "1 tbsp" },
+      { "name": "Cinnamon", "amount": "pinch" }
+    ],
+    "foodTypes": ["fruit", "fat"],
+    "prepMinutes": 2,
+    "medicalNote": {
+      "text": "Apples (with skin) are a leading source of soluble pectin fiber and quercetin — both implicated in steadier post-meal glucose curves.",
+      "source": "USDA FoodData Central + AHA dietary fiber guidance"
+    }
+  },
+  {
+    "id": "e-w11",
+    "phase": "eating_window",
+    "title": "Hard-boiled eggs + veggie sticks",
+    "dietIncludes": ["vegetarian", "omnivore", "pescatarian", "meat_forward"],
+    "dietExcludes": ["vegan"],
+    "bullets": [
+      "Eggs ahead of time turn into instant protein later.",
+      "Carrot, celery, and bell pepper sticks make a fast snack plate."
+    ],
+    "ingredients": [
+      { "name": "Hard-boiled eggs", "amount": "2 large" },
+      { "name": "Carrot sticks", "amount": "1 cup" },
+      { "name": "Celery sticks", "amount": "1 cup" },
+      { "name": "Hummus", "amount": "2 tbsp" }
+    ],
+    "foodTypes": ["protein", "vegetable", "fat"],
+    "prepMinutes": 12,
+    "medicalNote": {
+      "text": "Boiling a batch of eggs once a week is a simple meal-prep strategy: each large egg keeps roughly one week refrigerated and supplies 6 g of complete protein.",
+      "source": "USDA Food Safety guidance"
+    }
+  },
+  {
+    "id": "e-w12",
+    "phase": "eating_window",
+    "title": "Tuna salad on greens",
+    "dietIncludes": ["pescatarian", "omnivore"],
+    "dietExcludes": ["vegan", "vegetarian"],
+    "bullets": [
+      "Canned tuna in water keeps lean protein in your pantry indefinitely.",
+      "Greek yogurt or olive oil dressings sit lighter than mayo."
+    ],
+    "ingredients": [
+      { "name": "Canned tuna in water, drained", "amount": "1 can (140 g)" },
+      { "name": "Greek yogurt", "amount": "2 tbsp" },
+      { "name": "Celery, finely diced", "amount": "¼ cup" },
+      { "name": "Mixed greens", "amount": "2 cups" },
+      { "name": "Lemon juice, black pepper", "amount": "to taste" }
+    ],
+    "foodTypes": ["protein", "vegetable", "dairy"],
+    "prepMinutes": 6,
+    "medicalNote": {
+      "text": "Light/skipjack canned tuna averages about 25 g of protein per 100 g and is among the lowest-mercury commonly-available tuna varieties — the FDA categorizes it as a 'best choice' for most adults.",
+      "source": "FDA / EPA Advice About Eating Fish (2021)"
+    }
+  },
+  {
+    "id": "e-w13",
+    "phase": "eating_window",
+    "title": "Black-bean and corn tacos",
+    "dietIncludes": ["vegan", "vegetarian", "omnivore", "pescatarian"],
+    "bullets": [
+      "Beans + corn together form a complete-amino-acid profile (a classic complementing pair).",
+      "Wrapping in corn tortillas keeps the plate naturally gluten-free if needed."
+    ],
+    "ingredients": [
+      { "name": "Cooked black beans", "amount": "½ cup" },
+      { "name": "Roasted corn kernels", "amount": "¼ cup" },
+      { "name": "Corn tortillas", "amount": "2 small" },
+      { "name": "Avocado, mashed", "amount": "¼ medium" },
+      { "name": "Salsa, cilantro, lime", "amount": "to taste" }
+    ],
+    "foodTypes": ["protein", "grain", "vegetable", "fat"],
+    "prepMinutes": 10,
+    "medicalNote": {
+      "text": "Mexican beans-and-corn dishes are a long-standing example of cultural protein complementing — lysine in beans pairs with methionine in corn for a complete amino-acid profile.",
+      "source": "FAO/WHO/UNU Expert Consultation on Protein Quality"
+    }
   }
 ]

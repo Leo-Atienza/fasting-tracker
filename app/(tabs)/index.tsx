@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,13 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
+import { FastCoachFonts, FastCoachPalette, type ColorSchemeName, type FastCoachPalette as PaletteColors } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { CircularRing } from '@/src/components/fastCoach/CircularRing';
 import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
-import type { EatPhase } from '@/src/domain/types';
+import type { EatPhase, EatSuggestion, FoodCategory } from '@/src/domain/types';
 import { pickEatSuggestions } from '@/src/features/eat/selectSuggestions';
 import { computeElapsedMs, computeRingProgress } from '@/src/features/fast/elapsed';
 import { getFastingStage } from '@/src/features/fast/fastingStage';
@@ -58,6 +59,18 @@ function iconForSuggestion(title: string, idx: number): MealIcon {
   return cycle[idx % cycle.length]!;
 }
 
+const FOOD_LABELS: Record<FoodCategory, string> = {
+  protein: 'Protein',
+  vegetable: 'Veg',
+  fruit: 'Fruit',
+  grain: 'Grain',
+  fat: 'Fat',
+  dairy: 'Dairy',
+  drink: 'Drink',
+  fermented: 'Fermented',
+  other: 'Other',
+};
+
 function formatTargetLabel(minutes: number): string {
   if (minutes % 60 === 0 && minutes >= 120) return `${minutes / 60} hours`;
   if (minutes % 60 === 0 && minutes === 60) return '1 hour';
@@ -89,6 +102,7 @@ export default function FastHomeScreen() {
   const [now, setNow] = useState(() => Date.now());
   const [targetChoice, setTargetChoice] =
     useState<(typeof TARGET_CHOICES)[number]>(initialTargetChoice);
+  const [openMeal, setOpenMeal] = useState<EatSuggestion | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -284,37 +298,68 @@ export default function FastHomeScreen() {
               eats.map((item, idx) => {
                 const accent = MEAL_ACCENTS[idx % MEAL_ACCENTS.length]!;
                 const icon = iconForSuggestion(item.title, idx);
-                const calories = 380 + ((idx * 73) % 240);
+                const hasDetails =
+                  (item.ingredients && item.ingredients.length > 0) ||
+                  item.medicalNote != null ||
+                  (item.foodTypes && item.foodTypes.length > 0);
+                const accessibilityLabel = hasDetails
+                  ? `${item.title} — tap for ingredients and details`
+                  : item.title;
                 return (
-                  <GlassCard palette={palette} radius={22} key={item.id} style={styles.mealCard}>
-                    <View
-                      style={[
-                        styles.mealArt,
-                        { backgroundColor: accent.from, borderBottomColor: palette.glassBorder },
-                      ]}>
-                      <View style={[styles.mealArtOverlay, { backgroundColor: accent.to }]} />
-                      <View style={[styles.mealIconHalo, { backgroundColor: palette.surfaceContainerLowest }]}>
-                        <MaterialCommunityIcons
-                          name={icon}
-                          size={32}
-                          color={palette.primary}
-                        />
+                  <Pressable
+                    key={item.id}
+                    onPress={hasDetails ? () => setOpenMeal(item) : undefined}
+                    accessibilityRole="button"
+                    accessibilityLabel={accessibilityLabel}
+                    style={({ pressed }) => [styles.mealCard, pressed && hasDetails && { opacity: 0.92 }]}>
+                    <GlassCard palette={palette} radius={22} style={styles.mealCardInner}>
+                      <View
+                        style={[
+                          styles.mealArt,
+                          { backgroundColor: accent.from, borderBottomColor: palette.glassBorder },
+                        ]}>
+                        <View style={[styles.mealArtOverlay, { backgroundColor: accent.to }]} />
+                        <View style={[styles.mealIconHalo, { backgroundColor: palette.surfaceContainerLowest }]}>
+                          <MaterialCommunityIcons name={icon} size={32} color={palette.primary} />
+                        </View>
+                        {item.prepMinutes != null && item.prepMinutes > 0 ? (
+                          <View style={[styles.mealPrepBadge, { backgroundColor: `${palette.surfaceContainerHigh}EE` }]}>
+                            <MaterialCommunityIcons name="clock-outline" size={12} color={palette.onSurfaceVariant} />
+                            <Text style={[styles.mealPrepBadgeText, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
+                              {item.prepMinutes}m
+                            </Text>
+                          </View>
+                        ) : null}
                       </View>
-                    </View>
-                    <View style={styles.mealBody}>
-                      <Text style={[styles.mealTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]} numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                      <Text style={[styles.mealKcal, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
-                        {calories} KCAL
-                      </Text>
-                      <Text
-                        style={[styles.mealSnippet, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}
-                        numberOfLines={2}>
-                        {previewLine(item.bullets[0] ?? '')}
-                      </Text>
-                    </View>
-                  </GlassCard>
+                      <View style={styles.mealBody}>
+                        <Text style={[styles.mealTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]} numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        {item.foodTypes && item.foodTypes.length > 0 ? (
+                          <View style={styles.mealTagRow}>
+                            {item.foodTypes.slice(0, 3).map((cat) => (
+                              <View
+                                key={`${item.id}-${cat}`}
+                                style={[styles.mealTag, { backgroundColor: `${palette.primary}14`, borderColor: `${palette.primary}22` }]}>
+                                <Text style={[styles.mealTagText, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                                  {FOOD_LABELS[cat]}
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        ) : (
+                          <Text style={[styles.mealKcal, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                            GUIDANCE
+                          </Text>
+                        )}
+                        <Text
+                          style={[styles.mealSnippet, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}
+                          numberOfLines={2}>
+                          {previewLine(item.bullets[0] ?? '')}
+                        </Text>
+                      </View>
+                    </GlassCard>
+                  </Pressable>
                 );
               })
             )}
@@ -324,8 +369,154 @@ export default function FastHomeScreen() {
             Educational companion only — not medical advice. If you feel unwell, end the fast and seek care.
           </Text>
         </ScrollView>
+
+        <MealDetailSheet
+          meal={openMeal}
+          palette={palette}
+          scheme={scheme}
+          onClose={() => setOpenMeal(null)}
+        />
       </SafeAreaView>
     </ScreenBackground>
+  );
+}
+
+function MealDetailSheet({
+  meal,
+  palette,
+  scheme,
+  onClose,
+}: {
+  meal: EatSuggestion | null;
+  palette: PaletteColors;
+  scheme: ColorSchemeName;
+  onClose: () => void;
+}) {
+  return (
+    <Modal visible={meal != null} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.sheetBackdrop} onPress={onClose} accessibilityLabel="Close meal details">
+        <Pressable style={[styles.sheetCard, { backgroundColor: scheme === 'dark' ? '#1B1D20' : '#FFFFFF' }]} onPress={(e) => e.stopPropagation()}>
+          <ScrollView contentContainerStyle={styles.sheetScroll}>
+            <View style={styles.sheetHandle}>
+              <View style={[styles.sheetGrabber, { backgroundColor: palette.outlineVariant }]} />
+            </View>
+
+            {meal ? (
+              <>
+                <Text style={[styles.sheetTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.display }]}>
+                  {meal.title}
+                </Text>
+
+                {meal.foodTypes && meal.foodTypes.length > 0 ? (
+                  <View style={styles.sheetTagRow}>
+                    {meal.foodTypes.map((cat) => (
+                      <View
+                        key={`sheet-${cat}`}
+                        style={[
+                          styles.sheetTag,
+                          { backgroundColor: `${palette.primary}1A`, borderColor: `${palette.primary}33` },
+                        ]}>
+                        <Text style={[styles.sheetTagText, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                          {FOOD_LABELS[cat].toUpperCase()}
+                        </Text>
+                      </View>
+                    ))}
+                    {meal.prepMinutes != null && meal.prepMinutes > 0 ? (
+                      <View
+                        style={[
+                          styles.sheetTag,
+                          { backgroundColor: `${palette.outline}1A`, borderColor: `${palette.outline}33` },
+                        ]}>
+                        <MaterialCommunityIcons name="clock-outline" size={11} color={palette.outline} />
+                        <Text style={[styles.sheetTagText, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                          {meal.prepMinutes} MIN
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {meal.ingredients && meal.ingredients.length > 0 ? (
+                  <View style={styles.sheetSection}>
+                    <Text style={[styles.sheetEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                      INGREDIENTS
+                    </Text>
+                    <View style={{ gap: 8 }}>
+                      {meal.ingredients.map((ing, idx) => (
+                        <View key={`${meal.id}-i-${idx}`} style={styles.ingredientRow}>
+                          <MaterialCommunityIcons name="circle-medium" size={18} color={palette.primary} />
+                          <Text style={[styles.ingredientName, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                            {ing.name}
+                          </Text>
+                          {ing.amount ? (
+                            <Text
+                              style={[
+                                styles.ingredientAmount,
+                                { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight },
+                              ]}>
+                              {ing.amount}
+                            </Text>
+                          ) : null}
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ) : null}
+
+                {meal.bullets.length > 0 ? (
+                  <View style={styles.sheetSection}>
+                    <Text style={[styles.sheetEyebrow, { color: palette.secondary, fontFamily: FastCoachFonts.label }]}>
+                      NOTES
+                    </Text>
+                    {meal.bullets.map((b, i) => (
+                      <Text
+                        key={`${meal.id}-b-${i}`}
+                        style={[styles.sheetBullet, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                        • {b}
+                      </Text>
+                    ))}
+                  </View>
+                ) : null}
+
+                {meal.medicalNote ? (
+                  <View
+                    style={[
+                      styles.medicalCard,
+                      { backgroundColor: `${palette.secondaryContainer}55`, borderLeftColor: palette.secondary },
+                    ]}>
+                    <MaterialCommunityIcons name="information-outline" size={20} color={palette.secondary} />
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Text style={[styles.medicalEyebrow, { color: palette.secondary, fontFamily: FastCoachFonts.label }]}>
+                        EVIDENCE NOTE
+                      </Text>
+                      <Text style={[styles.medicalBody, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                        {meal.medicalNote.text}
+                      </Text>
+                      <Text style={[styles.medicalSource, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                        Source: {meal.medicalNote.source}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                <Pressable
+                  onPress={onClose}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                  style={({ pressed }) => [
+                    styles.sheetCloseBtn,
+                    { backgroundColor: palette.primary, opacity: pressed ? 0.86 : 1 },
+                  ]}>
+                  <Text style={[styles.sheetCloseText, { color: palette.onPrimary, fontFamily: FastCoachFonts.headlineMd }]}>
+                    Close
+                  </Text>
+                </Pressable>
+              </>
+            ) : null}
+          </ScrollView>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -433,9 +624,33 @@ const styles = StyleSheet.create({
   mealCard: {
     flex: 1,
     minWidth: '47%',
+    borderRadius: 22,
+    overflow: 'hidden',
+  },
+  mealCardInner: {
     overflow: 'hidden',
     padding: 0,
   },
+  mealPrepBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  mealPrepBadgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.8 },
+  mealTagRow: { flexDirection: 'row', gap: 4, flexWrap: 'wrap', marginTop: 2 },
+  mealTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  mealTagText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
   mealArt: {
     height: 110,
     alignItems: 'center',
@@ -466,4 +681,56 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'center',
   },
+  sheetBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  sheetCard: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '85%',
+    paddingHorizontal: 22,
+    paddingBottom: 30,
+  },
+  sheetScroll: { paddingTop: 8, paddingBottom: 12, gap: 16 },
+  sheetHandle: { alignItems: 'center', paddingVertical: 6 },
+  sheetGrabber: { width: 44, height: 5, borderRadius: 999 },
+  sheetTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.4, lineHeight: 30 },
+  sheetTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  sheetTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  sheetTagText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.0 },
+  sheetSection: { gap: 8, marginTop: 4 },
+  sheetEyebrow: { fontSize: 11, letterSpacing: 1.6, fontWeight: '800' },
+  sheetBullet: { fontSize: 14, lineHeight: 20 },
+  ingredientRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  ingredientName: { flex: 1, fontSize: 14, lineHeight: 20 },
+  ingredientAmount: { fontSize: 13, fontVariant: ['tabular-nums'] },
+  medicalCard: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderLeftWidth: 4,
+    marginTop: 6,
+  },
+  medicalEyebrow: { fontSize: 10, letterSpacing: 1.6, fontWeight: '800' },
+  medicalBody: { fontSize: 14, lineHeight: 20 },
+  medicalSource: { fontSize: 12, lineHeight: 18, fontStyle: 'italic' },
+  sheetCloseBtn: {
+    marginTop: 14,
+    height: 50,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetCloseText: { fontSize: 16, fontWeight: '800', letterSpacing: -0.1 },
 });

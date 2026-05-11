@@ -43,6 +43,32 @@ export interface Fact {
   body: string;
 }
 
+export type FoodCategory =
+  | 'protein'
+  | 'vegetable'
+  | 'fruit'
+  | 'grain'
+  | 'fat'
+  | 'dairy'
+  | 'drink'
+  | 'fermented'
+  | 'other';
+
+export interface MealIngredient {
+  name: string;
+  /** Human-readable measurement (e.g. "1 cup", "200 g", "2 tbsp"). Optional for items where the measurement is obvious. */
+  amount?: string;
+}
+
+export interface MealMedicalNote {
+  /** Educational copy — not medical advice. */
+  text: string;
+  /** Short institutional attribution (e.g. "NIH NIA", "NEJM 2019 review"). */
+  source: string;
+  /** Optional canonical URL — surfaced on the credits row when present. */
+  sourceUrl?: string;
+}
+
 export interface EatSuggestion {
   id: string;
   phase: EatPhase;
@@ -50,4 +76,12 @@ export interface EatSuggestion {
   bullets: string[];
   dietIncludes?: DietPreferenceId[];
   dietExcludes?: DietPreferenceId[];
+  /** Hand-curated ingredient list with measurements. Optional — older entries pass through unchanged. */
+  ingredients?: MealIngredient[];
+  /** Food groups represented (1-4 typical). */
+  foodTypes?: FoodCategory[];
+  /** Prep time in minutes, including assembly. */
+  prepMinutes?: number;
+  /** Optional educational note attached to the preset. */
+  medicalNote?: MealMedicalNote;
 }
