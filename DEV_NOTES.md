@@ -49,26 +49,28 @@ If a future screen needs visual / interactive coverage, revisit
 `vitest.config.ts` to add `environmentMatchGlobs` for `*.tsx.test.ts` and
 `setupFiles` that stub the native-only modules listed above.
 
-### Meal preset medical facts — sourcing caveat
+### Meal preset medical facts — sourcing caveat (closed in R7 P2)
 
-The R6 plan asked for medical facts researched from the open web first
-and bundled offline. During the round, WebSearch and WebFetch returned
-`400` / `403` / `404` for major medical-institution URLs (Cleveland
-Clinic, Hopkins, Harvard Health, eatright.org, nia.nih.gov), so the
-final facts in [assets/data/eat-suggestions.json](assets/data/eat-suggestions.json)
-were composed from widely-accepted, citation-traceable claims in
-mainstream clinical nutrition literature (NEJM 2019 de Cabo & Mattson
-IF review, NASEM 2005 water DRIs, USDA Dietary Guidelines 2020–2025,
-AHA fish/dietary statements, FDA FDA/EPA fish advisories, EFSA caffeine
-opinion, Academy of Nutrition and Dietetics position papers, USDA
-FoodData Central). Sources are attributed by institution name only —
-no URLs are stored — so a future round with working web access can
-swap in canonical citation URLs without changing the displayed text.
+R6 shipped 25 medical notes attributed by institution name only because
+WebSearch/WebFetch were returning `400`/`403`/`404` for canonical URLs
+during that round. R7 Phase 2 backfilled canonical URLs across 24 of
+the 25 `medicalNote` entries (21 unique institutional sources). The
+single remaining entry, "Academy of Nutrition and Dietetics — general
+refeeding guidance" on `e-b1` (bone/vegetable broth), is intentionally
+left URL-less — the claim is general clinical guidance with no single
+canonical document we could find. The renderer falls through gracefully
+when `sourceUrl` is absent.
 
-Each fact is wrapped in an `EatSuggestion.medicalNote` with `text`,
+Users can now verify any cited claim from **Settings → ABOUT → Sources
+& credits**. The Credits screen aggregates every unique `medicalNote.source`
+across the bundle (via [aggregateMedicalSources](src/features/eat/aggregateSources.ts)),
+shows how many meal presets cite each source, and offers a tap-to-open
+link when a `sourceUrl` is present.
+
+Each fact still wraps in an `EatSuggestion.medicalNote` with `text`,
 `source`, and optional `sourceUrl` fields. The home-screen meal detail
-sheet renders all three. The app's existing "Educational copy only —
-not medical advice" disclaimer applies to these notes too.
+sheet and the Credits screen both honor the optional URL. The app's
+existing "Educational copy only — not medical advice" disclaimer applies.
 
 ## Build gotchas (Windows host)
 

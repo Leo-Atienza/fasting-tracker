@@ -179,6 +179,7 @@ function RootLayoutNav({ storeHydrated }: { storeHydrated: boolean }) {
       <Stack screenOptions={stackHeader}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="credits" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

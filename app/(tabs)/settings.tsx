@@ -14,12 +14,17 @@ import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import { TouchSlider } from '@/src/components/fastCoach/TouchSlider';
+import rawSuggestions from '@/assets/data/eat-suggestions.json';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
+import type { EatSuggestion } from '@/src/domain/types';
+import { aggregateMedicalSources } from '@/src/features/eat/aggregateSources';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
 import { useNotificationPermissionStatus } from '@/src/hooks/useNotificationPermissionStatus';
 import { formatVolume, mlToOz } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
+
+const SUGGESTIONS = rawSuggestions as EatSuggestion[];
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -59,6 +64,8 @@ export default function SettingsScreen() {
     () => DIET_OPTIONS.find((d) => d.id === dietPreferenceId) ?? DIET_OPTIONS[3]!,
     [dietPreferenceId],
   );
+
+  const sourcesCount = useMemo(() => aggregateMedicalSources(SUGGESTIONS).length, []);
 
   function onSliderChange(next: number) {
     setGoal(Math.round(next));
@@ -382,6 +389,30 @@ export default function SettingsScreen() {
               </View>
             </GlassCard>
           ) : null}
+
+          {/* ABOUT */}
+          <SectionLabel palette={palette}>ABOUT</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open sources and credits"
+              accessibilityHint="See every medical source cited by the meal presets."
+              onPress={() => router.push('/credits')}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
+                <MaterialCommunityIcons name="book-open-variant" color={palette.tertiary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Sources & credits
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  {sourcesCount} medical reference{sourcesCount === 1 ? '' : 's'} used in meal presets
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
+            </Pressable>
+          </GlassCard>
 
           {/* DANGER ZONE */}
           <SectionLabel palette={palette}>DANGER ZONE</SectionLabel>

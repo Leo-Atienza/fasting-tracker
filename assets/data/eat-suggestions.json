@@ -15,7 +15,8 @@
     "prepMinutes": 0,
     "medicalNote": {
       "text": "Adequate total-water intake for adults is roughly 2.7 L/day (women) and 3.7 L/day (men), including water from food. Hot weather and exercise increase the need.",
-      "source": "NASEM 2005 (Dietary Reference Intakes for Water)"
+      "source": "NASEM 2005 (Dietary Reference Intakes for Water)",
+      "sourceUrl": "https://nap.nationalacademies.org/catalog/10925"
     }
   },
   {
@@ -35,7 +36,8 @@
     "prepMinutes": 1,
     "medicalNote": {
       "text": "Prolonged water-only fasting (>24h) increases urinary sodium loss; a small amount of salt can mitigate lightheadedness for some people. Anyone on blood-pressure medication should consult a clinician first.",
-      "source": "Cleveland Clinic / NIH NIDDK general nutrition guidance"
+      "source": "Cleveland Clinic / NIH NIDDK general nutrition guidance",
+      "sourceUrl": "https://www.niddk.nih.gov/health-information/diet-nutrition"
     }
   },
   {
@@ -54,7 +56,8 @@
     "prepMinutes": 3,
     "medicalNote": {
       "text": "EFSA considers up to 400 mg of caffeine per day (≈4 standard cups of coffee) safe for healthy non-pregnant adults. Caffeine acts as a mild appetite suppressant, which may help during longer fasting windows.",
-      "source": "EFSA 2015 caffeine safety opinion"
+      "source": "EFSA 2015 caffeine safety opinion",
+      "sourceUrl": "https://www.efsa.europa.eu/en/efsajournal/pub/4102"
     }
   },
   {
@@ -69,7 +72,8 @@
     "prepMinutes": 0,
     "medicalNote": {
       "text": "Intermittent fasting is not appropriate for people who are pregnant or breastfeeding, have a history of eating disorders, are under 18, or take medication where missing meals affects dosing (e.g. insulin).",
-      "source": "NIH NIA — Calorie Restriction and Fasting Diets"
+      "source": "NIH NIA — Calorie Restriction and Fasting Diets",
+      "sourceUrl": "https://www.nia.nih.gov/health/diet-and-nutrition/calorie-restriction-and-fasting-diets-what-do-we-know"
     }
   },
   {
@@ -112,7 +116,8 @@
     "prepMinutes": 3,
     "medicalNote": {
       "text": "A ¾-cup serving of Greek yogurt typically provides 15–20 g of protein, supporting satiety and muscle-protein synthesis at the first meal of the day.",
-      "source": "USDA FoodData Central"
+      "source": "USDA FoodData Central",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -135,7 +140,8 @@
     "prepMinutes": 10,
     "medicalNote": {
       "text": "Beta-glucan in oats (≥3 g/day) is associated with lower LDL cholesterol — an established FDA-authorized health claim on oat-based foods.",
-      "source": "FDA 21 CFR 101.81 (whole-oat health claim)"
+      "source": "FDA 21 CFR 101.81 (whole-oat health claim)",
+      "sourceUrl": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-E/section-101.81"
     }
   },
   {
@@ -158,7 +164,8 @@
     "prepMinutes": 8,
     "medicalNote": {
       "text": "Two large eggs supply about 12 g of complete protein with all nine essential amino acids — useful when breaking a fast on a smaller portion.",
-      "source": "USDA FoodData Central"
+      "source": "USDA FoodData Central",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -181,7 +188,8 @@
     "prepMinutes": 7,
     "medicalNote": {
       "text": "Fermented foods like miso are associated with improved gut microbial diversity in controlled human trials — a small but consistent benefit at modest intake.",
-      "source": "Sonnenburg lab, Stanford (Cell 2021)"
+      "source": "Sonnenburg lab, Stanford (Cell 2021)",
+      "sourceUrl": "https://www.cell.com/cell/fulltext/S0092-8674(21)00754-6"
     }
   },
   {
@@ -202,7 +210,8 @@
     "prepMinutes": 3,
     "medicalNote": {
       "text": "Pairing a carbohydrate source with protein or fat blunts the post-meal glucose spike — a useful pattern when easing off a long fasting window.",
-      "source": "AHA Scientific Statement on glycemic index (Circulation 2002)"
+      "source": "AHA Scientific Statement on glycemic index (Circulation 2002)",
+      "sourceUrl": "https://www.ahajournals.org/doi/10.1161/01.CIR.0000038493.65177.94"
     }
   },
   {
@@ -225,7 +234,8 @@
     "prepMinutes": 12,
     "medicalNote": {
       "text": "The American Heart Association recommends two servings (~85 g cooked each) of oily fish per week for cardiovascular benefit from EPA/DHA omega-3s.",
-      "source": "AHA Dietary Recommendation for Fish (2018 update)"
+      "source": "AHA Dietary Recommendation for Fish (2018 update)",
+      "sourceUrl": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000574"
     }
   },
   {
@@ -248,7 +258,8 @@
     "prepMinutes": 10,
     "medicalNote": {
       "text": "Combining plant proteins across the day provides every essential amino acid — strict 'protein complementing' within a single meal is not required for adults.",
-      "source": "Academy of Nutrition and Dietetics Position Paper on Vegetarian Diets (J Acad Nutr Diet 2016)"
+      "source": "Academy of Nutrition and Dietetics Position Paper on Vegetarian Diets (J Acad Nutr Diet 2016)",
+      "sourceUrl": "https://www.jandonline.org/article/S2212-2672(16)31192-3/fulltext"
     }
   },
   {
@@ -271,7 +282,8 @@
     "prepMinutes": 25,
     "medicalNote": {
       "text": "One cup of cooked lentils provides about 18 g of protein and 16 g of fiber — among the densest plant-protein options available.",
-      "source": "USDA FoodData Central"
+      "source": "USDA FoodData Central",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -295,7 +307,8 @@
     "prepMinutes": 15,
     "medicalNote": {
       "text": "Quinoa is one of the few plant foods classified as a complete protein, containing all nine essential amino acids in meaningful amounts.",
-      "source": "USDA FoodData Central — Quinoa, cooked"
+      "source": "USDA FoodData Central — Quinoa, cooked",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -319,7 +332,8 @@
     "prepMinutes": 20,
     "medicalNote": {
       "text": "The Recommended Dietary Allowance for protein in healthy adults is 0.8 g/kg/day; resistance-training or older adults may benefit from 1.2–1.6 g/kg/day, distributed across meals.",
-      "source": "NASEM Dietary Reference Intakes — Protein"
+      "source": "NASEM Dietary Reference Intakes — Protein",
+      "sourceUrl": "https://nap.nationalacademies.org/catalog/10490"
     }
   },
   {
@@ -344,7 +358,8 @@
     "prepMinutes": 15,
     "medicalNote": {
       "text": "Two servings of oily fish per week (≈250 mg/day of EPA+DHA) is associated with reduced cardiovascular events in observational and trial evidence.",
-      "source": "AHA Scientific Statement on Seafood (Circulation 2018)"
+      "source": "AHA Scientific Statement on Seafood (Circulation 2018)",
+      "sourceUrl": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000574"
     }
   },
   {
@@ -368,7 +383,8 @@
     "prepMinutes": 18,
     "medicalNote": {
       "text": "Tempeh provides about 15–20 g of protein per 100 g and is fermented, which improves digestibility of soy isoflavones compared with whole soybeans.",
-      "source": "Academy of Nutrition and Dietetics — Plant-Based Diets"
+      "source": "Academy of Nutrition and Dietetics — Plant-Based Diets",
+      "sourceUrl": "https://www.eatright.org/health/wellness/vegetarian-and-special-diets/building-a-healthy-vegetarian-diet-myths-vs-facts"
     }
   },
   {
@@ -392,7 +408,8 @@
     "prepMinutes": 12,
     "medicalNote": {
       "text": "Mediterranean dietary patterns are consistently associated with reduced cardiovascular and all-cause mortality across large prospective cohorts (PREDIMED trial; NEJM 2013).",
-      "source": "PREDIMED — NEJM 2013/2018"
+      "source": "PREDIMED — NEJM 2013/2018",
+      "sourceUrl": "https://www.nejm.org/doi/full/10.1056/NEJMoa1800389"
     }
   },
   {
@@ -417,7 +434,8 @@
     "prepMinutes": 18,
     "medicalNote": {
       "text": "Beef provides heme iron, which is absorbed more efficiently than non-heme iron from plants — a useful consideration for menstruating adults or known iron-deficiency.",
-      "source": "NIH Office of Dietary Supplements — Iron Fact Sheet"
+      "source": "NIH Office of Dietary Supplements — Iron Fact Sheet",
+      "sourceUrl": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/"
     }
   },
   {
@@ -440,7 +458,8 @@
     "prepMinutes": 4,
     "medicalNote": {
       "text": "One cup of low-fat cottage cheese provides about 28 g of protein — comparable to a 4-oz serving of chicken breast.",
-      "source": "USDA FoodData Central"
+      "source": "USDA FoodData Central",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -464,7 +483,8 @@
     "prepMinutes": 15,
     "medicalNote": {
       "text": "USDA Dietary Guidelines recommend making at least half of all grain servings whole grains, which are associated with reduced risk of cardiovascular disease and type 2 diabetes.",
-      "source": "USDA Dietary Guidelines 2020–2025"
+      "source": "USDA Dietary Guidelines 2020–2025",
+      "sourceUrl": "https://www.dietaryguidelines.gov/"
     }
   },
   {
@@ -484,7 +504,8 @@
     "prepMinutes": 2,
     "medicalNote": {
       "text": "Apples (with skin) are a leading source of soluble pectin fiber and quercetin — both implicated in steadier post-meal glucose curves.",
-      "source": "USDA FoodData Central + AHA dietary fiber guidance"
+      "source": "USDA FoodData Central + AHA dietary fiber guidance",
+      "sourceUrl": "https://fdc.nal.usda.gov/"
     }
   },
   {
@@ -507,7 +528,8 @@
     "prepMinutes": 12,
     "medicalNote": {
       "text": "Boiling a batch of eggs once a week is a simple meal-prep strategy: each large egg keeps roughly one week refrigerated and supplies 6 g of complete protein.",
-      "source": "USDA Food Safety guidance"
+      "source": "USDA Food Safety guidance",
+      "sourceUrl": "https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation"
     }
   },
   {
@@ -531,7 +553,8 @@
     "prepMinutes": 6,
     "medicalNote": {
       "text": "Light/skipjack canned tuna averages about 25 g of protein per 100 g and is among the lowest-mercury commonly-available tuna varieties — the FDA categorizes it as a 'best choice' for most adults.",
-      "source": "FDA / EPA Advice About Eating Fish (2021)"
+      "source": "FDA / EPA Advice About Eating Fish (2021)",
+      "sourceUrl": "https://www.fda.gov/food/consumers/advice-about-eating-fish"
     }
   },
   {
@@ -554,7 +577,8 @@
     "prepMinutes": 10,
     "medicalNote": {
       "text": "Mexican beans-and-corn dishes are a long-standing example of cultural protein complementing — lysine in beans pairs with methionine in corn for a complete amino-acid profile.",
-      "source": "FAO/WHO/UNU Expert Consultation on Protein Quality"
+      "source": "FAO/WHO/UNU Expert Consultation on Protein Quality",
+      "sourceUrl": "https://www.fao.org/3/aa040e/aa040e00.htm"
     }
   }
 ]
