@@ -1,9 +1,15 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import {
+  isMilestoneIdentifier,
+  milestonesToScheduleFrom,
+} from './milestones';
+
 /**
- * Local notification scheduler — schedules a small set of milestone reminders
- * at 12h, 16h, and 20h from an active fast's start time.
+ * Local notification scheduler — schedules the milestone reminder set at the
+ * hours defined in `./milestones.ts`, starting from an active fast's start
+ * time.
  *
  * Stays defensive: every public method swallows errors so a missing permission
  * or unavailable native module never crashes the JS bridge. On web this becomes
@@ -12,27 +18,6 @@ import { Platform } from 'react-native';
  */
 
 const ANDROID_CHANNEL_ID = 'fasting-milestones';
-
-type Milestone = { hours: number; title: string; body: string };
-
-/** Educational copy only — not medical advice. */
-const MILESTONES: Milestone[] = [
-  {
-    hours: 12,
-    title: '12 hours in — nicely held.',
-    body: 'You are crossing into a metabolic-glide phase for many people. Keep sipping water.',
-  },
-  {
-    hours: 16,
-    title: '16 hours — popular checkpoint.',
-    body: 'The classic 16:8 window. Notice how your appetite cues feel right now.',
-  },
-  {
-    hours: 20,
-    title: '20 hours — long-window territory.',
-    body: 'Celebrate the consistency. End the fast whenever your day calls for it.',
-  },
-];
 
 let handlerInstalled = false;
 
@@ -100,25 +85,19 @@ export async function ensureNotificationsPermission(): Promise<boolean> {
 }
 
 /**
- * Schedule the 12h / 16h / 20h reminder set from a given fast start.
+ * Schedule the milestone reminder set from a given fast start.
  * Only milestones that lie in the future are scheduled. Existing fasting
  * reminders are cancelled first so re-starts don't pile up.
  */
 export async function scheduleFastingMilestones(startedAtIso: string): Promise<void> {
   try {
-    const startedAt = Date.parse(startedAtIso);
-    if (!Number.isFinite(startedAt)) return;
-
     await ensureAndroidChannel();
     await cancelFastingMilestones();
 
-    const now = Date.now();
-    for (const m of MILESTONES) {
-      const fireAt = startedAt + m.hours * 60 * 60 * 1000;
-      if (fireAt - now < 5_000) continue;
-
+    const planned = milestonesToScheduleFrom(startedAtIso, Date.now());
+    for (const m of planned) {
       await Notifications.scheduleNotificationAsync({
-        identifier: makeMilestoneId(m.hours),
+        identifier: m.id,
         content: {
           title: m.title,
           body: m.body,
@@ -127,7 +106,7 @@ export async function scheduleFastingMilestones(startedAtIso: string): Promise<v
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: new Date(fireAt),
+          date: m.fireAt,
           ...(Platform.OS === 'android' ? { channelId: ANDROID_CHANNEL_ID } : null),
         },
       });
@@ -151,12 +130,4 @@ export async function cancelFastingMilestones(): Promise<void> {
   } catch {
     /* ignore */
   }
-}
-
-function makeMilestoneId(hours: number): string {
-  return `fasting-milestone-${hours}h`;
-}
-
-function isMilestoneIdentifier(id: string): boolean {
-  return id.startsWith('fasting-milestone-');
 }
