@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Fasting Facts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#c2c1ff",
+                        "on-primary-container": "#004d1a",
+                        "on-secondary-fixed-variant": "#004493",
+                        "surface-container-low": "#f3f3f8",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#53e16f",
+                        "on-background": "#1a1c1f",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#302aaf",
+                        "on-surface": "#1a1c1f",
+                        "surface-bright": "#f9f9fe",
+                        "on-primary-fixed-variant": "#00531c",
+                        "error": "#ba1a1a",
+                        "primary-container": "#34c759",
+                        "secondary": "#0058bc",
+                        "surface-container-highest": "#e2e2e7",
+                        "inverse-surface": "#2e3034",
+                        "outline": "#6d7b6b",
+                        "on-tertiary-fixed-variant": "#3631b4",
+                        "tertiary-container": "#a6a5ff",
+                        "surface-variant": "#e2e2e7",
+                        "surface-container": "#ededf2",
+                        "on-surface-variant": "#3d4a3c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#fefcff",
+                        "primary": "#006e28",
+                        "tertiary": "#4f4ccd",
+                        "secondary-container": "#0070eb",
+                        "on-tertiary-fixed": "#0c006a",
+                        "surface-container-high": "#e8e8ed",
+                        "primary-fixed": "#72fe88",
+                        "surface-dim": "#d9dade",
+                        "outline-variant": "#bccbb8",
+                        "on-primary-fixed": "#002107",
+                        "tertiary-fixed": "#e2dfff",
+                        "background": "#f9f9fe",
+                        "inverse-on-surface": "#f0f0f5",
+                        "surface": "#f9f9fe",
+                        "on-secondary-fixed": "#001a41",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#53e16f",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-tint": "#006e28"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "glass-padding": "20px",
+                        "stack-gap-lg": "40px",
+                        "container-padding": "24px",
+                        "stack-gap-sm": "12px",
+                        "unit": "4px",
+                        "stack-gap-md": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300"}],
+                        "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                        "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["44px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Glassmorphism Background Mesh */
+        .bg-mesh {
+            background-color: #f9f9fe;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(114, 254, 136, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(0, 112, 235, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(83, 225, 111, 0.1) 0px, transparent 50%);
+        }
+        
+        /* Inner Glow */
+        .glass-inner-glow {
+            box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Hide scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased bg-mesh min-h-screen pb-32">
+<!-- TopAppBar (Hidden on Mobile, Visible on md) -->
+<header class="hidden md:flex fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 shadow-sm border-b border-white/40 dark:border-outline-variant/20 flex justify-between items-center h-16 px-container-padding w-full">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-70 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">history</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-extrabold tracking-tight text-on-surface dark:text-on-surface-variant">Fast Coach</h1>
+</div>
+<nav class="flex gap-8">
+<a class="text-on-surface-variant hover:opacity-70 transition-opacity active:scale-95 duration-200 font-label-caps text-label-caps" href="#">Fast</a>
+<a class="text-on-surface-variant hover:opacity-70 transition-opacity active:scale-95 duration-200 font-label-caps text-label-caps" href="#">Water</a>
+<a class="text-primary font-bold hover:opacity-70 transition-opacity active:scale-95 duration-200 font-label-caps text-label-caps flex flex-col items-center after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1" href="#">Facts</a>
+</nav>
+<button class="hover:opacity-70 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">settings</span>
+</button>
+</header>
+<!-- Mobile Header -->
+<header class="md:hidden pt-12 pb-6 px-container-padding flex justify-between items-center z-40 relative">
+<h1 class="font-headline-lg text-headline-lg font-extrabold tracking-tight text-on-surface">Facts</h1>
+<button class="w-10 h-10 rounded-full bg-surface-container-highest/50 backdrop-blur-md flex items-center justify-center glass-inner-glow hover:opacity-70 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined text-on-surface">shuffle</span>
+</button>
+</header>
+<main class="px-container-padding max-w-3xl mx-auto flex flex-col gap-stack-gap-lg pt-4 md:pt-32 relative z-10">
+<!-- Fact of the Day - Premium Glass Card -->
+<section class="flex flex-col gap-stack-gap-sm">
+<h2 class="font-label-caps text-label-caps text-primary uppercase tracking-wider">Fact of the Day</h2>
+<div class="relative w-full rounded-xl overflow-hidden bg-surface-container-lowest/40 backdrop-blur-[20px] glass-inner-glow shadow-[0_10px_40px_rgba(0,0,0,0.03)] p-8">
+<!-- Decorative blurred blob behind text -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-primary-fixed/30 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-6">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-[24px] icon-fill">bolt</span>
+</div>
+<p class="font-headline-md text-headline-md text-on-surface">
+                        Autophagy, the body's cellular recycling process, typically begins after 24 hours of fasting. It clears out damaged cells and regenerates newer, healthier ones.
+                    </p>
+<div class="flex items-center justify-between mt-2">
+<div class="flex gap-2">
+<span class="px-3 py-1 rounded-full bg-surface-variant/50 backdrop-blur-sm font-label-caps text-label-caps text-on-surface-variant">SCIENCE</span>
+<span class="px-3 py-1 rounded-full bg-surface-variant/50 backdrop-blur-sm font-label-caps text-label-caps text-on-surface-variant">24H+</span>
+</div>
+<button class="hover:scale-110 transition-transform active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary text-[28px] icon-fill">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid for Categories or Quick Stats -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest/60 backdrop-blur-xl rounded-lg p-6 flex flex-col gap-2 glass-inner-glow hover:bg-surface-container-lowest/80 transition-colors">
+<span class="material-symbols-outlined text-secondary text-[24px]">water_drop</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-2">Hydration</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">12 Facts</span>
+</div>
+<div class="bg-surface-container-lowest/60 backdrop-blur-xl rounded-lg p-6 flex flex-col gap-2 glass-inner-glow hover:bg-surface-container-lowest/80 transition-colors">
+<span class="material-symbols-outlined text-tertiary text-[24px]">favorite</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-2">Health</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">34 Facts</span>
+</div>
+</section>
+<!-- Favorite Facts List -->
+<section class="flex flex-col gap-stack-gap-md pb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Your Favorites</h2>
+<div class="flex flex-col gap-3">
+<!-- List Item 1 -->
+<div class="group flex items-start gap-4 p-5 rounded-lg bg-surface-container-lowest/50 backdrop-blur-lg glass-inner-glow hover:bg-surface-container-lowest/80 transition-all cursor-pointer">
+<button class="mt-1 flex-shrink-0 hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px] icon-fill">star</span>
+</button>
+<div class="flex flex-col gap-1">
+<p class="font-body-lg text-body-lg text-on-surface">Black coffee doesn't break a fast and can actually enhance ketone production.</p>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70">NUTRITION</span>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group flex items-start gap-4 p-5 rounded-lg bg-surface-container-lowest/50 backdrop-blur-lg glass-inner-glow hover:bg-surface-container-lowest/80 transition-all cursor-pointer">
+<button class="mt-1 flex-shrink-0 hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px] icon-fill">star</span>
+</button>
+<div class="flex flex-col gap-1">
+<p class="font-body-lg text-body-lg text-on-surface">Insulin levels drop significantly during fasting, making fat burning more accessible to the body.</p>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70">METABOLISM</span>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="group flex items-start gap-4 p-5 rounded-lg bg-surface-container-lowest/50 backdrop-blur-lg glass-inner-glow hover:bg-surface-container-lowest/80 transition-all cursor-pointer">
+<button class="mt-1 flex-shrink-0 hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px] icon-fill">star</span>
+</button>
+<div class="flex flex-col gap-1">
+<p class="font-body-lg text-body-lg text-on-surface">Human Growth Hormone (HGH) levels can increase up to 5-fold during an extended fast.</p>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70">HORMONES</span>
+</div>
+</div>
+</div>
+<button class="mt-4 mx-auto w-fit px-6 py-3 rounded-full bg-surface-container-high/50 hover:bg-surface-variant transition-colors font-body-md text-body-md text-on-surface font-medium">
+                View All Favorites
+            </button>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] rounded-xl z-50 bg-surface-container-lowest/70 backdrop-blur-2xl dark:bg-inverse-surface/80 border border-white/40 dark:border-outline-variant/10 shadow-[0_10px_20px_rgba(0,0,0,0.05)] flex justify-around items-center py-stack-gap-sm px-4">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-6 py-2 hover:bg-surface-container-high/50 dark:hover:bg-surface-variant/20 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">timer</span>
+<span class="font-label-caps text-label-caps">Fast</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-6 py-2 hover:bg-surface-container-high/50 dark:hover:bg-surface-variant/20 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">water_drop</span>
+<span class="font-label-caps text-label-caps">Water</span>
+</a>
+<!-- Active State for Facts -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed bg-primary-fixed/20 dark:bg-primary-fixed-dim/20 rounded-full px-6 py-2 shadow-[0_0_15px_rgba(83,225,111,0.3)] hover:bg-surface-container-high/50 dark:hover:bg-surface-variant/20 transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1 icon-fill">lightbulb</span>
+<span class="font-label-caps text-label-caps">Facts</span>
+</a>
+</nav>
+</body></html>

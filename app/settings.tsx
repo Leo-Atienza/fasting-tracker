@@ -1,16 +1,21 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
+import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
+import { IOSToggle } from '@/src/components/fastCoach/IOSToggle';
 import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
-import { StackTopBar } from '@/src/components/fastCoach/StackTopBar';
+import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
+import { TouchSlider } from '@/src/components/fastCoach/TouchSlider';
 import { DIET_OPTIONS } from '@/src/constants/diets';
+import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
 import { formatVolume, mlToOz, ozToMl } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
@@ -27,10 +32,24 @@ export default function SettingsScreen() {
   const waterUnit = useAppStore((s) => s.waterUnit);
   const setGoal = useAppStore((s) => s.setWaterDailyGoalMl);
   const setWaterUnit = useAppStore((s) => s.setWaterUnit);
+  const remindersEnabled = useAppStore((s) => s.fastingRemindersEnabled);
+  const setRemindersEnabled = useAppStore((s) => s.setFastingRemindersEnabled);
+  const premiumDismissed = useAppStore((s) => s.premiumDismissed);
+  const setPremiumDismissed = useAppStore((s) => s.setPremiumDismissed);
   const clearAllData = useAppStore((s) => s.clearAllData);
 
+  const [dietPickerOpen, setDietPickerOpen] = useState(false);
+
+  const currentDiet = useMemo(
+    () => DIET_OPTIONS.find((d) => d.id === dietPreferenceId) ?? DIET_OPTIONS[3]!,
+    [dietPreferenceId],
+  );
+
+  function onSliderChange(next: number) {
+    setGoal(Math.round(next));
+  }
+
   function confirmClearAll() {
-    // First dialog: are you sure?
     Alert.alert(
       'Clear all data?',
       'This wipes your fast history, water log, favorites, and preferences. Onboarding will restart.',
@@ -40,191 +59,170 @@ export default function SettingsScreen() {
           text: 'Continue',
           style: 'destructive',
           onPress: () => {
-            // Second dialog: type the word? Use a second confirm step instead
-            // (Alert can't render an input on Android pre-API 28 reliably).
-            Alert.alert(
-              'Are you absolutely sure?',
-              'This cannot be undone.',
-              [
-                { text: 'No, keep my data', style: 'cancel' },
-                {
-                  text: 'Yes, wipe everything',
-                  style: 'destructive',
-                  onPress: () => {
-                    clearAllData();
-                    Alert.alert('Cleared', 'All data has been reset. Restart the app to re-run onboarding.');
-                  },
+            Alert.alert('Are you absolutely sure?', 'This cannot be undone.', [
+              { text: 'No, keep my data', style: 'cancel' },
+              {
+                text: 'Yes, wipe everything',
+                style: 'destructive',
+                onPress: () => {
+                  clearAllData();
+                  Alert.alert('Cleared', 'All data has been reset. Restart the app to re-run onboarding.');
                 },
-              ],
-            );
+              },
+            ]);
           },
         },
       ],
     );
   }
 
-  const [draftGoal, setDraftGoal] = useState(String(Math.round(waterDailyGoalMl)));
-
-  useFocusEffect(
-    useCallback(() => {
-      const canonicalMl = useAppStore.getState().waterDailyGoalMl;
-      const unit = useAppStore.getState().waterUnit;
-      const display =
-        unit === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl);
-      setDraftGoal(String(display));
-    }, []),
-  );
-
-  function commitGoal(nextGoalMl?: number) {
-    const parsed = nextGoalMl ?? (() => {
-      const n = Number(draftGoal);
-      return Number.isNaN(n) ? NaN : (waterUnit === 'oz' ? ozToMl(n) : Math.round(n));
-    })();
-    if (Number.isNaN(parsed)) {
-      Alert.alert('Invalid goal', 'Enter numbers only.');
-      return;
-    }
-    const ml = Math.round(parsed);
-    setGoal(ml);
-    setDraftGoal(String(waterUnit === 'oz' ? Math.round(mlToOz(ml)) : ml));
-    Alert.alert('Saved', `Goal set to ${formatVolume(ml, waterUnit)} per day`);
-  }
-
-  const goalInCurrentUnit =
-    waterUnit === 'oz' ? Math.round(mlToOz(waterDailyGoalMl)) : waterDailyGoalMl;
-  const draftGoalNumber = Number(draftGoal);
-  const currentDraft = Number.isFinite(draftGoalNumber) ? Math.max(0, Math.round(draftGoalNumber)) : goalInCurrentUnit;
-  const step = waterUnit === 'oz' ? 1 : 50;
+  const goalDisplay =
+    waterUnit === 'oz'
+      ? `${Math.round(mlToOz(waterDailyGoalMl))} oz`
+      : `${Math.round(waterDailyGoalMl)} ml`;
 
   return (
-    <ScreenBackground palette={palette}>
-      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.pad} showsVerticalScrollIndicator={false}>
-          <StackTopBar title="Settings" palette={palette} onBack={() => router.back()} />
+    <ScreenBackground palette={palette} accent="settings">
+      <SafeAreaView edges={['bottom']} style={styles.flex}>
+        <FixedTopBar
+          title="Settings"
+          palette={palette}
+          isDark={scheme === 'dark'}
+          showHistory={false}
+          rightAccessory={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close settings"
+              hitSlop={10}
+              onPress={() => router.back()}
+              style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.7 }]}>
+              <MaterialCommunityIcons name="close" size={22} color={palette.onSurfaceVariant} />
+            </Pressable>
+          }
+        />
 
-          <GlassCard palette={palette} style={styles.profileCard}>
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 20 }]}
+          showsVerticalScrollIndicator={false}>
+          {/* Profile mini-card */}
+          <GlassCard palette={palette} radius={24} tone="mid" style={styles.profileCard}>
             <View style={[styles.avatar, { backgroundColor: palette.primaryContainer }]}>
-              <Text style={[styles.avatarText, { color: palette.onPrimaryContainer, fontFamily: FastCoachFonts.headlineMd }]}>
-                FC
-              </Text>
+              <MaterialCommunityIcons name="account" size={28} color={palette.onPrimaryContainer} />
             </View>
-            <View style={styles.profileText}>
+            <View style={{ flex: 1 }}>
               <Text style={[styles.profileName, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
                 Fast Coach User
               </Text>
-              <Text style={[styles.profilePlan, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+              <Text style={[styles.profileSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 Personalized fasting profile
               </Text>
             </View>
+            <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
           </GlassCard>
 
-          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            Preferences
-          </Text>
-          <GlassCard palette={palette} style={styles.sectionCard}>
-            {DIET_OPTIONS.map((opt, index) => {
-              const selected = dietPreferenceId === opt.id;
-              return (
-                <View key={opt.id}>
-                  <ScalePressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
-                    onPress={() => setDiet(opt.id)}
-                    containerStyle={styles.row}
-                    scaleTo={0.99}>
-                    <View style={[styles.iconChip, { backgroundColor: selected ? palette.primaryContainer : palette.surfaceContainerLow }]}>
-                      <Text style={{ color: selected ? palette.onPrimaryContainer : palette.onSurfaceVariant }}>
-                        {selected ? '✓' : '•'}
-                      </Text>
-                    </View>
-                    <View style={styles.rowText}>
-                      <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
-                        {opt.label}
-                      </Text>
-                      <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
-                        {opt.description}
-                      </Text>
-                    </View>
-                  </ScalePressable>
-                  {index < DIET_OPTIONS.length - 1 ? <View style={[styles.divider, { backgroundColor: palette.outlineVariant }]} /> : null}
-                </View>
-              );
-            })}
+          {/* PREFERENCES */}
+          <SectionLabel palette={palette}>PREFERENCES</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Change diet preference"
+              onPress={() => setDietPickerOpen(true)}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.primary}1A` }]}>
+                <MaterialCommunityIcons name="silverware-fork-knife" color={palette.primary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Diet Preference
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  {currentDiet.label}
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
+            </Pressable>
+
+            <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
+
+            <View style={styles.row}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
+                <MaterialCommunityIcons name="bell-ring" color={palette.tertiary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Fasting Reminders
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  Local cues at common fast milestones.
+                </Text>
+              </View>
+              <IOSToggle
+                palette={palette}
+                value={remindersEnabled}
+                onValueChange={setRemindersEnabled}
+                accessibilityLabel="Toggle fasting reminders"
+              />
+            </View>
           </GlassCard>
 
-          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            Hydration
-          </Text>
-          <GlassCard palette={palette} style={styles.sectionCard}>
-            <View style={styles.rowTop}>
-              <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
-                Daily Water Goal
-              </Text>
+          {/* HYDRATION */}
+          <SectionLabel palette={palette}>HYDRATION</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+            <View style={[styles.row, { paddingBottom: 6 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.secondary}1A` }]}>
+                <MaterialCommunityIcons name="water" color={palette.secondary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Daily Water Goal
+                </Text>
+              </View>
               <Text style={[styles.goalValue, { color: palette.secondary, fontFamily: FastCoachFonts.headlineMd }]}>
-                {goalInCurrentUnit} {waterUnit}
+                {goalDisplay}
               </Text>
             </View>
-            <View style={styles.goalAdjustRow}>
-              <ScalePressable
-                accessibilityRole="button"
-                accessibilityLabel="Decrease water goal"
-                onPress={() => setDraftGoal(String(Math.max(0, currentDraft - step)))}
-                scaleTo={0.96}>
-                <View style={[styles.adjustBtn, { backgroundColor: palette.surfaceContainerLow }]}>
-                <Text style={[styles.adjustLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-                  -{step}
+            <View style={styles.sliderWrap}>
+              <TouchSlider
+                palette={palette}
+                value={waterDailyGoalMl}
+                min={WATER_GOAL_MIN_ML}
+                max={5000}
+                step={50}
+                accentColor={palette.secondary}
+                onChange={onSliderChange}
+                accessibilityLabel="Daily water goal"
+              />
+              <View style={styles.sliderRange}>
+                <Text style={[styles.rangeText, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                  {formatVolume(WATER_GOAL_MIN_ML, waterUnit)}
                 </Text>
-                </View>
-              </ScalePressable>
-              <Text style={[styles.goalDraft, { color: palette.secondary, fontFamily: FastCoachFonts.display }]}>
-                {currentDraft}
-              </Text>
-              <ScalePressable
-                accessibilityRole="button"
-                accessibilityLabel="Increase water goal"
-                onPress={() => setDraftGoal(String(currentDraft + step))}
-                scaleTo={0.96}>
-                <View style={[styles.adjustBtn, { backgroundColor: palette.surfaceContainerLow }]}>
-                <Text style={[styles.adjustLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-                  +{step}
+                <Text style={[styles.rangeText, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                  {formatVolume(5000, waterUnit)}
                 </Text>
-                </View>
-              </ScalePressable>
+              </View>
             </View>
-            <View style={[styles.segment, { backgroundColor: palette.glassFill }]}>
+
+            <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55`, marginVertical: 10 }]} />
+
+            <Text style={[styles.subSectionTitle, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+              Display Units
+            </Text>
+            <View style={[styles.segment, { backgroundColor: `${palette.surfaceContainerLow}DD` }]}>
               {(['ml', 'oz'] as WaterUnit[]).map((u) => (
                 <ScalePressable
                   key={u}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: waterUnit === u }}
                   accessibilityLabel={u === 'ml' ? 'Milliliters unit' : 'Ounces unit'}
-                  onPress={() => {
-                    const draftNum = Number(draftGoal);
-                    if (Number.isFinite(draftNum) && draftNum >= 0) {
-                      let nextDisplay: number;
-                      if (u === waterUnit) {
-                        nextDisplay = Math.round(draftNum);
-                      } else if (u === 'oz') {
-                        nextDisplay = Math.round(mlToOz(draftNum));
-                      } else {
-                        nextDisplay = ozToMl(draftNum);
-                      }
-                      setWaterUnit(u);
-                      setDraftGoal(String(nextDisplay));
-                      return;
-                    }
-                    const canonicalMl = useAppStore.getState().waterDailyGoalMl;
-                    setWaterUnit(u);
-                    setDraftGoal(String(u === 'oz' ? Math.round(mlToOz(canonicalMl)) : Math.round(canonicalMl)));
-                  }}
-                  scaleTo={0.985}
+                  onPress={() => setWaterUnit(u)}
+                  scaleTo={0.98}
                   containerStyle={[
-                    styles.segmentItem,
-                    waterUnit === u && { backgroundColor: palette.surfaceContainerLowest },
+                    styles.segItem,
+                    waterUnit === u && { backgroundColor: palette.surfaceContainerLowest, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
                   ]}>
                   <Text
                     style={[
-                      styles.segmentLabel,
+                      styles.segLabel,
                       {
                         color: waterUnit === u ? palette.secondary : palette.onSurfaceVariant,
                         fontFamily: FastCoachFonts.label,
@@ -237,132 +235,249 @@ export default function SettingsScreen() {
             </View>
           </GlassCard>
 
-          <ScalePressable
-            accessibilityRole="button"
-            accessibilityLabel="Save hydration goal"
-            onPress={() => commitGoal()}
-            scaleTo={0.985}>
-            <View style={[styles.saveBtn, { backgroundColor: palette.primary }]}>
-              <Text style={[styles.saveText, { color: palette.onPrimary, fontFamily: FastCoachFonts.label }]}>
-                Save hydration goal
-              </Text>
-            </View>
-          </ScalePressable>
+          {/* COACH NOTE / PREMIUM placeholder */}
+          {!premiumDismissed ? (
+            <GlassCard palette={palette} radius={24} tone="mid" style={styles.premium}>
+              <View style={[styles.premiumOverlay, { backgroundColor: `${palette.primary}EE` }]} />
+              <View style={styles.premiumBlob} />
+              <View style={styles.premiumContent}>
+                <View style={styles.premiumBadge}>
+                  <Text style={[styles.premiumBadgeText, { fontFamily: FastCoachFonts.label }]}>COACH NOTE</Text>
+                </View>
+                <Text style={[styles.premiumTitle, { fontFamily: FastCoachFonts.headlineMd }]}>
+                  Consistency beats perfection.
+                </Text>
+                <Text style={[styles.premiumBody, { fontFamily: FastCoachFonts.body }]}>
+                  Sustainable schedules teach more about your body than extreme plans.
+                </Text>
+                <View style={styles.premiumActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Dismiss coach note"
+                    onPress={() => setPremiumDismissed(true)}
+                    style={({ pressed }) => [styles.premiumDismiss, pressed && { opacity: 0.8 }]}>
+                    <Text style={[styles.premiumDismissText, { fontFamily: FastCoachFonts.label }]}>Dismiss</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </GlassCard>
+          ) : null}
 
-          <Text style={[styles.sectionLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            Danger zone
-          </Text>
-          <ScalePressable
-            accessibilityRole="button"
-            accessibilityLabel="Clear all data, restarts onboarding"
-            accessibilityHint="Double-confirm dialog will follow."
-            onPress={confirmClearAll}
-            scaleTo={0.985}>
-            <View
-              style={[
-                styles.dangerBtn,
-                { backgroundColor: `${palette.error}18`, borderColor: `${palette.error}55` },
-              ]}>
-              <Text style={[styles.dangerText, { color: palette.error, fontFamily: FastCoachFonts.label }]}>
-                Clear all data
-              </Text>
-            </View>
-          </ScalePressable>
+          {/* DANGER ZONE */}
+          <SectionLabel palette={palette}>DANGER ZONE</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear all data, restarts onboarding"
+              accessibilityHint="Double-confirm dialog will follow."
+              onPress={confirmClearAll}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.error}1A` }]}>
+                <MaterialCommunityIcons name="trash-can-outline" color={palette.error} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.error, fontFamily: FastCoachFonts.body }]}>
+                  Clear all data
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  Erases fasts, water, favorites, preferences.
+                </Text>
+              </View>
+            </Pressable>
+          </GlassCard>
 
-          <Text
-            accessibilityRole="text"
-            style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
-            Fast Coach v{Constants.expoConfig?.version ?? '1.0.0'}
+          <Text style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
+            Fast Coach v{Constants.expoConfig?.version ?? '1.0.0'}{'\n'}Made for steadier rhythms.
           </Text>
         </ScrollView>
+
+        {/* Diet picker modal */}
+        <Modal transparent visible={dietPickerOpen} animationType="fade" onRequestClose={() => setDietPickerOpen(false)}>
+          <Pressable
+            style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}
+            onPress={() => setDietPickerOpen(false)}>
+            <Pressable
+              style={[
+                styles.sheet,
+                { backgroundColor: palette.surfaceContainerLowest, borderColor: palette.glassBorder },
+              ]}
+              onPress={() => undefined}>
+              <Text style={[styles.sheetTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                Diet preference
+              </Text>
+              <Text style={{ color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body, marginBottom: 6 }}>
+                Tailors meal suggestions across the app.
+              </Text>
+              {DIET_OPTIONS.map((opt) => {
+                const sel = opt.id === dietPreferenceId;
+                return (
+                  <Pressable
+                    key={opt.id}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: sel }}
+                    onPress={() => {
+                      setDiet(opt.id);
+                      setDietPickerOpen(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.dietRow,
+                      {
+                        backgroundColor: sel ? `${palette.primary}10` : 'transparent',
+                        borderColor: sel ? palette.primary : palette.outlineVariant,
+                      },
+                      pressed && { opacity: 0.9 },
+                    ]}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.dietTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                        {opt.label}
+                      </Text>
+                      <Text style={[styles.dietSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                        {opt.description}
+                      </Text>
+                    </View>
+                    {sel ? (
+                      <MaterialCommunityIcons name="check-circle" size={22} color={palette.primary} />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close diet picker"
+                onPress={() => setDietPickerOpen(false)}
+                style={[styles.sheetBtn, { backgroundColor: palette.primary, marginTop: 12 }]}>
+                <Text style={[styles.sheetBtnText, { color: palette.onPrimary, fontFamily: FastCoachFonts.headlineMd }]}>
+                  Done
+                </Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </SafeAreaView>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  pad: {
-    padding: 20,
-    paddingBottom: 40,
+  flex: { flex: 1 },
+  scroll: { paddingHorizontal: 22, paddingBottom: 60, gap: 14 },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 14,
+    padding: 18,
   },
-  profileCard: { padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 20 },
-  profileText: { flex: 1 },
-  profileName: { fontSize: 18 },
-  profilePlan: { fontSize: 13, marginTop: 2 },
-  sectionLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 6 },
-  sectionCard: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 10 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
-  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, paddingBottom: 4 },
-  iconChip: { width: 28, height: 28, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  rowText: { flex: 1 },
-  rowTitle: { fontSize: 15, lineHeight: 20 },
-  rowSub: { fontSize: 13, lineHeight: 18, marginTop: 1 },
-  goalValue: { fontSize: 22 },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginHorizontal: 6,
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  goalAdjustRow: {
-    marginTop: 8,
-    marginBottom: 10,
+  profileName: { fontSize: 18, fontWeight: '800' },
+  profileSub: { fontSize: 13, marginTop: 2 },
+  sectionCard: { padding: 0 },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  adjustBtn: {
-    minWidth: 72,
+  rowOrb: {
+    width: 40,
+    height: 40,
     borderRadius: 999,
-    paddingVertical: 9,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  adjustLabel: { fontSize: 13 },
-  goalDraft: { fontSize: 30 },
+  rowTitle: { fontSize: 15, fontWeight: '600' },
+  rowSub: { fontSize: 12, marginTop: 2 },
+  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 16 },
+  goalValue: { fontSize: 18, fontWeight: '800' },
+  sliderWrap: { paddingHorizontal: 16, paddingBottom: 12 },
+  sliderRange: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  rangeText: { fontSize: 10, letterSpacing: 1.2, fontWeight: '700' },
+  subSectionTitle: { fontSize: 12, paddingHorizontal: 16, marginBottom: 6 },
   segment: {
-    marginTop: 4,
-    marginBottom: 8,
-    borderRadius: 999,
-    padding: 4,
     flexDirection: 'row',
-    gap: 4,
-  },
-  segmentItem: {
-    flex: 1,
+    marginHorizontal: 14,
+    marginBottom: 14,
+    padding: 4,
     borderRadius: 999,
-    paddingVertical: 9,
-    paddingHorizontal: 8,
-    alignItems: 'center',
   },
-  segmentLabel: { fontSize: 12 },
-  saveBtn: {
-    minHeight: 52,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 6,
+  segItem: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 999 },
+  segLabel: { fontSize: 12, fontWeight: '700' },
+  premium: {
+    overflow: 'hidden',
+    position: 'relative',
+    minHeight: 150,
+    padding: 0,
   },
-  saveText: { fontSize: 15 },
-  dangerBtn: {
-    minHeight: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    marginTop: 4,
+  premiumOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
-  dangerText: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
+  premiumBlob: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    right: -80,
+    top: -80,
   },
+  premiumContent: { padding: 22, gap: 8 },
+  premiumBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  premiumBadgeText: { color: '#ffffff', fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },
+  premiumTitle: { color: '#ffffff', fontSize: 20, fontWeight: '800', letterSpacing: -0.3, lineHeight: 26 },
+  premiumBody: { color: 'rgba(255,255,255,0.86)', fontSize: 14, lineHeight: 20 },
+  premiumActions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 4 },
+  premiumDismiss: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  premiumDismissText: { color: '#ffffff', fontSize: 12, letterSpacing: 1.2, fontWeight: '800' },
   versionFooter: {
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 28,
+    marginTop: 16,
     marginBottom: 8,
-    letterSpacing: 0.4,
+    lineHeight: 18,
   },
+  modalBackdrop: { flex: 1, justifyContent: 'flex-end', padding: 20, paddingBottom: 40 },
+  sheet: {
+    borderRadius: 28,
+    padding: 22,
+    gap: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  sheetTitle: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
+  sheetBtn: { borderRadius: 999, paddingVertical: 14, alignItems: 'center' },
+  sheetBtnText: { fontSize: 16, fontWeight: '800' },
+  dietRow: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  dietTitle: { fontSize: 15, fontWeight: '700' },
+  dietSub: { fontSize: 12, marginTop: 2, lineHeight: 18 },
 });

@@ -36,6 +36,10 @@ interface AppSlice {
   waterUnit: WaterUnit;
   favoriteFactIds: string[];
   activeFast: ActiveFast | null;
+  /** UI mock preference — settings shows a toggle but app doesn't yet schedule notifications. */
+  fastingRemindersEnabled: boolean;
+  /** Dismissed the premium hero in Settings. */
+  premiumDismissed: boolean;
 }
 
 interface AppActions {
@@ -51,6 +55,8 @@ interface AppActions {
   setWaterUnit: (u: WaterUnit) => void;
   toggleFavoriteFact: (id: string) => void;
   bumpSuggestionShuffle: () => void;
+  setFastingRemindersEnabled: (next: boolean) => void;
+  setPremiumDismissed: (next: boolean) => void;
   /** Hard reset to initial state. Wipes persist on next write. */
   clearAllData: () => void;
 }
@@ -69,6 +75,8 @@ export const useAppStore = create<AppStore>()(
       waterDailyGoalMl: 2500,
       waterUnit: 'ml',
       favoriteFactIds: [],
+      fastingRemindersEnabled: true,
+      premiumDismissed: false,
       skipOnboarding: () => set({ hasCompletedOnboarding: true }),
       completeOnboarding: (pref) =>
         set({ hasCompletedOnboarding: true, dietPreferenceId: pref }),
@@ -135,6 +143,8 @@ export const useAppStore = create<AppStore>()(
         })),
       bumpSuggestionShuffle: () =>
         set((s) => ({ eatShuffleNonce: s.eatShuffleNonce + 1 })),
+      setFastingRemindersEnabled: (next) => set({ fastingRemindersEnabled: next }),
+      setPremiumDismissed: (next) => set({ premiumDismissed: next }),
       clearAllData: () =>
         set({
           hasCompletedOnboarding: false,
@@ -146,6 +156,8 @@ export const useAppStore = create<AppStore>()(
           waterDailyGoalMl: 2500,
           waterUnit: 'ml',
           favoriteFactIds: [],
+          fastingRemindersEnabled: true,
+          premiumDismissed: false,
         }),
     }),
     {
@@ -163,6 +175,8 @@ export const useAppStore = create<AppStore>()(
         waterDailyGoalMl: s.waterDailyGoalMl,
         waterUnit: s.waterUnit,
         favoriteFactIds: s.favoriteFactIds,
+        fastingRemindersEnabled: s.fastingRemindersEnabled,
+        premiumDismissed: s.premiumDismissed,
       }),
       /** Manual rehydrate in useStoreHydrated — avoids web/native races with splash gate. */
       skipHydration: true,

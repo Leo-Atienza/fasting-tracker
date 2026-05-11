@@ -10,26 +10,23 @@ import {
   type FastCoachPalette as FastCoachPaletteColors,
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FastCoachHeader } from '@/src/components/fastCoach/FastCoachHeader';
+import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
+import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import { computeInsights } from '@/src/features/insights/computeInsights';
 import { formatElapsedShort } from '@/src/lib/time';
 import { formatVolume } from '@/src/lib/units';
 import { useAppStore } from '@/src/store/useAppStore';
 
-const DAY_LABELS_OFFSET = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function todayWeekdayShortNames(now: Date): string[] {
-  // Returns 7 short weekday names (Sun..Sat indexed) ordered oldest -> today,
-  // mirroring the `last7Days*` selectors.
   const out: string[] = [];
   for (let i = 6; i >= 0; i -= 1) {
     const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const idx = d.getDay(); // 0 = Sun
-    // Use Mon-first lookup: 0(Sun)->6, 1(Mon)->0, ... 6(Sat)->5
-    const monFirst = (idx + 6) % 7;
-    out.push(DAY_LABELS_OFFSET[monFirst] ?? '');
+    const monFirst = (d.getDay() + 6) % 7;
+    out.push(DAY_LABELS[monFirst] ?? '');
   }
   return out;
 }
@@ -43,22 +40,28 @@ export default function InsightsScreen() {
   const waterUnit = useAppStore((s) => s.waterUnit);
   const goalMl = useAppStore((s) => s.waterDailyGoalMl);
 
-  const snapshot = useMemo(() => computeInsights(sessions, waterEntries, new Date()), [sessions, waterEntries]);
+  const snapshot = useMemo(
+    () => computeInsights(sessions, waterEntries, new Date()),
+    [sessions, waterEntries],
+  );
   const dayLabels = useMemo(() => todayWeekdayShortNames(new Date()), []);
 
   const waterPeak = Math.max(goalMl, ...snapshot.water7d, 1);
   const fastsPeak = Math.max(1, ...snapshot.fasts7d);
-
   const empty = snapshot.totalFasts === 0;
 
   return (
-    <ScreenBackground palette={palette}>
-      <SafeAreaView style={styles.flex} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.pad}>
-          <FastCoachHeader title="Insights" palette={palette} />
+    <ScreenBackground palette={palette} accent="insights">
+      <SafeAreaView style={styles.flex} edges={['bottom']}>
+        <FixedTopBar title="Insights" palette={palette} isDark={scheme === 'dark'} />
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 20 }]}
+          showsVerticalScrollIndicator={false}>
+          <SectionLabel palette={palette} tone="primary">YOUR WEEKLY VIEW</SectionLabel>
 
-          {/* Streak ribbon */}
-          <GlassCard palette={palette} style={[styles.streakCard, { borderColor: palette.glassBorder }]}>
+          {/* Streak hero */}
+          <GlassCard palette={palette} radius={26} tone="high" style={styles.streakCard}>
+            <View style={[styles.streakBlob, { backgroundColor: `${palette.primaryFixed}55` }]} pointerEvents="none" />
             <View style={[styles.streakIcon, { backgroundColor: `${palette.primaryContainer}33` }]}>
               <MaterialCommunityIcons
                 name={snapshot.streakDays > 0 ? 'fire' : 'play-circle-outline'}
@@ -66,16 +69,16 @@ export default function InsightsScreen() {
                 color={palette.primary}
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, gap: 4 }}>
               <Text style={[styles.streakEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
-                {snapshot.streakDays > 0 ? 'Current streak' : 'Streak waiting on you'}
+                {snapshot.streakDays > 0 ? 'CURRENT STREAK' : 'STREAK WAITING ON YOU'}
               </Text>
               <Text style={[styles.streakValue, { color: palette.onSurface, fontFamily: FastCoachFonts.display }]}>
                 {snapshot.streakDays > 0
                   ? `${snapshot.streakDays} ${snapshot.streakDays === 1 ? 'day' : 'days'}`
                   : 'Start today'}
               </Text>
-              <Text style={[styles.streakSub, { color: palette.onSurfaceVariant }]}>
+              <Text style={[styles.streakSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 {snapshot.streakDays > 1
                   ? 'Consecutive days with at least one completed fast.'
                   : snapshot.streakDays === 1
@@ -85,36 +88,39 @@ export default function InsightsScreen() {
             </View>
           </GlassCard>
 
-          {/* Stat tiles */}
+          {/* Bento metrics */}
           <View style={styles.tileRow}>
-            <StatTile
+            <Tile
               palette={palette}
-              eyebrow="Total fasts"
+              eyebrow="TOTAL FASTS"
               value={String(snapshot.totalFasts)}
               icon="checkbox-multiple-marked-outline"
+              accent={palette.primary}
             />
-            <StatTile
+            <Tile
               palette={palette}
-              eyebrow="Avg length"
+              eyebrow="AVG LENGTH"
               value={empty ? '—' : formatElapsedShort(snapshot.averageDurationMs)}
               icon="chart-bell-curve"
+              accent={palette.secondary}
             />
-            <StatTile
+            <Tile
               palette={palette}
-              eyebrow="Longest"
+              eyebrow="LONGEST"
               value={empty ? '—' : formatElapsedShort(snapshot.longestMs)}
               icon="trophy-outline"
+              accent={palette.tertiary}
             />
           </View>
 
-          {/* Water sparkline */}
-          <GlassCard palette={palette} style={styles.chartCard}>
+          {/* Water chart */}
+          <GlassCard palette={palette} radius={26} style={styles.chartCard}>
             <View style={styles.chartHeader}>
               <Text style={[styles.chartEyebrow, { color: palette.secondary, fontFamily: FastCoachFonts.label }]}>
-                Hydration · last 7 days
+                HYDRATION · LAST 7 DAYS
               </Text>
-              <Text style={[styles.chartLegend, { color: palette.onSurfaceVariant }]}>
-                Goal: {formatVolume(goalMl, waterUnit)}
+              <Text style={[styles.chartLegend, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                Goal {formatVolume(goalMl, waterUnit)}
               </Text>
             </View>
             <View style={styles.bars} accessibilityRole="image" accessibilityLabel="Bar chart of daily water intake over the last 7 days">
@@ -129,29 +135,31 @@ export default function InsightsScreen() {
                           styles.barFill,
                           {
                             height: `${heightPct}%`,
-                            backgroundColor: met ? palette.secondary : `${palette.secondaryContainer}AA`,
+                            backgroundColor: met ? palette.secondary : `${palette.secondaryContainer}77`,
                           },
                         ]}
                       />
                     </View>
-                    <Text style={[styles.barLabel, { color: palette.outline }]}>{dayLabels[i] ?? ''}</Text>
+                    <Text style={[styles.barLabel, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                      {dayLabels[i] ?? ''}
+                    </Text>
                   </View>
                 );
               })}
             </View>
           </GlassCard>
 
-          {/* Fasts-per-day sparkline */}
-          <GlassCard palette={palette} style={styles.chartCard}>
+          {/* Fasts chart */}
+          <GlassCard palette={palette} radius={26} style={styles.chartCard}>
             <View style={styles.chartHeader}>
               <Text style={[styles.chartEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
-                Fasts completed · last 7 days
+                FASTS · LAST 7 DAYS
               </Text>
-              <Text style={[styles.chartLegend, { color: palette.onSurfaceVariant }]}>
+              <Text style={[styles.chartLegend, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 {empty ? 'No fasts yet' : `${snapshot.fasts7d.reduce((a, b) => a + b, 0)} this week`}
               </Text>
             </View>
-            <View style={styles.bars} accessibilityRole="image" accessibilityLabel="Bar chart of fasts completed each day over the last 7 days">
+            <View style={styles.bars}>
               {snapshot.fasts7d.map((n, i) => {
                 const heightPct = fastsPeak > 0 ? Math.max(2, (n / fastsPeak) * 100) : 2;
                 return (
@@ -162,12 +170,14 @@ export default function InsightsScreen() {
                           styles.barFill,
                           {
                             height: `${heightPct}%`,
-                            backgroundColor: n > 0 ? palette.primary : `${palette.primaryContainer}66`,
+                            backgroundColor: n > 0 ? palette.primary : `${palette.primaryContainer}55`,
                           },
                         ]}
                       />
                     </View>
-                    <Text style={[styles.barLabel, { color: palette.outline }]}>{dayLabels[i] ?? ''}</Text>
+                    <Text style={[styles.barLabel, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                      {dayLabels[i] ?? ''}
+                    </Text>
                   </View>
                 );
               })}
@@ -175,7 +185,7 @@ export default function InsightsScreen() {
           </GlassCard>
 
           {empty ? (
-            <Text style={[styles.emptyHint, { color: palette.onSurfaceVariant }]}>
+            <Text style={[styles.emptyHint, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
               Complete your first fast on the Fast tab and stats start appearing here automatically.
             </Text>
           ) : null}
@@ -185,21 +195,23 @@ export default function InsightsScreen() {
   );
 }
 
-function StatTile({
+function Tile({
   palette,
   eyebrow,
   value,
   icon,
+  accent,
 }: {
   palette: FastCoachPaletteColors;
   eyebrow: string;
   value: string;
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  accent: string;
 }) {
   return (
-    <GlassCard palette={palette} style={styles.tile}>
-      <View style={[styles.tileIcon, { backgroundColor: `${palette.primaryContainer}22` }]}>
-        <MaterialCommunityIcons name={icon} size={22} color={palette.primary} />
+    <GlassCard palette={palette} radius={22} style={styles.tile}>
+      <View style={[styles.tileIcon, { backgroundColor: `${accent}1A` }]}>
+        <MaterialCommunityIcons name={icon} size={20} color={accent} />
       </View>
       <Text style={[styles.tileEyebrow, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
         {eyebrow}
@@ -212,124 +224,34 @@ function StatTile({
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: 'transparent' },
-  pad: { paddingHorizontal: 22, paddingBottom: 140, gap: 16 },
+  flex: { flex: 1 },
+  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
   streakCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
+    padding: 20,
     gap: 14,
-    borderRadius: 26,
-  },
-  streakIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  streakEyebrow: {
-    fontSize: 11,
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-  },
-  streakValue: {
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-    marginTop: 2,
-  },
-  streakSub: {
-    fontSize: 13,
-    marginTop: 4,
-    fontFamily: FastCoachFonts.body,
-    lineHeight: 18,
-  },
-  tileRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  tile: {
-    flex: 1,
-    padding: 14,
-    gap: 8,
-    borderRadius: 20,
-    alignItems: 'flex-start',
-  },
-  tileIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tileEyebrow: {
-    fontSize: 10,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-  },
-  tileValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-    fontVariant: ['tabular-nums'],
-  },
-  chartCard: {
-    padding: 18,
-    gap: 14,
-    borderRadius: 24,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  chartEyebrow: {
-    fontSize: 11,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-    fontWeight: '800',
-  },
-  chartLegend: {
-    fontSize: 12,
-    fontFamily: FastCoachFonts.body,
-  },
-  bars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: 100,
-    gap: 8,
-  },
-  barCell: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 6,
-  },
-  barTrack: {
-    width: '100%',
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'flex-end',
     overflow: 'hidden',
-    borderRadius: 6,
+    position: 'relative',
   },
-  barFill: {
-    width: '100%',
-    borderRadius: 6,
-  },
-  barLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  emptyHint: {
-    marginTop: 4,
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 20,
-    fontFamily: FastCoachFonts.body,
-  },
+  streakBlob: { position: 'absolute', top: -50, right: -40, width: 160, height: 160, borderRadius: 999 },
+  streakIcon: { width: 56, height: 56, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  streakEyebrow: { fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: '800' },
+  streakValue: { fontSize: 28, letterSpacing: -0.5, fontWeight: '800' },
+  streakSub: { fontSize: 13, marginTop: 2, lineHeight: 18 },
+  tileRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  tile: { flex: 1, padding: 14, gap: 6 },
+  tileIcon: { width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  tileEyebrow: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '800', marginTop: 4 },
+  tileValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
+  chartCard: { padding: 20, gap: 14 },
+  chartHeader: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  chartEyebrow: { fontSize: 11, letterSpacing: 1.6, fontWeight: '800' },
+  chartLegend: { fontSize: 12 },
+  bars: { flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 8 },
+  barCell: { flex: 1, alignItems: 'center', gap: 6 },
+  barTrack: { width: '100%', flex: 1, justifyContent: 'flex-end', borderRadius: 6, overflow: 'hidden' },
+  barFill: { width: '100%', borderRadius: 6 },
+  barLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
+  emptyHint: { marginTop: 4, fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });

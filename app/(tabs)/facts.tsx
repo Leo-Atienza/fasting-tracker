@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,9 +7,10 @@ import factsDataset from '@/assets/data/fasting-facts.json';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FastCoachHeader } from '@/src/components/fastCoach/FastCoachHeader';
+import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
+import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import type { Fact, FactTheme } from '@/src/domain/types';
 import { hashString } from '@/src/lib/hash';
 import { dayKey } from '@/src/lib/time';
@@ -25,14 +25,19 @@ const THEME_TAG: Record<FactTheme, string> = {
   general: 'PRACTICAL',
 };
 
-function groupCounts() {
-  let focus = 0;
-  let other = 0;
-  for (const f of FACTS) {
-    if (f.theme === 'cognition') focus += 1;
-    else other += 1;
-  }
-  return { focus, other };
+/** Two-bucket categorization matching the design's Hydration / Health bento. */
+type Bucket = 'hydration' | 'health';
+const BUCKET_BY_THEME: Record<FactTheme, Bucket> = {
+  cognition: 'hydration', // focus/sleep/hydration/headache facts
+  general: 'hydration',
+  metabolic: 'health',
+  longevity: 'health',
+};
+
+function countByBucket(): Record<Bucket, number> {
+  const counts: Record<Bucket, number> = { hydration: 0, health: 0 };
+  for (const f of FACTS) counts[BUCKET_BY_THEME[f.theme]] += 1;
+  return counts;
 }
 
 export default function FactsScreen() {
@@ -40,6 +45,7 @@ export default function FactsScreen() {
   const palette = FastCoachPalette[scheme];
 
   const [shuffle, setShuffle] = useState(0);
+  const [filterBucket, setFilterBucket] = useState<Bucket | null>(null);
   const [expandFavorites, setExpandFavorites] = useState(false);
 
   const favoriteFactIds = useAppStore((s) => s.favoriteFactIds);
@@ -50,167 +56,180 @@ export default function FactsScreen() {
     return FACTS[idx]!;
   }, [shuffle]);
 
-  const { focus, other } = useMemo(() => groupCounts(), []);
-  const favorites = useMemo(
-    () => FACTS.filter((f) => favoriteFactIds.includes(f.id)),
-    [favoriteFactIds],
-  );
-
+  const counts = useMemo(() => countByBucket(), []);
+  const favoritesAll = useMemo(() => FACTS.filter((f) => favoriteFactIds.includes(f.id)), [favoriteFactIds]);
+  const favorites = filterBucket
+    ? favoritesAll.filter((f) => BUCKET_BY_THEME[f.theme] === filterBucket)
+    : favoritesAll;
   const shownFavorites = expandFavorites ? favorites : favorites.slice(0, 3);
-
-  function handleShuffle() {
-    setShuffle((s) => s + 1);
-  }
 
   const headerShuffle = (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Shuffle fact of the day"
-      onPress={handleShuffle}
+      onPress={() => setShuffle((s) => s + 1)}
       style={({ pressed }) => [
         styles.shuffleFab,
         {
-          backgroundColor: `${palette.surfaceContainerHigh}CC`,
+          backgroundColor: scheme === 'dark' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.55)',
           borderColor: palette.glassBorder,
-          opacity: pressed ? 0.9 : 1,
+          opacity: pressed ? 0.85 : 1,
         },
       ]}>
       <MaterialCommunityIcons name="shuffle-variant" size={22} color={palette.onSurface} />
     </Pressable>
   );
 
+  const isCuratedFav = favoriteFactIds.includes(curated.id);
+
   return (
-    <ScreenBackground palette={palette}>
-      <SafeAreaView style={styles.flex} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.pad}>
-          <FastCoachHeader title="Facts" palette={palette} rightAccessory={headerShuffle} />
+    <ScreenBackground palette={palette} accent="facts">
+      <SafeAreaView style={styles.flex} edges={['bottom']}>
+        <FixedTopBar title="Facts" palette={palette} isDark={scheme === 'dark'} rightAccessory={headerShuffle} showHistory={false} />
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 18 }]} showsVerticalScrollIndicator={false}>
+          <SectionLabel palette={palette} tone="primary">FACT OF THE DAY</SectionLabel>
 
-          <Text style={[styles.fotdEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
-            Fact of the day
-          </Text>
-
-          <GlassCard palette={palette} style={[styles.heroFact, styles.heroGlow]}>
-            <LinearGradient
-              colors={[`${palette.primaryFixed}66`, `${palette.surfaceContainerLow}00`]}
-              start={{ x: 1, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              pointerEvents="none"
-              style={StyleSheet.absoluteFill}
-            />
+          {/* Hero glass fact */}
+          <GlassCard palette={palette} radius={28} tone="high" style={styles.hero}>
+            <View style={[styles.heroBlob, { backgroundColor: `${palette.primaryFixed}55` }]} pointerEvents="none" />
             <View style={styles.heroRow}>
-              <View style={[styles.boltWrap, { backgroundColor: palette.primaryContainer }]}>
-                <MaterialCommunityIcons name="lightning-bolt" color={palette.onPrimaryContainer} size={26} />
+              <View style={[styles.boltOrb, { backgroundColor: palette.primaryContainer }]}>
+                <MaterialCommunityIcons name="lightning-bolt" color={palette.onPrimaryContainer} size={22} />
               </View>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={
-                  favoriteFactIds.includes(curated.id) ? 'Remove from favorites' : 'Save fact to favorites'
-                }
+                accessibilityLabel={isCuratedFav ? 'Remove from favorites' : 'Save fact to favorites'}
                 onPress={() => toggleFavoriteFact(curated.id)}
-                style={styles.bookmarkTap}
-                hitSlop={8}>
+                hitSlop={10}>
                 <MaterialCommunityIcons
-                  name={favoriteFactIds.includes(curated.id) ? 'bookmark' : 'bookmark-outline'}
-                  size={30}
+                  name={isCuratedFav ? 'bookmark' : 'bookmark-outline'}
+                  size={28}
                   color={palette.primary}
                 />
               </Pressable>
             </View>
-            <Text
-              accessibilityRole="header"
-              style={[
-                styles.heroTitle,
-                { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd },
-              ]}>
-              {curated.title}
+            <Text accessibilityRole="header" style={[styles.heroTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+              {curated.title}.
             </Text>
-            <Text style={[styles.heroBody, { color: palette.onSurfaceVariant }]}>
+            <Text style={[styles.heroBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
               {curated.body}
             </Text>
-            <View style={styles.heroTags}>
-              <View style={[styles.tag, { backgroundColor: `${palette.surfaceVariant}BB` }]}>
-                <Text style={[styles.tagText, { color: palette.outline }]}>
+            <View style={styles.tagRow}>
+              <View style={[styles.tag, { backgroundColor: `${palette.surfaceVariant}AA` }]}>
+                <Text style={[styles.tagText, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
                   {THEME_TAG[curated.theme]}
                 </Text>
               </View>
-              <View style={[styles.tag, { backgroundColor: `${palette.surfaceVariant}BB` }]}>
-                <Text style={[styles.tagText, { color: palette.outline }]}>FAST COACH NOTES</Text>
+              <View style={[styles.tag, { backgroundColor: `${palette.surfaceVariant}AA` }]}>
+                <Text style={[styles.tagText, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                  COACH NOTES
+                </Text>
               </View>
             </View>
           </GlassCard>
 
+          {/* Hydration / Health bento */}
           <View style={styles.bentoRow}>
-            <GlassCard palette={palette} style={[styles.bentoCard, styles.bentoGlow]}>
-              <MaterialCommunityIcons name="water" color={palette.secondary} size={28} />
-              <Text style={[styles.bentoMuted, { color: palette.outline }]}>Focus & flow</Text>
-              <Text style={[styles.bentoStat, { color: palette.onSurface }]}>{focus} facts</Text>
-            </GlassCard>
-            <GlassCard palette={palette} style={[styles.bentoCard, styles.bentoGlow]}>
-              <MaterialCommunityIcons name="heart-pulse" color={palette.tertiary} size={27} />
-              <Text style={[styles.bentoMuted, { color: palette.outline }]}>Other facts</Text>
-              <Text style={[styles.bentoStat, { color: palette.onSurface }]}>{other} facts</Text>
-            </GlassCard>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: filterBucket === 'hydration' }}
+              onPress={() => setFilterBucket((b) => (b === 'hydration' ? null : 'hydration'))}
+              style={({ pressed }) => [styles.bentoBtn, pressed && { opacity: 0.94 }]}>
+              <GlassCard palette={palette} radius={22} style={[styles.bentoCard, filterBucket === 'hydration' && { borderColor: palette.secondary, borderWidth: 1.5 }]}>
+                <MaterialCommunityIcons name="water" color={palette.secondary} size={26} />
+                <Text style={[styles.bentoLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                  Hydration
+                </Text>
+                <Text style={[styles.bentoStat, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                  {counts.hydration} Facts
+                </Text>
+              </GlassCard>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: filterBucket === 'health' }}
+              onPress={() => setFilterBucket((b) => (b === 'health' ? null : 'health'))}
+              style={({ pressed }) => [styles.bentoBtn, pressed && { opacity: 0.94 }]}>
+              <GlassCard palette={palette} radius={22} style={[styles.bentoCard, filterBucket === 'health' && { borderColor: palette.tertiary, borderWidth: 1.5 }]}>
+                <MaterialCommunityIcons name="heart-pulse" color={palette.tertiary} size={26} />
+                <Text style={[styles.bentoLabel, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                  Health
+                </Text>
+                <Text style={[styles.bentoStat, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                  {counts.health} Facts
+                </Text>
+              </GlassCard>
+            </Pressable>
           </View>
 
+          {/* Your Favorites */}
           <Text style={[styles.favHd, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-            Your favorites
+            Your Favorites
           </Text>
 
-          <View style={{ gap: 12 }}>
-            {favorites.length === 0 ? (
-              <Text style={{ color: palette.onSurfaceVariant }}>
-                Tap the bookmark chip on facts you want to revisit.
+          {favoritesAll.length === 0 ? (
+            <GlassCard palette={palette} radius={22} style={{ padding: 22, marginTop: 4 }}>
+              <Text style={{ color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body, lineHeight: 22 }}>
+                Tap the bookmark on the Fact of the Day or any fact you want to revisit — they show up here.
               </Text>
-            ) : (
-              <>
-                {shownFavorites.map((fact) => (
-                  <GlassCard palette={palette} key={fact.id} style={[styles.miniFav]}>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Remove "${fact.title}" from favorites`}
-                      onPress={() => toggleFavoriteFact(fact.id)}
-                      style={styles.favTap}>
-                      <MaterialCommunityIcons name="star" color={palette.primary} size={22} />
-                    </Pressable>
-                    <View style={{ flex: 1, gap: 6 }}>
-                      <Text style={[styles.miniTitle, { color: palette.onSurface }]}>{fact.title}</Text>
-                      <Text style={[styles.miniBody, { color: palette.onSurfaceVariant }]}>{fact.body}</Text>
-                      <Text style={[styles.miniTag, { color: palette.outline }]}>
-                        {THEME_TAG[fact.theme]}
-                      </Text>
-                    </View>
-                  </GlassCard>
-                ))}
-                {favorites.length > 3 ? (
+            </GlassCard>
+          ) : (
+            <View style={{ gap: 12 }}>
+              {shownFavorites.map((fact) => (
+                <GlassCard palette={palette} radius={22} key={fact.id} tone="low" style={styles.favCard}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={
-                      expandFavorites ? 'Show fewer saved facts' : 'Show every saved fact'
-                    }
-                    accessibilityState={{ expanded: expandFavorites }}
-                    onPress={() => setExpandFavorites((x) => !x)}
-                    style={[
-                      styles.viewAllChip,
-                      { backgroundColor: `${palette.surfaceContainerHigh}BB`, borderColor: palette.glassBorder },
-                    ]}>
-                    <Text style={[styles.viewAllChipText, { color: palette.onSurface }]}>
-                      {expandFavorites ? 'Collapse list' : 'View all favorites'}
-                    </Text>
+                    accessibilityLabel={`Remove "${fact.title}" from favorites`}
+                    onPress={() => toggleFavoriteFact(fact.id)}
+                    hitSlop={8}
+                    style={styles.favStar}>
+                    <MaterialCommunityIcons name="star" color={palette.primary} size={22} />
                   </Pressable>
-                ) : null}
-              </>
-            )}
-          </View>
+                  <View style={{ flex: 1, gap: 6 }}>
+                    <Text style={[styles.favTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                      {fact.title}.
+                    </Text>
+                    <Text style={[styles.favBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                      {fact.body}
+                    </Text>
+                    <Text style={[styles.favTag, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                      {THEME_TAG[fact.theme]}
+                    </Text>
+                  </View>
+                </GlassCard>
+              ))}
+              {favorites.length > 3 ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={expandFavorites ? 'Show fewer saved facts' : 'Show every saved fact'}
+                  accessibilityState={{ expanded: expandFavorites }}
+                  onPress={() => setExpandFavorites((x) => !x)}
+                  style={[
+                    styles.viewAllChip,
+                    {
+                      backgroundColor: scheme === 'dark' ? 'rgba(255,255,255,0.10)' : `${palette.surfaceContainerHigh}AA`,
+                      borderColor: palette.glassBorder,
+                    },
+                  ]}>
+                  <Text style={[styles.viewAllText, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                    {expandFavorites ? 'Collapse list' : 'View All Favorites'}
+                  </Text>
+                </Pressable>
+              ) : null}
+              {filterBucket && favorites.length === 0 ? (
+                <Text style={{ color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight, textAlign: 'center' }}>
+                  No favorites in this category yet.
+                </Text>
+              ) : null}
+            </View>
+          )}
 
-          <GlassCard palette={palette} style={styles.banner}>
-            <MaterialCommunityIcons name="shield-check" color={palette.primary} size={22} style={{ marginBottom: 10 }} />
-            <Text style={[styles.bannerText, { color: palette.onSurfaceVariant }]}>
-              Fasting is not safe for everyone. Check in with clinicians for medications, chronic conditions,
-              pregnancy, or if you&apos;ve navigated eating disorders.
+          <GlassCard palette={palette} radius={20} tone="low" style={styles.banner}>
+            <MaterialCommunityIcons name="shield-check" color={palette.primary} size={20} />
+            <Text style={[styles.bannerText, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+              Fasting is not safe for everyone. Check in with clinicians for medications, chronic conditions, pregnancy, or if you've navigated eating disorders.
             </Text>
           </GlassCard>
-
-          <View style={{ height: 32 }} />
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
@@ -218,103 +237,51 @@ export default function FactsScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: 'transparent' },
-  pad: { paddingHorizontal: 22, paddingBottom: 132, gap: 14 },
+  flex: { flex: 1 },
+  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
   shuffleFab: {
-    borderRadius: 999,
     width: 40,
     height: 40,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
   },
-  fotdEyebrow: {
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: '800',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  heroFact: { padding: 24 },
-  heroGlow: {
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 10 },
-    overflow: 'hidden',
-    position: 'relative',
-    minHeight: 180,
-    gap: 12,
-    marginTop: 2,
-    marginBottom: 6,
-  },
-  heroRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  boltWrap: { width: 48, height: 48, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  bookmarkTap: {
-    padding: 6,
-  },
-  heroTitle: { fontSize: 21, letterSpacing: -0.35, marginTop: 4, marginBottom: 4, lineHeight: 28 },
-  heroBody: { fontFamily: FastCoachFonts.bodyLight, fontSize: 17, lineHeight: 26, letterSpacing: 0.2 },
-  heroTags: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  tagText: {
-    letterSpacing: 1.9,
-    textTransform: 'uppercase',
-    fontSize: 10,
-    fontWeight: '800',
-    fontFamily: FastCoachFonts.label,
-  },
-  bentoRow: { flexDirection: 'row', gap: 14, marginTop: 6 },
-  bentoGlow: {},
-  bentoCard: {
-    flex: 1,
-    padding: 22,
-    borderRadius: 18,
-    gap: 12,
-    minHeight: 140,
-    justifyContent: 'space-between',
-  },
-  bentoMuted: { fontSize: 14, letterSpacing: 0.06 * 13, fontWeight: '600', marginTop: 14 },
-  bentoStat: { fontWeight: '800', fontSize: 24 },
-  favHd: { fontSize: 22, letterSpacing: -0.35, marginTop: 22, marginBottom: 12 },
-  miniFav: {
-    flexDirection: 'row',
-    padding: 22,
-    gap: 14,
-    alignItems: 'flex-start',
-  },
-  favTap: { paddingTop: 4 },
-  miniTitle: { fontWeight: '800', letterSpacing: -0.2, fontSize: 16 },
-  miniBody: { fontSize: 15, fontFamily: FastCoachFonts.bodyLight, lineHeight: 24 },
-  miniTag: { fontSize: 11, letterSpacing: 2, marginTop: 4, fontWeight: '700' },
+  hero: { padding: 24, overflow: 'hidden', position: 'relative' },
+  heroBlob: { position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: 999 },
+  heroRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  boltOrb: { width: 44, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  heroTitle: { fontSize: 20, lineHeight: 28, letterSpacing: -0.3, marginBottom: 6, fontWeight: '700' },
+  heroBody: { fontSize: 16, lineHeight: 24 },
+  tagRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
+  tag: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
+  tagText: { fontSize: 10, letterSpacing: 1.6, fontWeight: '800' },
+  bentoRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  bentoBtn: { flex: 1 },
+  bentoCard: { padding: 18, gap: 6, minHeight: 110 },
+  bentoLabel: { fontSize: 13, marginTop: 8 },
+  bentoStat: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
+  favHd: { fontSize: 22, letterSpacing: -0.3, fontWeight: '700', marginTop: 14 },
+  favCard: { flexDirection: 'row', padding: 18, gap: 12, alignItems: 'flex-start' },
+  favStar: { paddingTop: 2 },
+  favTitle: { fontSize: 15, fontWeight: '600', lineHeight: 22 },
+  favBody: { fontSize: 13, lineHeight: 20 },
+  favTag: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800', marginTop: 2 },
   viewAllChip: {
     alignSelf: 'center',
-    borderRadius: 999,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 12,
-    marginTop: 12,
+    borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 6,
   },
-  viewAllChipText: { fontWeight: '700', letterSpacing: 0.06 * 12 },
+  viewAllText: { fontSize: 14, fontWeight: '700' },
   banner: {
-    padding: 22,
-    marginTop: 18,
-    borderRadius: 22,
+    flexDirection: 'row',
+    gap: 12,
+    padding: 18,
     alignItems: 'flex-start',
+    marginTop: 12,
   },
-  bannerText: {
-    fontSize: 14,
-    lineHeight: 22,
-    fontFamily: FastCoachFonts.body,
-    fontWeight: '500',
-  },
+  bannerText: { flex: 1, fontSize: 13, lineHeight: 19 },
 });

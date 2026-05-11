@@ -17,4 +17,6 @@ export interface PersistedSlice {
   waterDailyGoalMl: number;
   waterUnit: WaterUnit;
   favoriteFactIds: string[];
+  fastingRemindersEnabled: boolean;
+  premiumDismissed: boolean;
 }

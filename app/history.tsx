@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,10 +11,10 @@ import {
   type FastCoachPalette as CoachPaletteColors,
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
+import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
-import { StackTopBar } from '@/src/components/fastCoach/StackTopBar';
 import type { FastSession } from '@/src/domain/types';
 import { formatElapsedShort, formatTimeOnly, relativeDayHeading } from '@/src/lib/time';
 import { sortedSessionsDescending } from '@/src/store/selectors';
@@ -27,50 +27,45 @@ type OutcomeBadge = {
   icon: 'check-circle' | 'fire' | 'minus-circle-outline' | 'infinity';
   bg: string;
   fg: string;
+  shadow?: string;
 };
 
-/** Maps session outcome to pill visuals (educational, not judgmental). */
 function outcomeBadge(session: FastSession, durMs: number, palette: CoachPaletteColors): OutcomeBadge {
   const durMin = durMs / (60 * 1000);
   const target = session.targetDurationMinutes;
 
   if (target == null) {
     return {
-      label: 'Flexible finish',
+      label: 'FLEXIBLE FINISH',
       icon: 'infinity',
-      bg: `${palette.surfaceVariant}CC`,
+      bg: `${palette.surfaceVariant}DD`,
       fg: palette.onSurfaceVariant,
     };
   }
-
   if (durMin < target - 0.001) {
     return {
-      label: 'Missed goal',
+      label: 'MISSED GOAL',
       icon: 'minus-circle-outline',
-      bg: `${palette.surfaceVariant}BB`,
+      bg: `${palette.surfaceVariant}DD`,
       fg: palette.onSurfaceVariant,
     };
   }
-
   if (durMin >= target * 1.08) {
     return {
-      label: 'Overachiever',
+      label: 'OVERACHIEVER',
       icon: 'fire',
       bg: palette.primaryContainer,
       fg: palette.onPrimaryContainer,
+      shadow: palette.primaryFixedDim,
     };
   }
-
   return {
-    label: 'Goal met',
+    label: 'GOAL MET',
     icon: 'check-circle',
     bg: palette.primaryContainer,
     fg: palette.onPrimaryContainer,
+    shadow: palette.primaryFixedDim,
   };
-}
-
-function durationMinutes(durMs: number): number {
-  return Math.floor(durMs / (60 * 1000));
 }
 
 export default function HistoryScreen() {
@@ -96,14 +91,6 @@ export default function HistoryScreen() {
   const viewport = sorted.slice(0, visibleCount);
   const hasMore = sorted.length > visibleCount;
 
-  const emptyCopy = useMemo(
-    () => ({
-      headline: 'No completed fasts yet',
-      hint: 'End a fast from the Fast tab — we chart it here instantly.',
-    }),
-    [],
-  );
-
   function parseDur(item: FastSession): number {
     const start = Date.parse(item.startedAt);
     const end = Date.parse(item.endedAt);
@@ -114,7 +101,7 @@ export default function HistoryScreen() {
     const dur = parseDur(item);
     const badge = outcomeBadge(item, dur, palette);
     const heading = relativeDayHeading(item.endedAt);
-    const subdued = badge.label === 'Missed goal' ? { opacity: 0.92 } : undefined;
+    const dimmed = badge.label === 'MISSED GOAL';
 
     return (
       <Pressable
@@ -122,69 +109,104 @@ export default function HistoryScreen() {
         accessibilityLabel={`${badge.label} fast, ${formatElapsedShort(dur)}, ${heading}`}
         accessibilityHint="Long-press to remove this fast from history."
         onLongPress={() => confirmRemove(item)}
-        delayLongPress={350}>
-      <GlassCard
-        palette={palette}
-        style={[styles.card, subdued]}>
-        <View style={[styles.blob, { backgroundColor: `${palette.primaryContainer}44` }]} />
-        <View style={styles.rowTop}>
-          <View>
-            <Text style={[styles.dayEyebrow, { color: palette.outline }]}>
-              {heading.toUpperCase()}
-            </Text>
-            <Text
+        delayLongPress={350}
+        style={{ marginBottom: 14 }}>
+        <GlassCard
+          palette={palette}
+          radius={24}
+          tone={dimmed ? 'low' : 'high'}
+          style={[styles.card, dimmed && { opacity: 0.85 }]}>
+          <View style={[styles.cardBlob, { backgroundColor: dimmed ? `${palette.outlineVariant}33` : `${palette.primaryFixed}55` }]} />
+          <View style={styles.cardTop}>
+            <View>
+              <Text style={[styles.dayEyebrow, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                {heading.toUpperCase()}
+              </Text>
+              <Text style={[styles.duration, { color: palette.onSurface, fontFamily: FastCoachFonts.display }]}>
+                {formatElapsedShort(dur)}
+              </Text>
+            </View>
+            <View
               style={[
-                styles.durHuge,
-                { color: palette.onSurface, fontFamily: FastCoachFonts.display },
+                styles.badge,
+                {
+                  backgroundColor: badge.bg,
+                  ...(badge.shadow && {
+                    shadowColor: badge.shadow,
+                    shadowOpacity: 0.55,
+                    shadowRadius: 10,
+                    shadowOffset: { width: 0, height: 0 },
+                    elevation: 4,
+                  }),
+                },
               ]}>
-              {formatElapsedShort(dur)}
-            </Text>
-            <Text style={[styles.clockHint, { color: palette.onSurfaceVariant }]}>
-              {`${durationMinutes(dur)} min total`}
-            </Text>
+              <MaterialCommunityIcons name={badge.icon} size={14} color={badge.fg} />
+              <Text style={[styles.badgeText, { color: badge.fg, fontFamily: FastCoachFonts.label }]}>
+                {badge.label}
+              </Text>
+            </View>
           </View>
-          <View style={[styles.badgeRow, { backgroundColor: badge.bg }]}>
-            <MaterialCommunityIcons name={badge.icon} size={17} color={badge.fg} />
-            <Text style={[styles.badgeText, { color: badge.fg }]}>{badge.label}</Text>
+          <View style={[styles.cardBottom, { borderTopColor: `${palette.outlineVariant}66` }]}>
+            <Metric
+              label="START"
+              value={formatTimeOnly(item.startedAt)}
+              labelColor={palette.outline}
+              valueColor={palette.onSurfaceVariant}
+            />
+            <Metric
+              label="END"
+              value={formatTimeOnly(item.endedAt)}
+              labelColor={palette.outline}
+              valueColor={palette.onSurfaceVariant}
+            />
           </View>
-        </View>
-        <View style={[styles.rowBottom, { borderTopColor: `${palette.outlineVariant}AA` }]}>
-          <Metric
-            label="START"
-            labelColor={palette.outline}
-            valueColor={palette.onSurfaceVariant}
-            value={formatTimeOnly(item.startedAt)}
-          />
-          <Metric
-            label="END"
-            labelColor={palette.outline}
-            valueColor={palette.onSurfaceVariant}
-            value={formatTimeOnly(item.endedAt)}
-          />
-        </View>
-      </GlassCard>
+        </GlassCard>
       </Pressable>
     );
   }
 
   return (
-    <ScreenBackground palette={palette}>
-      <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
-        <StackTopBar title="History" palette={palette} onBack={() => router.back()} />
+    <ScreenBackground palette={palette} accent="history">
+      <SafeAreaView style={styles.flex} edges={['bottom']}>
+        <FixedTopBar
+          title="Fast Coach"
+          palette={palette}
+          isDark={scheme === 'dark'}
+          showHistory={false}
+          rightAccessory={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              hitSlop={10}
+              onPress={() => router.back()}
+              style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.7 }]}>
+              <MaterialCommunityIcons name="close" size={22} color={palette.onSurfaceVariant} />
+            </Pressable>
+          }
+          hideRight={false}
+        />
         {sessions.length === 0 ? (
-          <View style={styles.empty}>
-            <MaterialCommunityIcons name="calendar-clock" size={46} color={palette.outline} />
-            <Text style={[styles.emptyTitle, { color: palette.onSurface }]}>{emptyCopy.headline}</Text>
-            <Text style={[styles.emptySub, { color: palette.onSurfaceVariant }]}>{emptyCopy.hint}</Text>
+          <View style={[styles.empty, { paddingTop: FIXED_TOP_BAR_HEIGHT + 80 }]}>
+            <MaterialCommunityIcons name="calendar-clock" size={48} color={palette.outline} />
+            <Text style={[styles.emptyTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+              No completed fasts yet
+            </Text>
+            <Text style={[styles.emptySub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+              End a fast from the Fast tab — we chart it here instantly.
+            </Text>
           </View>
         ) : (
           <FlatList
             data={viewport}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { paddingTop: FIXED_TOP_BAR_HEIGHT + 18 }]}
+            showsVerticalScrollIndicator={false}
             ListHeaderComponent={
-              <View style={{ marginBottom: 16, gap: 8 }}>
-                <Text style={[styles.sub, { color: palette.onSurfaceVariant }]}>
+              <View style={styles.listHeader}>
+                <Text style={[styles.title, { color: palette.primary, fontFamily: FastCoachFonts.headlineLg }]}>
+                  History
+                </Text>
+                <Text style={[styles.subtitle, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
                   Your recent fasting milestones.
                 </Text>
               </View>
@@ -197,13 +219,15 @@ export default function HistoryScreen() {
                   accessibilityLabel="Load older fasts"
                   onPress={() => setVisibleCount((c) => c + PAGE)}
                   scaleTo={0.985}>
-                  <View style={[styles.loadMore, { backgroundColor: `${palette.surfaceContainerHigh}EE` }]}>
-                    <Text style={[styles.loadMoreText, { color: palette.primary }]}>Load more</Text>
+                  <View style={[styles.loadMore, { backgroundColor: `${palette.surfaceContainerHigh}DD` }]}>
+                    <Text style={[styles.loadMoreText, { color: palette.primary, fontFamily: FastCoachFonts.headlineMd }]}>
+                      Load More
+                    </Text>
                     <MaterialCommunityIcons name="chevron-down" size={22} color={palette.primary} />
                   </View>
                 </ScalePressable>
               ) : (
-                <View style={{ height: 18 }} />
+                <View style={{ height: 24 }} />
               )
             }
           />
@@ -225,80 +249,50 @@ function Metric({
   valueColor: string;
 }) {
   return (
-    <View style={{ gap: 4 }}>
-      <Text style={[styles.metricLabel, { color: labelColor }]}>{label}</Text>
-      <Text style={[styles.metricValue, { color: valueColor }]}>{value}</Text>
+    <View style={{ gap: 4, marginRight: 40 }}>
+      <Text style={[styles.metricLabel, { color: labelColor, fontFamily: FastCoachFonts.label }]}>{label}</Text>
+      <Text style={[styles.metricValue, { color: valueColor, fontFamily: FastCoachFonts.body }]}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: 'transparent' },
-  list: { paddingHorizontal: 22, paddingBottom: 36, paddingTop: 8 },
-  sub: { fontSize: 16, lineHeight: 24, fontFamily: FastCoachFonts.bodyLight },
-  card: {
-    padding: 20,
-    overflow: 'hidden',
-    borderRadius: 20,
-    gap: 16,
-    marginBottom: 16,
-  },
-  blob: {
+  flex: { flex: 1 },
+  list: { paddingHorizontal: 22, paddingBottom: 36 },
+  listHeader: { marginBottom: 14, gap: 6 },
+  title: { fontSize: 32, fontWeight: '800', letterSpacing: -0.4 },
+  subtitle: { fontSize: 15, lineHeight: 22 },
+  card: { padding: 20, overflow: 'hidden', position: 'relative', gap: 16 },
+  cardBlob: {
     position: 'absolute',
-    width: 160,
-    height: 160,
+    width: 140,
+    height: 140,
     borderRadius: 999,
-    top: -40,
-    right: -50,
-    opacity: 0.8,
+    top: -50,
+    right: -40,
+    opacity: 0.7,
   },
-  rowTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 16,
-  },
-  dayEyebrow: {
-    letterSpacing: 2,
-    fontSize: 11,
-    fontWeight: '800',
-    marginBottom: 6,
-    fontFamily: FastCoachFonts.label,
-  },
-  durHuge: { fontSize: 30, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
-  clockHint: { fontSize: 13, marginTop: 4, fontFamily: FastCoachFonts.body },
-  badgeRow: {
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  dayEyebrow: { fontSize: 11, letterSpacing: 1.8, fontWeight: '800', marginBottom: 4 },
+  duration: { fontSize: 30, fontWeight: '800', letterSpacing: -0.4, fontVariant: ['tabular-nums'] },
+  badge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    alignSelf: 'flex-start',
   },
-  badgeText: {
-    fontSize: 11,
-    letterSpacing: 2,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    fontFamily: FastCoachFonts.label,
-  },
-  rowBottom: {
+  badgeText: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },
+  cardBottom: {
     flexDirection: 'row',
-    gap: 40,
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 14,
+    paddingTop: 12,
   },
-  metricLabel: {
-    fontSize: 11,
-    letterSpacing: 2,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    fontFamily: FastCoachFonts.label,
-  },
-  metricValue: { fontSize: 15, fontFamily: FastCoachFonts.body },
+  metricLabel: { fontSize: 11, letterSpacing: 1.6, fontWeight: '800' },
+  metricValue: { fontSize: 15 },
   loadMore: {
-    marginTop: 8,
+    marginTop: 12,
     borderRadius: 999,
     paddingVertical: 16,
     flexDirection: 'row',
@@ -307,13 +301,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   loadMoreText: { fontSize: 17, fontWeight: '800', letterSpacing: -0.2 },
-  empty: {
-    flex: 1,
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', padding: 32, gap: 12 },
+  emptyTitle: { fontSize: 22, textAlign: 'center', fontWeight: '700', marginTop: 12 },
+  emptySub: { fontSize: 15, lineHeight: 22, textAlign: 'center' },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    gap: 12,
   },
-  emptyTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center' },
-  emptySub: { fontSize: 15, lineHeight: 22, textAlign: 'center' },
 });

@@ -57,6 +57,11 @@ export function coercePersistedAppSlice(raw: unknown): Partial<PersistedSlice> {
 
   if (o.waterUnit === 'ml' || o.waterUnit === 'oz') partial.waterUnit = o.waterUnit as WaterUnit;
 
+  if (typeof o.fastingRemindersEnabled === 'boolean')
+    partial.fastingRemindersEnabled = o.fastingRemindersEnabled;
+  if (typeof o.premiumDismissed === 'boolean')
+    partial.premiumDismissed = o.premiumDismissed;
+
   if (Array.isArray(o.sessions))
     partial.sessions = trimSessionsNewestFirst(sanitizeSessions(o.sessions));
   if (Array.isArray(o.waterEntries))

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZenFast Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#4f4ccd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#002107",
+                        "surface-container-high": "#e8e8ed",
+                        "outline": "#6d7b6b",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#006e28",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#fefcff",
+                        "tertiary-container": "#a6a5ff",
+                        "surface": "#f9f9fe",
+                        "on-primary-fixed-variant": "#00531c",
+                        "secondary": "#0058bc",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f3f3f8",
+                        "surface-container": "#ededf2",
+                        "surface-variant": "#e2e2e7",
+                        "primary-container": "#34c759",
+                        "tertiary-fixed-dim": "#c2c1ff",
+                        "secondary-container": "#0070eb",
+                        "on-secondary-fixed-variant": "#004493",
+                        "on-primary-container": "#004d1a",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#53e16f",
+                        "primary-fixed": "#72fe88",
+                        "on-surface-variant": "#3d4a3c",
+                        "on-tertiary-container": "#302aaf",
+                        "on-surface": "#1a1c1f",
+                        "surface-dim": "#d9dade",
+                        "on-tertiary-fixed-variant": "#3631b4",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#53e16f",
+                        "on-secondary-fixed": "#001a41",
+                        "on-background": "#1a1c1f",
+                        "surface-bright": "#f9f9fe",
+                        "inverse-on-surface": "#f0f0f5",
+                        "primary": "#006e28",
+                        "background": "#f9f9fe",
+                        "tertiary-fixed": "#e2dfff",
+                        "on-tertiary-fixed": "#0c006a",
+                        "inverse-surface": "#2e3034",
+                        "surface-container-highest": "#e2e2e7",
+                        "outline-variant": "#bccbb8",
+                        "secondary-fixed": "#d8e2ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-gap-lg": "40px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-md": "24px",
+                        "glass-padding": "20px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "display-lg": ["44px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["15px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300"}],
+                        "label-caps": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+        }
+        .glass-card-active {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid #006e28;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        .mesh-bg {
+            background: radial-gradient(at 0% 0%, #72fe8833 0%, transparent 50%),
+                        radial-gradient(at 100% 0%, #adc6ff33 0%, transparent 50%),
+                        radial-gradient(at 50% 100%, #e2dfff33 0%, transparent 50%);
+            background-color: #f9f9fe;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="mesh-bg min-h-screen text-on-surface font-body-md overflow-x-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Anchor (As per Shared Components JSON) -->
+<header class="fixed top-0 w-full bg-surface/60 backdrop-blur-xl border-b border-white/20 shadow-sm flex justify-between items-center h-16 px-container-padding z-50">
+<div class="flex items-center gap-stack-gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="spa">spa</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">ZenFast</span>
+</div>
+<div class="flex items-center gap-stack-gap-md">
+<button class="text-on-surface-variant font-label-caps uppercase tracking-widest hover:opacity-80 transition-opacity">Skip</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-padding max-w-lg mx-auto">
+<!-- Hero Section -->
+<section class="mb-stack-gap-lg text-center">
+<div class="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white/40">
+<img alt="Healthy Meal" class="w-full h-full object-cover" data-alt="A macro photography shot of a vibrant, healthy meal bowl filled with colorful vegetables, nuts, and fresh greens. The lighting is soft and natural, emphasizing textures and fresh ingredients. The image is set against a clean, light-mode background that mirrors the airy wellness retreat aesthetic of the app. High-end culinary photography style with a professional, coach-like authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDshZEnV9LPP8byHyUBSysEiqKYDDPX5s6QFkZr3i-yKQdlzrpQrDlL1MZYfJQINbhCWAbMaI8joL6afB6SXyp-4S5EfrNPBs55eQ0jmF7gjjBA1NxRMcWsvkSiq56sjsY7gkjAKlPsrAGqNGGelbxHVRhZoWDhBVKinn4lbV1ebGCDsJWU1XrEaueBa9O2ze6QW3PS8F8VvLthjGGZXN7SlGMGsJq53Z3Bc2-tfeasSe2axrNz8WnQwTZA6F6xFqEyCVG74Z5QvOE"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Tailored for you.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">How do you usually eat? This helps us personalize your meal suggestions and fasting phases.</p>
+</section>
+<!-- Selection Options (Bento Style Cards) -->
+<div class="space-y-stack-gap-md mb-stack-gap-lg">
+<!-- Everything Option -->
+<button class="w-full glass-card-active p-glass-padding rounded-lg flex items-center gap-4 transition-all active:scale-95 text-left">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<h3 class="font-headline-md text-[18px]">Everything</h3>
+<p class="font-body-md text-on-surface-variant text-sm">No specific dietary restrictions or preferences.</p>
+</div>
+<span class="ml-auto material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Grid for Diet Options -->
+<div class="grid grid-cols-2 gap-stack-gap-md">
+<!-- Keto -->
+<button class="glass-card p-glass-padding rounded-lg flex flex-col gap-4 transition-all hover:bg-white/60 active:scale-95 text-left">
+<div class="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="egg">egg</span>
+</div>
+<span class="font-headline-md text-[16px]">Keto</span>
+</button>
+<!-- Vegan -->
+<button class="glass-card p-glass-padding rounded-lg flex flex-col gap-4 transition-all hover:bg-white/60 active:scale-95 text-left">
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="eco">eco</span>
+</div>
+<span class="font-headline-md text-[16px]">Vegan</span>
+</button>
+<!-- Vegetarian -->
+<button class="glass-card p-glass-padding rounded-lg flex flex-col gap-4 transition-all hover:bg-white/60 active:scale-95 text-left">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="nutrition">nutrition</span>
+</div>
+<span class="font-headline-md text-[16px]">Vegetarian</span>
+</button>
+<!-- Paleo -->
+<button class="glass-card p-glass-padding rounded-lg flex flex-col gap-4 transition-all hover:bg-white/60 active:scale-95 text-left">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed-dim/20 flex items-center justify-center text-secondary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="set_meal">set_meal</span>
+</div>
+<span class="font-headline-md text-[16px]">Paleo</span>
+</button>
+</div>
+</div>
+<!-- High-Performance Accent Section -->
+<div class="glass-card p-6 rounded-lg border-l-4 border-primary shadow-sm mb-stack-gap-lg">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+<div>
+<h4 class="font-headline-md text-[14px] uppercase tracking-widest text-primary mb-1">Coach Insight</h4>
+<p class="font-body-md text-on-surface-variant text-sm">Selecting a diet profile helps us align your fasting windows with your metabolic needs.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions Container -->
+<div class="fixed bottom-0 left-0 right-0 p-container-padding bg-surface/80 backdrop-blur-xl border-t border-white/20 z-50">
+<div class="max-w-lg mx-auto flex flex-col gap-4">
+<button class="w-full h-14 rounded-full bg-primary text-on-primary font-headline-md text-[18px] flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(0,110,40,0.2)] active:scale-95 transition-transform">
+                Continue
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<p class="text-center font-label-caps text-on-surface-variant/60 text-[10px] uppercase tracking-widest">
+                Step 2 of 4 • Dietary Profile
+            </p>
+</div>
+</div>
+<!-- Background Decorative Element -->
+<div class="fixed -bottom-24 -left-24 w-64 h-64 bg-primary-fixed/20 blur-[100px] rounded-full -z-10"></div>
+<div class="fixed top-24 -right-24 w-80 h-80 bg-secondary-fixed/20 blur-[120px] rounded-full -z-10"></div>
+</body></html>

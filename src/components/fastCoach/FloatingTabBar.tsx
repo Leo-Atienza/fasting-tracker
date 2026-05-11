@@ -10,9 +10,16 @@ import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/consta
 
 type MciName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-const ICONS: readonly MciName[] = ['timer', 'water', 'chart-line-variant', 'lightbulb-outline'];
+type IconPair = { active: MciName; idle: MciName };
 
-/** Custom glass tab bar wired from `(tabs)/_layout` with explicit color scheme from the host screen. */
+const ICONS: Record<string, IconPair> = {
+  index: { active: 'timer', idle: 'timer-outline' },
+  water: { active: 'water', idle: 'water-outline' },
+  insights: { active: 'chart-line', idle: 'chart-line-variant' },
+  facts: { active: 'lightbulb-on', idle: 'lightbulb-outline' },
+};
+
+/** Glass capsule tab bar matching the Stitch "High-Performance Zen" mobile pattern. */
 export function FloatingTabBar({
   state,
   descriptors,
@@ -21,79 +28,86 @@ export function FloatingTabBar({
 }: BottomTabBarProps & { colorScheme: ColorSchemeName }) {
   const palette = FastCoachPalette[colorScheme];
   const insets = useSafeAreaInsets();
+  const isDark = colorScheme === 'dark';
 
   return (
     <View
-      style={[
-        styles.outer,
-        { paddingBottom: Math.max(insets.bottom, 10) },
-      ]}
+      pointerEvents="box-none"
+      style={[styles.outer, { paddingBottom: Math.max(insets.bottom + 4, 14) }]}
       accessibilityRole="tablist">
-      <BlurView
-        intensity={Platform.select({ ios: 48, android: 28, web: 32 })}
-        tint={colorScheme === 'dark' ? 'dark' : 'light'}
-        style={[styles.blur, { borderColor: palette.glassBorder }]}>
-        <View style={[styles.inner, { backgroundColor: palette.glassFill }]}>
-          {state.routes.map((route, index) => {
-            const opts = descriptors[route.key]?.options ?? {};
-            const label =
-              opts.tabBarLabel !== undefined
-                ? String(opts.tabBarLabel)
-                : opts.title ?? route.name;
-            const focused = state.index === index;
-            const color = focused ? palette.primary : palette.outline;
+      <View style={styles.shadowFrame}>
+        <BlurView
+          intensity={Platform.select({ ios: 60, android: 32, web: 0 })}
+          tint={isDark ? 'dark' : 'light'}
+          style={[styles.blur, { borderColor: palette.glassBorder }]}>
+          <View
+            style={[
+              styles.inner,
+              { backgroundColor: isDark ? 'rgba(30,32,36,0.65)' : 'rgba(255,255,255,0.55)' },
+            ]}>
+            {state.routes.map((route, index) => {
+              const opts = descriptors[route.key]?.options ?? {};
+              const label =
+                opts.tabBarLabel !== undefined
+                  ? String(opts.tabBarLabel)
+                  : opts.title ?? route.name;
+              const focused = state.index === index;
+              const tone = focused ? palette.primary : palette.outline;
+              const icons: IconPair = ICONS[route.name] ?? { active: 'circle', idle: 'circle-outline' };
+              const iconName = focused ? icons.active : icons.idle;
 
-            function onPress() {
-              const e = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
-            }
+              function onPress() {
+                const e = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
+              }
 
-            const iconName: MciName = ICONS[index] ?? ('circle-outline' as MciName);
-
-            return (
-              <Pressable
-                key={route.key}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: focused }}
-                onPress={onPress}
-                style={({ pressed }) => [
-                  styles.tab,
-                  focused && [
-                    styles.tabActive,
-                    {
-                      backgroundColor:
-                        colorScheme === 'dark' ? palette.surfaceContainerHigh : `${palette.primaryFixed}33`,
-                    },
-                  ],
-                  pressed && { opacity: 0.92 },
-                ]}>
-                <MaterialCommunityIcons
-                  name={iconName}
-                  size={26}
-                  color={color}
-                  accessibilityElementsHidden={true}
-                />
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.label,
-                    { color },
-                    focused && {
-                      fontFamily: FastCoachFonts.label,
-                      fontWeight: '600',
-                    },
+              return (
+                <Pressable
+                  key={route.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: focused }}
+                  accessibilityLabel={typeof label === 'string' ? label : route.name}
+                  onPress={onPress}
+                  hitSlop={6}
+                  style={({ pressed }) => [
+                    styles.tab,
+                    focused && [
+                      styles.tabActive,
+                      {
+                        backgroundColor: isDark
+                          ? 'rgba(83,225,111,0.18)'
+                          : 'rgba(114,254,136,0.22)',
+                      },
+                    ],
+                    pressed && { opacity: 0.88, transform: [{ scale: 0.96 }] },
                   ]}>
-                  {typeof label === 'string' ? label : route.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </BlurView>
+                  <MaterialCommunityIcons
+                    name={iconName}
+                    size={22}
+                    color={tone}
+                    accessibilityElementsHidden={true}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.label,
+                      {
+                        color: tone,
+                        fontFamily: focused ? FastCoachFonts.label : FastCoachFonts.body,
+                      },
+                    ]}>
+                    {typeof label === 'string' ? label : route.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </BlurView>
+      </View>
     </View>
   );
 }
@@ -106,52 +120,62 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'center',
   },
-  blur: {
+  shadowFrame: {
     width: '90%',
-    borderRadius: 18,
+    borderRadius: 999,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.14,
+        shadowRadius: 26,
+        shadowOffset: { width: 0, height: 12 },
+      },
+      android: { elevation: 16 },
+      default: ({
+        boxShadow: '0 16px 32px rgba(0,0,0,0.08)',
+      } as object),
+    }),
+  },
+  blur: {
+    borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
-    marginBottom: 6,
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } },
-      android: { elevation: 14 },
-      default: {},
-    }),
   },
   inner: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'stretch',
-    paddingVertical: Platform.OS === 'ios' ? 10 : 8,
-    paddingHorizontal: 4,
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
     gap: 4,
   },
   tab: {
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 2,
-    paddingVertical: Platform.OS === 'android' ? 6 : 4,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
     borderRadius: 999,
-    minHeight: Platform.OS === 'web' ? 56 : undefined,
+    minHeight: 52,
   },
   tabActive: {
     ...Platform.select({
       ios: {
         shadowColor: '#53e16f',
-        shadowOpacity: 0.38,
-        shadowRadius: 12,
+        shadowOpacity: 0.45,
+        shadowRadius: 14,
         shadowOffset: { width: 0, height: 0 },
       },
       default: {},
     }),
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.08 * 13,
-    fontWeight: '600',
+    letterSpacing: 1.4,
+    fontWeight: '700',
     marginTop: 2,
   },
 });

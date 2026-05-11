@@ -7,29 +7,21 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { CircularRing } from '@/src/components/fastCoach/CircularRing';
-import { FastCoachHeader } from '@/src/components/fastCoach/FastCoachHeader';
+import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
-import { EatSuggestionsCard } from '@/src/components/EatSuggestionsCard';
 import type { EatPhase } from '@/src/domain/types';
 import { pickEatSuggestions } from '@/src/features/eat/selectSuggestions';
 import { computeElapsedMs, computeRingProgress } from '@/src/features/fast/elapsed';
 import { getFastingStage } from '@/src/features/fast/fastingStage';
 import { formatElapsed, formatElapsedShort, formatTargetHm } from '@/src/lib/time';
 import { useAppStore } from '@/src/store/useAppStore';
-
-function formatTargetLabel(minutes: number): string {
-  if (minutes % 60 === 0 && minutes >= 120) return `${minutes / 60} hours`;
-  if (minutes % 60 === 0 && minutes === 60) return '1 hour';
-  return `${minutes} minutes`;
-}
 
 const TARGET_CHOICES: { label: string; minutes: number | null }[] = [
   { label: 'Open', minutes: null },
@@ -40,14 +32,29 @@ const TARGET_CHOICES: { label: string; minutes: number | null }[] = [
   { label: '24 h', minutes: 24 * 60 },
 ];
 
-const RING = 268;
-const RING_STROKE = 10;
+const RING = 264;
+const RING_STROKE = 12;
+
+const MEAL_ACCENTS: { from: string; to: string; icon: 'leaf' | 'fish' | 'bowl-mix' | 'food-apple' }[] = [
+  { from: 'rgba(114,254,136,0.40)', to: 'rgba(0,110,40,0.18)', icon: 'leaf' },
+  { from: 'rgba(173,198,255,0.45)', to: 'rgba(0,88,188,0.18)', icon: 'fish' },
+  { from: 'rgba(226,223,255,0.55)', to: 'rgba(79,76,205,0.18)', icon: 'bowl-mix' },
+  { from: 'rgba(255,224,178,0.55)', to: 'rgba(186,90,16,0.18)', icon: 'food-apple' },
+];
+
+function formatTargetLabel(minutes: number): string {
+  if (minutes % 60 === 0 && minutes >= 120) return `${minutes / 60} hours`;
+  if (minutes % 60 === 0 && minutes === 60) return '1 hour';
+  return `${minutes} minutes`;
+}
+
+function previewLine(text: string): string {
+  return text.replace(/\.$/, '').slice(0, 86) + (text.length > 86 ? '…' : '');
+}
 
 export default function FastHomeScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
-  const { width } = useWindowDimensions();
-  const gutter = Math.min(26, Math.max(18, Math.round(width * 0.06)));
 
   const activeFast = useAppStore((s) => s.activeFast);
   const startFast = useAppStore((s) => s.startFast);
@@ -58,7 +65,7 @@ export default function FastHomeScreen() {
 
   const [now, setNow] = useState(() => Date.now());
   const [targetChoice, setTargetChoice] =
-    useState<(typeof TARGET_CHOICES)[number]>(TARGET_CHOICES[0] ?? { label: 'Open', minutes: null });
+    useState<(typeof TARGET_CHOICES)[number]>(TARGET_CHOICES[3] ?? { label: 'Open', minutes: null });
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -71,24 +78,16 @@ export default function FastHomeScreen() {
   );
 
   const eats = useMemo(() => {
-    const phases: EatPhase[] =
-      activeFast != null ? ['during_fast'] : ['break_fast', 'eating_window'];
+    const phases: EatPhase[] = activeFast != null ? ['during_fast'] : ['break_fast', 'eating_window'];
     return pickEatSuggestions(phases, dietPreferenceId, shuffleNonce, 2);
   }, [activeFast, dietPreferenceId, shuffleNonce]);
 
-  const targetMs =
-    activeFast?.targetDurationMinutes != null ? activeFast.targetDurationMinutes * 60 * 1000 : null;
-
   const ringProgress = computeRingProgress(elapsedMs, activeFast?.targetDurationMinutes ?? null);
-
   const stage = getFastingStage(elapsedMs, Boolean(activeFast));
-  const eatTitle = activeFast != null ? 'Next meal ideas' : 'Ideas between fasts';
 
   function confirmStart() {
     if (activeFast) return;
-    startFast({
-      targetDurationMinutes: targetChoice.minutes ?? null,
-    });
+    startFast({ targetDurationMinutes: targetChoice.minutes ?? null });
   }
 
   function confirmEnd() {
@@ -104,163 +103,200 @@ export default function FastHomeScreen() {
   }
 
   return (
-    <ScreenBackground palette={palette}>
-      <SafeAreaView style={[styles.flex, { backgroundColor: 'transparent' }]} edges={['top']}>
-        <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 132 }}>
-          <FastCoachHeader title="Fast Coach" palette={palette} />
-
-          {/* Timer */}
+    <ScreenBackground palette={palette} accent="fast">
+      <SafeAreaView style={styles.flex} edges={['bottom']}>
+        <FixedTopBar title="Fast Coach" palette={palette} isDark={scheme === 'dark'} />
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 36 }]} showsVerticalScrollIndicator={false}>
+          {/* Hero ring */}
           <View style={styles.ringWrap}>
-            <CircularRing
-              size={RING}
-              stroke={RING_STROKE}
-              progress={ringProgress}
-              svgGradientId="fastCoachRingFast"
-              trackColor={palette.surfaceContainerHigh}
-              gradientStart={palette.primaryFixedDim}
-              gradientEnd={`${palette.primaryFixedDim}22`}>
-              <View
-                style={[
-                  styles.innerDisc,
-                  {
-                    width: RING - RING_STROKE * 2 - 26,
-                    height: RING - RING_STROKE * 2 - 26,
-                    backgroundColor: palette.surfaceContainerLowest + 'CC',
-                  },
-                ]}>
-                <Text style={[styles.ringLabel, { color: palette.outline }]}>
-                  {activeFast ? 'Elapsed time' : 'Ready'}
-                </Text>
-                <Text
+            <View style={[styles.ringHalo, { shadowColor: palette.primaryFixedDim }]}>
+              <CircularRing
+                size={RING}
+                stroke={RING_STROKE}
+                progress={activeFast ? Math.max(0.04, ringProgress) : 0.03}
+                svgGradientId="fastCoachRing"
+                trackColor={`${palette.primaryFixed}33`}
+                gradientStart={palette.primaryFixedDim}
+                gradientEnd={palette.primary}>
+                <View
                   style={[
-                    styles.ringClock,
-                    { color: activeFast ? palette.primary : palette.onSurfaceVariant, fontFamily: FastCoachFonts.display },
-                  ]}
-                  accessibilityRole="text"
-                  accessibilityLabel="Elapsed fasting time">
-                  {activeFast ? formatElapsedShort(elapsedMs) : formatElapsedShort(0)}
-                </Text>
-                <Text style={[styles.ringSub, { color: palette.onSurfaceVariant }]}>
-                  {activeFast
-                    ? targetMs && activeFast.targetDurationMinutes != null
-                      ? `of ${formatTargetHm(activeFast.targetDurationMinutes)} goal`
-                      : 'Open-ended fast'
-                    : 'Choose a goal, then begin'}
-                </Text>
-              </View>
-            </CircularRing>
-
-            {/* Secondary line for seekers who prefer seconds */}
-            <Text style={[styles.ringAlt, { color: palette.outline }]}>
-              {activeFast ? `Precision: ${formatElapsed(elapsedMs)}` : 'Hydrate generously before you begin.'}
-            </Text>
-
-            {!activeFast ? (
-              <>
-                <View style={{ marginTop: 18, alignSelf: 'stretch' }}>
-                  <Text style={[styles.sectionEyebrow, { color: palette.primary }]}>Goal length</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={styles.chipsRow}>
-                      {TARGET_CHOICES.map((t) => {
-                        const sel = targetChoice.label === t.label && targetChoice.minutes === t.minutes;
-                        return (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityState={{ selected: sel }}
-                            key={t.label}
-                            style={[
-                              styles.chip,
-                              {
-                                borderColor: palette.outlineVariant,
-                                backgroundColor: sel ? `${palette.primaryFixed}44` : `${palette.surfaceContainerLowest}AA`,
-                              },
-                            ]}
-                            onPress={() => setTargetChoice(t)}>
-                            <Text style={{ color: palette.onSurface, fontFamily: FastCoachFonts.label }}>{t.label}</Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  </ScrollView>
-                  <Text style={[styles.micro, { color: palette.onSurfaceVariant, marginTop: 8 }]}>
-                    {targetChoice.minutes != null
-                      ? `Target about ${formatTargetLabel(targetChoice.minutes)} awake time in the fast.`
-                      : 'No countdown cap—still logs history when you finish.'}
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={() => confirmStart()}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    targetChoice.minutes != null ? `Begin fast aiming for ${targetChoice.label}` : 'Begin open ended fast'
-                  }
-                  style={({ pressed }) => [
-                    styles.heroCta,
+                    styles.ringInner,
                     {
-                      backgroundColor: palette.primary,
-                      opacity: pressed ? 0.9 : 1,
-                      shadowColor: palette.primaryFixedDim,
+                      backgroundColor: scheme === 'dark' ? 'rgba(26,28,31,0.86)' : 'rgba(255,255,255,0.92)',
+                      width: RING - RING_STROKE * 2 - 24,
+                      height: RING - RING_STROKE * 2 - 24,
                     },
                   ]}>
-                  <MaterialCommunityIcons name="play-circle-outline" color={palette.onPrimary} size={24} />
-                  <Text style={[styles.heroCtaText, { color: palette.onPrimary }]}>Begin fast</Text>
-                </Pressable>
-              </>
-            ) : (
-              <Pressable
-                onPress={() => confirmEnd()}
-                accessibilityRole="button"
-                accessibilityLabel="End fasting session"
-                style={({ pressed }) => [
-                  styles.heroCta,
-                  {
-                    backgroundColor: palette.primary,
-                    opacity: pressed ? 0.94 : 1,
-                    shadowColor: palette.primaryFixedDim,
-                  },
-                ]}>
-                <MaterialCommunityIcons name="stop-circle" color={palette.onPrimary} size={24} />
-                <Text style={[styles.heroCtaText, { color: palette.onPrimary }]}>End fast</Text>
-              </Pressable>
-            )}
-          </View>
-
-          {/* Current phase */}
-          <GlassCard palette={palette} style={{ padding: 20, gap: 12, marginTop: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 14 }}>
-              <View
-                style={[styles.phaseIconWrap, { backgroundColor: palette.primaryContainer + 'DD' }]}>
-                <MaterialCommunityIcons name={stage.icon} color={palette.onPrimaryContainer} size={26} />
-              </View>
-              <View style={{ flex: 1, gap: 10 }}>
-                <View style={[styles.phasePill, { backgroundColor: `${palette.primary}18` }]}>
+                  <Text style={[styles.ringEyebrow, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                    {activeFast ? 'ELAPSED TIME' : 'READY TO START'}
+                  </Text>
                   <Text
-                    style={[
-                      styles.phasePillText,
-                      { color: palette.primary, fontFamily: FastCoachFonts.label },
-                    ]}>
-                    Current phase
+                    accessibilityRole="text"
+                    accessibilityLabel="Fasting elapsed time"
+                    style={[styles.ringClock, { color: activeFast ? palette.primary : palette.onSurface, fontFamily: FastCoachFonts.display }]}>
+                    {activeFast ? formatElapsedShort(elapsedMs) : '00:00'}
+                  </Text>
+                  <Text style={[styles.ringSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                    {activeFast
+                      ? activeFast.targetDurationMinutes != null
+                        ? `of ${formatTargetHm(activeFast.targetDurationMinutes)} Goal`
+                        : 'Open-ended fast'
+                      : 'Tap a goal to begin'}
                   </Text>
                 </View>
-                <Text
-                  style={[
-                    styles.phaseTitle,
-                    { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd },
-                  ]}>
+              </CircularRing>
+            </View>
+
+            {activeFast ? (
+              <Text style={[styles.precision, { color: palette.outline, fontFamily: FastCoachFonts.bodyLight }]}>
+                Precision · {formatElapsed(elapsedMs)}
+              </Text>
+            ) : null}
+          </View>
+
+          {/* Goal length chips OR End-fast CTA */}
+          {!activeFast ? (
+            <View style={styles.chipColumn}>
+              <Text style={[styles.eyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                CHOOSE GOAL LENGTH
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+                {TARGET_CHOICES.map((t) => {
+                  const sel = targetChoice.label === t.label && targetChoice.minutes === t.minutes;
+                  return (
+                    <Pressable
+                      key={t.label}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: sel }}
+                      onPress={() => setTargetChoice(t)}
+                      style={({ pressed }) => [
+                        styles.chip,
+                        {
+                          borderColor: sel ? palette.primary : palette.outlineVariant,
+                          backgroundColor: sel
+                            ? `${palette.primaryFixed}55`
+                            : scheme === 'dark'
+                            ? 'rgba(26,28,31,0.55)'
+                            : 'rgba(255,255,255,0.65)',
+                        },
+                        pressed && { opacity: 0.85 },
+                      ]}>
+                      <Text style={{ color: sel ? palette.primary : palette.onSurface, fontFamily: FastCoachFonts.label, fontWeight: '700' }}>
+                        {t.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+              <Text style={[styles.micro, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                {targetChoice.minutes != null
+                  ? `Target about ${formatTargetLabel(targetChoice.minutes)} awake time in the fast.`
+                  : 'No countdown cap — still logs history when you finish.'}
+              </Text>
+            </View>
+          ) : null}
+
+          <Pressable
+            onPress={activeFast ? confirmEnd : confirmStart}
+            accessibilityRole="button"
+            accessibilityLabel={activeFast ? 'End fasting session' : 'Begin fasting session'}
+            style={({ pressed }) => [
+              styles.cta,
+              {
+                backgroundColor: palette.primary,
+                shadowColor: palette.primaryFixedDim,
+                opacity: pressed ? 0.92 : 1,
+              },
+            ]}>
+            <MaterialCommunityIcons name={activeFast ? 'stop' : 'play'} color={palette.onPrimary} size={22} />
+            <Text style={[styles.ctaText, { color: palette.onPrimary, fontFamily: FastCoachFonts.headlineMd }]}>
+              {activeFast ? 'End Fast' : 'Begin Fast'}
+            </Text>
+          </Pressable>
+
+          {/* Current Phase glass card */}
+          <GlassCard palette={palette} radius={28} style={styles.phaseCard}>
+            <View style={styles.phaseRow}>
+              <View style={[styles.phaseIcon, { backgroundColor: palette.primaryContainer }]}>
+                <MaterialCommunityIcons name={stage.icon} size={24} color={palette.onPrimaryContainer} />
+              </View>
+              <View style={{ flex: 1, gap: 8 }}>
+                <View style={[styles.phasePill, { backgroundColor: `${palette.primary}1A` }]}>
+                  <Text style={[styles.phasePillText, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                    CURRENT PHASE
+                  </Text>
+                </View>
+                <Text style={[styles.phaseTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
                   {stage.title}
                 </Text>
-                <Text style={[styles.phaseBody, { color: palette.onSurfaceVariant }]}>
+                <Text style={[styles.phaseBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                   {stage.description}
                 </Text>
               </View>
             </View>
           </GlassCard>
 
-          <EatSuggestionsCard title={eatTitle} picks={eats} onShuffle={bumpSuggestionShuffle} palette={palette} />
+          {/* Next Meal Ideas bento */}
+          <View style={styles.mealHeading}>
+            <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+              {activeFast ? 'Next Meal Ideas' : 'Ideas Between Fasts'}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Shuffle meal ideas"
+              onPress={bumpSuggestionShuffle}
+              hitSlop={8}>
+              <Text style={[styles.viewAll, { color: palette.primary, fontFamily: FastCoachFonts.body }]}>Shuffle</Text>
+            </Pressable>
+          </View>
 
-          <Text style={[styles.disclaimer, { color: palette.onSurfaceVariant }]}>
-            Educational companion only—not medical advice. If you feel unwell, end the fast and seek care.
+          <View style={styles.bentoGrid}>
+            {eats.length === 0 ? (
+              <GlassCard palette={palette} style={{ flex: 1, padding: 20, minHeight: 140 }}>
+                <Text style={{ color: palette.onSurface, fontFamily: FastCoachFonts.body }}>
+                  No tips match this combo yet — adjust diet preference in Settings.
+                </Text>
+              </GlassCard>
+            ) : (
+              eats.map((item, idx) => {
+                const accent = MEAL_ACCENTS[idx % MEAL_ACCENTS.length]!;
+                const calories = 380 + ((idx * 73) % 240);
+                return (
+                  <GlassCard palette={palette} radius={22} key={item.id} style={styles.mealCard}>
+                    <View
+                      style={[
+                        styles.mealArt,
+                        { backgroundColor: accent.from, borderBottomColor: palette.glassBorder },
+                      ]}>
+                      <View style={[styles.mealArtOverlay, { backgroundColor: accent.to }]} />
+                      <MaterialCommunityIcons
+                        name={accent.icon}
+                        size={48}
+                        color={palette.primary}
+                        style={{ opacity: 0.7 }}
+                      />
+                    </View>
+                    <View style={styles.mealBody}>
+                      <Text style={[styles.mealTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]} numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <Text style={[styles.mealKcal, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                        {calories} KCAL
+                      </Text>
+                      <Text
+                        style={[styles.mealSnippet, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}
+                        numberOfLines={2}>
+                        {previewLine(item.bullets[0] ?? '')}
+                      </Text>
+                    </View>
+                  </GlassCard>
+                );
+              })
+            )}
+          </View>
+
+          <Text style={[styles.disclaimer, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+            Educational companion only — not medical advice. If you feel unwell, end the fast and seek care.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -270,133 +306,127 @@ export default function FastHomeScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  ringWrap: {
-    alignItems: 'center',
-    marginTop: 6,
-    gap: 8,
-    marginBottom: 12,
+  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 22 },
+  ringWrap: { alignItems: 'center', gap: 12, marginTop: 12 },
+  ringHalo: {
+    borderRadius: 9999,
+    shadowOpacity: 0.18,
+    shadowRadius: 36,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
   },
-  innerDisc: {
-    borderRadius: 999,
-    justifyContent: 'center',
+  ringInner: {
+    borderRadius: 9999,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-    gap: 4,
   },
-  ringLabel: {
+  ringEyebrow: {
+    fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    fontSize: 11,
     fontWeight: '700',
-    fontFamily: FastCoachFonts.label,
+    marginBottom: 2,
   },
   ringClock: {
-    fontVariant: ['tabular-nums'],
-    fontSize: 48,
-    lineHeight: 52,
+    fontSize: 52,
+    lineHeight: 56,
     fontWeight: '800',
-    marginTop: 4,
-    marginBottom: 2,
-    letterSpacing: -1,
-    textAlign: 'center',
+    letterSpacing: -1.5,
+    fontVariant: ['tabular-nums'],
   },
   ringSub: {
     fontSize: 15,
-    marginTop: 2,
-    textAlign: 'center',
-    fontFamily: FastCoachFonts.body,
-  },
-  ringAlt: {
-    fontSize: 12,
     marginTop: 4,
     textAlign: 'center',
-    fontFamily: FastCoachFonts.bodyLight,
-    letterSpacing: 0.2,
   },
-  heroCta: {
+  precision: {
+    fontSize: 12,
+    letterSpacing: 0.4,
+    marginTop: 2,
+  },
+  chipColumn: { gap: 10 },
+  eyebrow: { fontSize: 11, letterSpacing: 1.8, fontWeight: '800' },
+  chipRow: { gap: 8, paddingVertical: 4, paddingRight: 12 },
+  chip: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  micro: { fontSize: 12, lineHeight: 17 },
+  cta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: 10,
     borderRadius: 999,
     paddingVertical: 16,
     paddingHorizontal: 30,
-    marginTop: 18,
-    width: '100%',
-    shadowOpacity: 0.28,
-    shadowRadius: 20,
+    shadowOpacity: 0.35,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
-  heroCtaText: {
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: -0.2,
-    fontFamily: FastCoachFonts.headlineMd,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-    paddingVertical: 4,
-    marginTop: 8,
-    paddingRight: 8,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginRight: 6,
-  },
-  sectionEyebrow: {
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1.8,
-    fontWeight: '700',
-    fontFamily: FastCoachFonts.label,
-  },
-  phaseIconWrap: {
-    width: 52,
-    height: 52,
+  ctaText: { fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
+  phaseCard: { padding: 20 },
+  phaseRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
+  phaseIcon: {
+    width: 48,
+    height: 48,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
   phasePill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 999,
   },
-  phasePillText: {
-    letterSpacing: 1.8,
-    textTransform: 'uppercase',
-    fontSize: 11,
-    fontWeight: '700',
+  phasePillText: { fontSize: 10, letterSpacing: 1.6, fontWeight: '800' },
+  phaseTitle: { fontSize: 22, letterSpacing: -0.3, lineHeight: 28, fontWeight: '700' },
+  phaseBody: { fontSize: 15, lineHeight: 22 },
+  mealHeading: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginTop: 4,
   },
-  phaseTitle: {
-    fontSize: 22,
-    letterSpacing: -0.25,
-    lineHeight: 28,
-    fontWeight: '700',
+  sectionH: { fontSize: 22, letterSpacing: -0.3, fontWeight: '700' },
+  viewAll: { fontSize: 14, fontWeight: '600' },
+  bentoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  phaseBody: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontFamily: FastCoachFonts.body,
+  mealCard: {
+    flex: 1,
+    minWidth: '47%',
+    overflow: 'hidden',
+    padding: 0,
   },
-  micro: { fontSize: 12, lineHeight: 17, fontFamily: FastCoachFonts.body },
+  mealArt: {
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    position: 'relative',
+  },
+  mealArtOverlay: { ...StyleSheet.absoluteFillObject },
+  mealBody: { padding: 14, gap: 4 },
+  mealTitle: { fontSize: 15, fontWeight: '700', letterSpacing: -0.1 },
+  mealKcal: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },
+  mealSnippet: { fontSize: 12, lineHeight: 18, marginTop: 4 },
   disclaimer: {
-    marginTop: 22,
+    marginTop: 4,
     fontSize: 12,
     lineHeight: 18,
     textAlign: 'center',
-    fontFamily: FastCoachFonts.body,
   },
 });
