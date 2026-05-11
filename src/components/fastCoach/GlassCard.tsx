@@ -61,7 +61,9 @@ export function GlassCard({
   };
 
   const inner = (
-    <View style={[styles.innerGlow, { borderColor: 'rgba(255,255,255,0.40)' }]} pointerEvents="box-none">
+    <View
+      style={[styles.innerGlow, { borderColor: 'rgba(255,255,255,0.40)', borderRadius: radius - StyleSheet.hairlineWidth }]}
+      pointerEvents="box-none">
       {children}
     </View>
   );
@@ -92,7 +94,6 @@ const styles = StyleSheet.create({
   innerGlow: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 24,
     margin: -StyleSheet.hairlineWidth,
   },
 });
