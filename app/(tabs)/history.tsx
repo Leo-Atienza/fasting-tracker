@@ -179,7 +179,7 @@ export default function HistoryScreen() {
               accessibilityRole="button"
               accessibilityLabel="Go back"
               hitSlop={10}
-              onPress={() => router.back()}
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
               style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.7 }]}>
               <MaterialCommunityIcons name="close" size={22} color={palette.onSurfaceVariant} />
             </Pressable>
@@ -259,7 +259,7 @@ function Metric({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  list: { paddingHorizontal: 22, paddingBottom: 36 },
+  list: { paddingHorizontal: 22, paddingBottom: 140 },
   listHeader: { marginBottom: 14, gap: 6 },
   title: { fontSize: 32, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { fontSize: 15, lineHeight: 22 },

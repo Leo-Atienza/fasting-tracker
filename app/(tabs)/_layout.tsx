@@ -16,6 +16,8 @@ export default function TabLayout() {
       <Tabs.Screen name="water" options={{ title: 'Water', tabBarLabel: 'Water' }} />
       <Tabs.Screen name="insights" options={{ title: 'Insights', tabBarLabel: 'Insights' }} />
       <Tabs.Screen name="facts" options={{ title: 'Facts', tabBarLabel: 'Facts' }} />
+      <Tabs.Screen name="history" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }

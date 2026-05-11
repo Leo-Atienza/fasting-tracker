@@ -127,7 +127,7 @@ export default function SettingsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Close settings"
               hitSlop={10}
-              onPress={() => router.back()}
+              onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
               style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.7 }]}>
               <MaterialCommunityIcons name="close" size={22} color={palette.onSurfaceVariant} />
             </Pressable>
@@ -444,7 +444,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 60, gap: 14 },
+  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
   iconBtn: {
     width: 40,
     height: 40,

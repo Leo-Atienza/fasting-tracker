@@ -30,6 +30,16 @@ export function FloatingTabBar({
   const insets = useSafeAreaInsets();
   const isDark = colorScheme === 'dark';
 
+  // Hide routes registered with `href: null` (e.g. /history, /settings) — these
+  // remain navigable via <Link> but should not render a tab pill. When the
+  // active route is one of these, no pill is highlighted, which reads
+  // correctly as "secondary screen layered over the tab stack."
+  const activeRouteName = state.routes[state.index]?.name;
+  const visibleRoutes = state.routes.filter((route) => {
+    const opts = descriptors[route.key]?.options ?? {};
+    return (opts as { href?: unknown }).href !== null && opts.tabBarButton !== null;
+  });
+
   return (
     <View
       pointerEvents="box-none"
@@ -45,13 +55,13 @@ export function FloatingTabBar({
               styles.inner,
               { backgroundColor: isDark ? 'rgba(30,32,36,0.65)' : 'rgba(255,255,255,0.55)' },
             ]}>
-            {state.routes.map((route, index) => {
+            {visibleRoutes.map((route) => {
               const opts = descriptors[route.key]?.options ?? {};
               const label =
                 opts.tabBarLabel !== undefined
                   ? String(opts.tabBarLabel)
                   : opts.title ?? route.name;
-              const focused = state.index === index;
+              const focused = route.name === activeRouteName;
               const tone = focused ? palette.primary : palette.outline;
               const icons: IconPair = ICONS[route.name] ?? { active: 'circle', idle: 'circle-outline' };
               const iconName = focused ? icons.active : icons.idle;
