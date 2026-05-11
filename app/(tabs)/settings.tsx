@@ -18,7 +18,7 @@ import { DIET_OPTIONS } from '@/src/constants/diets';
 import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
 import { useNotificationPermissionStatus } from '@/src/hooks/useNotificationPermissionStatus';
-import { formatVolume, mlToOz, ozToMl } from '@/src/lib/units';
+import { formatVolume, mlToOz } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
 export default function SettingsScreen() {

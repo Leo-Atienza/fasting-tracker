@@ -14,6 +14,7 @@ import { Inter_300Light, Inter_400Regular, Inter_600SemiBold } from '@expo-googl
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import { Redirect, Stack, useSegments } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 
@@ -120,6 +121,10 @@ function RootLayoutNav({ storeHydrated }: { storeHydrated: boolean }) {
   const scheme = (colorScheme === 'dark' ? 'dark' : 'light') as ColorSchemeName;
   const p = FastCoachPalette[scheme];
   const navTheme = useMemo(() => navigationThemeFor(scheme), [scheme]);
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(p.background).catch(() => {});
+  }, [p.background]);
 
   const stackHeader = useMemo(
     () => ({
