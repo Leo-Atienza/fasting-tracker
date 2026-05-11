@@ -8,6 +8,8 @@ import {
   last7DaysFastsCount,
   last7DaysWaterMl,
   longestSessionMs,
+  monthlySummary,
+  streakProgress,
   totalCompletedFasts,
 } from '@/src/features/insights/computeInsights';
 
@@ -167,16 +169,91 @@ describe('insights — 7-day windows', () => {
   });
 });
 
+describe('insights — monthlySummary', () => {
+  it('returns zeros and a full-length fastsPerDay when no sessions', () => {
+    const out = monthlySummary([], NOW);
+    expect(out.totalFasts).toBe(0);
+    expect(out.totalFastedMs).toBe(0);
+    expect(out.longestMs).toBe(0);
+    expect(out.averageDurationMs).toBe(0);
+    // May has 31 days.
+    expect(out.fastsPerDay).toHaveLength(31);
+    expect(out.fastsPerDay.every((n) => n === 0)).toBe(true);
+    expect(out.monthLabel).toBe('May 2026');
+  });
+
+  it('counts only fasts whose endedAt falls in this calendar month', () => {
+    // April session (ended last month) — excluded.
+    const aprilEnded = session(
+      new Date('2026-04-25T20:00:00').getTime(),
+      14 * HOUR,
+      'apr',
+    );
+    // May 1 session, end-of-day — included.
+    const may1End = new Date('2026-05-01T22:00:00').getTime();
+    const may1 = session(may1End - 14 * HOUR, 14 * HOUR, 'may1');
+    // May 10 session — included.
+    const may10End = new Date('2026-05-10T11:00:00').getTime();
+    const may10 = session(may10End - 16 * HOUR, 16 * HOUR, 'may10');
+
+    const out = monthlySummary([aprilEnded, may1, may10], NOW);
+    expect(out.totalFasts).toBe(2);
+    expect(out.totalFastedMs).toBe(14 * HOUR + 16 * HOUR);
+    expect(out.longestMs).toBe(16 * HOUR);
+    expect(out.averageDurationMs).toBe(Math.round((14 * HOUR + 16 * HOUR) / 2));
+    expect(out.fastsPerDay[0]).toBe(1);
+    expect(out.fastsPerDay[9]).toBe(1);
+  });
+
+  it('uses the calendar length of the supplied month (Feb 2026 = 28 days)', () => {
+    const feb = new Date('2026-02-14T12:00:00');
+    const out = monthlySummary([], feb);
+    expect(out.fastsPerDay).toHaveLength(28);
+    expect(out.monthLabel).toBe('February 2026');
+  });
+});
+
+describe('insights — streakProgress', () => {
+  it('returns 0/0 when no target is set', () => {
+    expect(streakProgress(3, null)).toEqual({ ratio: 0, remaining: 0 });
+  });
+
+  it('computes a fractional ratio when the streak is below the target', () => {
+    const out = streakProgress(5, 7);
+    expect(out.ratio).toBeCloseTo(5 / 7, 5);
+    expect(out.remaining).toBe(2);
+  });
+
+  it('clamps ratio at 1 and remaining at 0 when the streak meets/exceeds the target', () => {
+    expect(streakProgress(7, 7)).toEqual({ ratio: 1, remaining: 0 });
+    const exceeded = streakProgress(10, 7);
+    expect(exceeded.ratio).toBe(1);
+    expect(exceeded.remaining).toBe(0);
+  });
+
+  it('rejects non-positive or non-finite targets', () => {
+    expect(streakProgress(3, 0)).toEqual({ ratio: 0, remaining: 0 });
+    expect(streakProgress(3, -5)).toEqual({ ratio: 0, remaining: 0 });
+    expect(streakProgress(3, Number.NaN)).toEqual({ ratio: 0, remaining: 0 });
+  });
+
+  it('clamps negative or non-finite current days to 0', () => {
+    expect(streakProgress(-2, 7)).toEqual({ ratio: 0, remaining: 7 });
+    expect(streakProgress(Number.NaN, 7)).toEqual({ ratio: 0, remaining: 7 });
+  });
+});
+
 describe('insights — computeInsights aggregator', () => {
   it('returns an empty snapshot when both arrays are empty', () => {
-    expect(computeInsights([], [], NOW)).toEqual({
-      totalFasts: 0,
-      averageDurationMs: 0,
-      longestMs: 0,
-      streakDays: 0,
-      water7d: [0, 0, 0, 0, 0, 0, 0],
-      fasts7d: [0, 0, 0, 0, 0, 0, 0],
-    });
+    const out = computeInsights([], [], NOW);
+    expect(out.totalFasts).toBe(0);
+    expect(out.averageDurationMs).toBe(0);
+    expect(out.longestMs).toBe(0);
+    expect(out.streakDays).toBe(0);
+    expect(out.water7d).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(out.fasts7d).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(out.monthly.totalFasts).toBe(0);
+    expect(out.monthly.monthLabel).toBe('May 2026');
   });
 
   it('agrees with individual selectors for a non-empty case', () => {
@@ -192,5 +269,6 @@ describe('insights — computeInsights aggregator', () => {
     expect(out.streakDays).toBe(currentStreakDays(s, NOW));
     expect(out.water7d).toEqual(last7DaysWaterMl(w, NOW));
     expect(out.fasts7d).toEqual(last7DaysFastsCount(s, NOW));
+    expect(out.monthly).toEqual(monthlySummary(s, NOW));
   });
 });

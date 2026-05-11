@@ -121,6 +121,106 @@ export function last7DaysFastsCount(
   return out;
 }
 
+const MONTH_LABELS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+function daysInMonth(year: number, monthIndex: number): number {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+export interface MonthlySummary {
+  /** Pretty label like "May 2026", localized to `now`'s calendar month. */
+  monthLabel: string;
+  /** Count of fasts whose endedAt falls inside `now`'s calendar month. */
+  totalFasts: number;
+  /** Sum of duration for those fasts, in milliseconds. */
+  totalFastedMs: number;
+  /** Longest duration among those fasts, in milliseconds. */
+  longestMs: number;
+  /** Mean duration of those fasts, in milliseconds; 0 when none. */
+  averageDurationMs: number;
+  /** One entry per day of the month, oldest first. Length matches the month. */
+  fastsPerDay: number[];
+}
+
+/**
+ * Summary of every fast that *ended* inside `now`'s local calendar month.
+ * Pure — `now` controls which month we're talking about.
+ */
+export function monthlySummary(
+  sessions: readonly FastSession[],
+  now: Date,
+): MonthlySummary {
+  const year = now.getFullYear();
+  const monthIndex = now.getMonth();
+  const len = daysInMonth(year, monthIndex);
+  const fastsPerDay = new Array<number>(len).fill(0);
+
+  let totalFastedMs = 0;
+  let longest = 0;
+  let count = 0;
+
+  for (const s of sessions) {
+    const endMs = Date.parse(s.endedAt);
+    if (!Number.isFinite(endMs)) continue;
+    const end = new Date(endMs);
+    if (end.getFullYear() !== year || end.getMonth() !== monthIndex) continue;
+    count += 1;
+    const dur = sessionDurationMs(s);
+    totalFastedMs += dur;
+    if (dur > longest) longest = dur;
+    const dayIndex = end.getDate() - 1;
+    if (dayIndex >= 0 && dayIndex < len) {
+      fastsPerDay[dayIndex] = (fastsPerDay[dayIndex] ?? 0) + 1;
+    }
+  }
+
+  return {
+    monthLabel: `${MONTH_LABELS[monthIndex] ?? ''} ${year}`,
+    totalFasts: count,
+    totalFastedMs,
+    longestMs: longest,
+    averageDurationMs: count > 0 ? Math.round(totalFastedMs / count) : 0,
+    fastsPerDay,
+  };
+}
+
+export interface StreakProgress {
+  /** Clamped [0, 1]. 0 when no target is set. */
+  ratio: number;
+  /** Days left to reach the target. 0 when met or no target. */
+  remaining: number;
+}
+
+/**
+ * Progress toward a streak target. `targetDays === null` or `≤ 0` returns
+ * `{ ratio: 0, remaining: 0 }` — the caller can still render "no goal" copy.
+ */
+export function streakProgress(
+  currentDays: number,
+  targetDays: number | null,
+): StreakProgress {
+  if (targetDays === null || !Number.isFinite(targetDays) || targetDays <= 0) {
+    return { ratio: 0, remaining: 0 };
+  }
+  const safeCurrent = Number.isFinite(currentDays) ? Math.max(0, currentDays) : 0;
+  const ratio = Math.max(0, Math.min(1, safeCurrent / targetDays));
+  const remaining = Math.max(0, targetDays - safeCurrent);
+  return { ratio, remaining };
+}
+
 export interface InsightsSnapshot {
   totalFasts: number;
   averageDurationMs: number;
@@ -128,6 +228,7 @@ export interface InsightsSnapshot {
   streakDays: number;
   water7d: number[];
   fasts7d: number[];
+  monthly: MonthlySummary;
 }
 
 export function computeInsights(
@@ -142,5 +243,6 @@ export function computeInsights(
     streakDays: currentStreakDays(sessions, now),
     water7d: last7DaysWaterMl(waterEntries, now),
     fasts7d: last7DaysFastsCount(sessions, now),
+    monthly: monthlySummary(sessions, now),
   };
 }

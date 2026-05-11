@@ -53,6 +53,8 @@ interface AppSlice {
    * scoped to the current fast — a brand new fast always nudges.
    */
   mutedFastStartedAt: string | null;
+  /** User-chosen streak target in days. `null` until the user picks one. */
+  streakTargetDays: number | null;
   /** Dismissed the premium hero in Settings. */
   premiumDismissed: boolean;
 }
@@ -76,6 +78,8 @@ interface AppActions {
   pauseRemindersForCurrentFast: () => void;
   /** Clear the per-fast mute set by pauseRemindersForCurrentFast. */
   clearReminderMute: () => void;
+  /** Set the streak target in days. `null` clears any prior target. */
+  setStreakTargetDays: (days: number | null) => void;
   setPremiumDismissed: (next: boolean) => void;
   /** Re-run the welcome flow without losing any user data. */
   replayOnboarding: () => void;
@@ -100,6 +104,7 @@ export const useAppStore = create<AppStore>()(
       favoriteFactIds: [],
       fastingRemindersEnabled: true,
       mutedFastStartedAt: null,
+      streakTargetDays: null,
       premiumDismissed: false,
       skipOnboarding: () => set({ hasCompletedOnboarding: true }),
       completeOnboarding: (payload) =>
@@ -190,6 +195,14 @@ export const useAppStore = create<AppStore>()(
         set({ mutedFastStartedAt: active.startedAt });
       },
       clearReminderMute: () => set({ mutedFastStartedAt: null }),
+      setStreakTargetDays: (days) => {
+        if (days === null) {
+          set({ streakTargetDays: null });
+          return;
+        }
+        if (!Number.isFinite(days) || days <= 0) return;
+        set({ streakTargetDays: Math.min(365, Math.floor(days)) });
+      },
       setPremiumDismissed: (next) => set({ premiumDismissed: next }),
       replayOnboarding: () => set({ hasCompletedOnboarding: false }),
       clearAllData: () =>
@@ -206,6 +219,7 @@ export const useAppStore = create<AppStore>()(
           favoriteFactIds: [],
           fastingRemindersEnabled: true,
           mutedFastStartedAt: null,
+          streakTargetDays: null,
           premiumDismissed: false,
         }),
     }),
@@ -227,6 +241,7 @@ export const useAppStore = create<AppStore>()(
         favoriteFactIds: s.favoriteFactIds,
         fastingRemindersEnabled: s.fastingRemindersEnabled,
         mutedFastStartedAt: s.mutedFastStartedAt,
+        streakTargetDays: s.streakTargetDays,
         premiumDismissed: s.premiumDismissed,
       }),
       /** Manual rehydrate in useStoreHydrated — avoids web/native races with splash gate. */

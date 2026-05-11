@@ -71,6 +71,15 @@ export function coercePersistedAppSlice(raw: unknown): Partial<PersistedSlice> {
   } else if (typeof o.mutedFastStartedAt === 'string' && isValidIsoTimestamp(o.mutedFastStartedAt)) {
     partial.mutedFastStartedAt = o.mutedFastStartedAt;
   }
+  if (o.streakTargetDays === null) {
+    partial.streakTargetDays = null;
+  } else if (
+    typeof o.streakTargetDays === 'number' &&
+    Number.isFinite(o.streakTargetDays) &&
+    o.streakTargetDays > 0
+  ) {
+    partial.streakTargetDays = Math.min(365, Math.floor(o.streakTargetDays));
+  }
   if (typeof o.premiumDismissed === 'boolean')
     partial.premiumDismissed = o.premiumDismissed;
 

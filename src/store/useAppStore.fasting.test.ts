@@ -36,6 +36,7 @@ function freshState() {
     waterUnit: 'ml',
     favoriteFactIds: [],
     mutedFastStartedAt: null,
+    streakTargetDays: null,
   });
 }
 
@@ -288,6 +289,53 @@ describe('useAppStore — reminder mute (R6.P3)', () => {
     useAppStore.getState().pauseRemindersForCurrentFast();
     useAppStore.getState().clearAllData();
     expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
+  });
+});
+
+describe('useAppStore — streak target (R6.P4)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('defaults to null on a fresh store', () => {
+    expect(useAppStore.getState().streakTargetDays).toBeNull();
+  });
+
+  it('setStreakTargetDays accepts canonical chip values', () => {
+    useAppStore.getState().setStreakTargetDays(7);
+    expect(useAppStore.getState().streakTargetDays).toBe(7);
+    useAppStore.getState().setStreakTargetDays(14);
+    expect(useAppStore.getState().streakTargetDays).toBe(14);
+    useAppStore.getState().setStreakTargetDays(30);
+    expect(useAppStore.getState().streakTargetDays).toBe(30);
+  });
+
+  it('setStreakTargetDays(null) clears any prior target', () => {
+    useAppStore.getState().setStreakTargetDays(14);
+    useAppStore.getState().setStreakTargetDays(null);
+    expect(useAppStore.getState().streakTargetDays).toBeNull();
+  });
+
+  it('setStreakTargetDays ignores zero / negative / non-finite inputs', () => {
+    useAppStore.getState().setStreakTargetDays(7);
+    useAppStore.getState().setStreakTargetDays(0);
+    expect(useAppStore.getState().streakTargetDays).toBe(7);
+    useAppStore.getState().setStreakTargetDays(-10);
+    expect(useAppStore.getState().streakTargetDays).toBe(7);
+    useAppStore.getState().setStreakTargetDays(Number.NaN);
+    expect(useAppStore.getState().streakTargetDays).toBe(7);
+  });
+
+  it('setStreakTargetDays clamps very large values to 365 days', () => {
+    useAppStore.getState().setStreakTargetDays(9999);
+    expect(useAppStore.getState().streakTargetDays).toBe(365);
+  });
+
+  it('clearAllData resets streakTargetDays to null', () => {
+    useAppStore.getState().setStreakTargetDays(30);
+    useAppStore.getState().clearAllData();
+    expect(useAppStore.getState().streakTargetDays).toBeNull();
   });
 });
 

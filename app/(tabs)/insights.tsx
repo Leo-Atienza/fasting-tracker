@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -14,10 +14,12 @@ import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTo
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
-import { computeInsights } from '@/src/features/insights/computeInsights';
+import { computeInsights, streakProgress } from '@/src/features/insights/computeInsights';
 import { formatElapsedShort } from '@/src/lib/time';
 import { formatVolume } from '@/src/lib/units';
 import { useAppStore } from '@/src/store/useAppStore';
+
+const STREAK_TARGET_OPTIONS: readonly number[] = [7, 14, 30];
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -40,6 +42,8 @@ export default function InsightsScreen() {
   const waterEntries = useAppStore((s) => s.waterEntries);
   const waterUnit = useAppStore((s) => s.waterUnit);
   const goalMl = useAppStore((s) => s.waterDailyGoalMl);
+  const streakTargetDays = useAppStore((s) => s.streakTargetDays);
+  const setStreakTargetDays = useAppStore((s) => s.setStreakTargetDays);
 
   const snapshot = useMemo(
     () => computeInsights(sessions, waterEntries, new Date()),
@@ -50,6 +54,13 @@ export default function InsightsScreen() {
   const waterPeak = Math.max(goalMl, ...snapshot.water7d, 1);
   const fastsPeak = Math.max(1, ...snapshot.fasts7d);
   const empty = snapshot.totalFasts === 0;
+
+  const progress = useMemo(
+    () => streakProgress(snapshot.streakDays, streakTargetDays),
+    [snapshot.streakDays, streakTargetDays],
+  );
+  const monthly = snapshot.monthly;
+  const monthlyPeak = Math.max(1, ...monthly.fastsPerDay);
 
   return (
     <ScreenBackground palette={palette} accent="insights">
@@ -87,6 +98,68 @@ export default function InsightsScreen() {
                   : 'A streak begins after your first completed fast.'}
               </Text>
             </View>
+          </GlassCard>
+
+          {/* Streak goal card */}
+          <GlassCard palette={palette} radius={22} tone="mid" style={styles.goalCard}>
+            <View style={styles.goalHeader}>
+              <Text style={[styles.goalEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                STREAK GOAL
+              </Text>
+              <Text style={[styles.goalSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                {streakTargetDays == null
+                  ? 'Pick a target to chase.'
+                  : progress.remaining === 0
+                  ? 'Target met — pick a new one to push further.'
+                  : `${progress.remaining} ${progress.remaining === 1 ? 'day' : 'days'} to go`}
+              </Text>
+            </View>
+            <View style={styles.chipRow}>
+              {STREAK_TARGET_OPTIONS.map((d) => {
+                const sel = streakTargetDays === d;
+                return (
+                  <Pressable
+                    key={d}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: sel }}
+                    accessibilityLabel={`Set streak goal to ${d} days`}
+                    onPress={() => setStreakTargetDays(sel ? null : d)}
+                    style={({ pressed }) => [
+                      styles.chip,
+                      {
+                        backgroundColor: sel ? palette.primary : `${palette.surfaceContainerLow}EE`,
+                        borderColor: sel ? palette.primary : palette.glassBorder,
+                        opacity: pressed ? 0.86 : 1,
+                      },
+                    ]}>
+                    <Text
+                      style={[
+                        styles.chipLabel,
+                        {
+                          color: sel ? palette.onPrimary : palette.onSurfaceVariant,
+                          fontFamily: FastCoachFonts.label,
+                        },
+                      ]}>
+                      {d}-DAY
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {streakTargetDays != null && snapshot.streakDays > 0 ? (
+              <View
+                style={[styles.progressTrack, { backgroundColor: `${palette.primaryContainer}AA` }]}
+                accessibilityRole="progressbar"
+                accessibilityValue={{ now: Math.round(progress.ratio * 100), min: 0, max: 100 }}
+                accessibilityLabel="Streak progress toward your goal">
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${Math.round(progress.ratio * 100)}%`, backgroundColor: palette.primary },
+                  ]}
+                />
+              </View>
+            ) : null}
           </GlassCard>
 
           {/* Bento metrics */}
@@ -185,6 +258,58 @@ export default function InsightsScreen() {
             </View>
           </GlassCard>
 
+          {/* Monthly summary */}
+          <SectionLabel palette={palette} tone="primary">THIS MONTH</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.chartCard}>
+            <View style={styles.chartHeader}>
+              <Text style={[styles.chartEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
+                {monthly.monthLabel.toUpperCase()}
+              </Text>
+              <Text style={[styles.chartLegend, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                {monthly.totalFasts === 0
+                  ? 'No fasts this month yet'
+                  : `${monthly.totalFasts} fasts logged`}
+              </Text>
+            </View>
+            <View style={styles.monthlyRow}>
+              <MonthlyTile
+                palette={palette}
+                eyebrow="FASTS"
+                value={String(monthly.totalFasts)}
+                accent={palette.primary}
+              />
+              <MonthlyTile
+                palette={palette}
+                eyebrow="HOURS"
+                value={formatHoursTotal(monthly.totalFastedMs)}
+                accent={palette.secondary}
+              />
+              <MonthlyTile
+                palette={palette}
+                eyebrow="LONGEST"
+                value={monthly.longestMs === 0 ? '—' : formatElapsedShort(monthly.longestMs)}
+                accent={palette.tertiary}
+              />
+              <MonthlyTile
+                palette={palette}
+                eyebrow="AVG"
+                value={monthly.averageDurationMs === 0 ? '—' : formatElapsedShort(monthly.averageDurationMs)}
+                accent={palette.primary}
+              />
+            </View>
+            <View style={styles.heatmap} accessibilityRole="image" accessibilityLabel={`Mini bar chart of fasts per day for ${monthly.monthLabel}`}>
+              {monthly.fastsPerDay.map((count, i) => {
+                const heightPct = monthlyPeak > 0 ? Math.max(8, (count / monthlyPeak) * 100) : 8;
+                const bg = count > 0 ? palette.primary : `${palette.outlineVariant}55`;
+                return (
+                  <View key={`m-${i}`} style={styles.heatCell}>
+                    <View style={[styles.heatBar, { height: `${heightPct}%`, backgroundColor: bg }]} />
+                  </View>
+                );
+              })}
+            </View>
+          </GlassCard>
+
           {empty ? (
             <Text style={[styles.emptyHint, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
               Complete your first fast on the Fast tab and stats start appearing here automatically.
@@ -193,6 +318,35 @@ export default function InsightsScreen() {
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
+  );
+}
+
+function formatHoursTotal(ms: number): string {
+  if (ms <= 0) return '0h';
+  const hours = Math.round(ms / (60 * 60 * 1000));
+  return `${hours}h`;
+}
+
+function MonthlyTile({
+  palette,
+  eyebrow,
+  value,
+  accent,
+}: {
+  palette: FastCoachPaletteColors;
+  eyebrow: string;
+  value: string;
+  accent: string;
+}) {
+  return (
+    <View style={[styles.monthlyTile, { backgroundColor: `${accent}11`, borderColor: `${accent}33` }]}>
+      <Text style={[styles.monthlyEyebrow, { color: accent, fontFamily: FastCoachFonts.label }]}>
+        {eyebrow}
+      </Text>
+      <Text style={[styles.monthlyValue, { color: palette.onSurface, fontFamily: FastCoachFonts.display }]}>
+        {value}
+      </Text>
+    </View>
   );
 }
 
@@ -255,4 +409,44 @@ const styles = StyleSheet.create({
   barFill: { width: '100%', borderRadius: 6 },
   barLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6 },
   emptyHint: { marginTop: 4, fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  goalCard: { padding: 18, gap: 12 },
+  goalHeader: { gap: 4 },
+  goalEyebrow: { fontSize: 11, letterSpacing: 1.6, fontWeight: '800' },
+  goalSub: { fontSize: 13, lineHeight: 18 },
+  chipRow: { flexDirection: 'row', gap: 8 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  chipLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1.2 },
+  progressTrack: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'hidden',
+    marginTop: 2,
+  },
+  progressFill: { height: '100%', borderRadius: 999 },
+  monthlyRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  monthlyTile: {
+    flexBasis: '47%',
+    flexGrow: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 4,
+  },
+  monthlyEyebrow: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },
+  monthlyValue: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
+  heatmap: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 48,
+    gap: 2,
+    marginTop: 4,
+  },
+  heatCell: { flex: 1, height: '100%', justifyContent: 'flex-end' },
+  heatBar: { width: '100%', borderRadius: 2 },
 });

@@ -22,5 +22,7 @@ export interface PersistedSlice {
   fastingRemindersEnabled: boolean;
   /** ISO of the activeFast.startedAt that the user paused reminders for. `null` when not muted. */
   mutedFastStartedAt: string | null;
+  /** User-chosen streak target in days (7 / 14 / 30 typical). `null` until the user picks one. */
+  streakTargetDays: number | null;
   premiumDismissed: boolean;
 }
