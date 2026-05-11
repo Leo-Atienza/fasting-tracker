@@ -2,6 +2,10 @@
 
 Project-local trash for files removed from the working tree. Restored from git if needed; not tracked by lint or tests.
 
+## 2026-05-11 — v1.0.7 APK bundle inspection scratch
+
+- `TRASH/bundle-check-r5/` — one-off `jar xf` extraction of `assets/index.android.bundle` from the v1.0.7 debug APK to confirm Phase 1–6 strings ("Replay setup", "NOTIFICATIONS BLOCKED", "Replay onboarding?", "Re-run the 4-step") all bundle correctly. Safe to delete.
+
 ## 2026-05-11 — APK bundle inspection scratch
 
 - `TRASH/bundle-check-extracted/` — moved from `/tmp/bundle-check` — one-off `jar xf` extraction of `assets/index.android.bundle` to verify new strings (Fasting Tracker / fasting-milestone) made it into the v1.0.6 debug APK. Safe to delete.
