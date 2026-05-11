@@ -20,6 +20,7 @@ import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
 import type { EatSuggestion } from '@/src/domain/types';
 import { aggregateMedicalSources } from '@/src/features/eat/aggregateSources';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
+import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useNotificationPermissionStatus } from '@/src/hooks/useNotificationPermissionStatus';
 import { formatVolume, mlToOz } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
@@ -39,6 +40,8 @@ export default function SettingsScreen() {
   const scheme = (colorScheme === 'dark' ? 'dark' : 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const bp = useBreakpoint();
+  const isWide = bp !== 'phone';
 
   const dietPreferenceId = useAppStore((s) => s.dietPreferenceId);
   const setDiet = useAppStore((s) => s.setDietPreferenceId);
@@ -160,7 +163,11 @@ export default function SettingsScreen() {
         />
 
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 20 }]}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingTop: topBarOffset + 20 },
+            isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
+          ]}
           showsVerticalScrollIndicator={false}>
           {/* Profile mini-card */}
           <GlassCard palette={palette} radius={24} tone="mid" style={styles.profileCard}>

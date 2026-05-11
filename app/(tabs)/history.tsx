@@ -16,6 +16,7 @@ import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import type { FastSession } from '@/src/domain/types';
+import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { formatElapsedShort, formatTimeOnly, relativeDayHeading } from '@/src/lib/time';
 import { sortedSessionsDescending } from '@/src/store/selectors';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -75,6 +76,7 @@ export default function HistoryScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const isWide = useBreakpoint() !== 'phone';
   const [visibleCount, setVisibleCount] = useState(PAGE);
 
   function confirmRemove(item: FastSession) {
@@ -200,7 +202,11 @@ export default function HistoryScreen() {
           <FlatList
             data={viewport}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.list, { paddingTop: topBarOffset + 18 }]}
+            contentContainerStyle={[
+              styles.list,
+              { paddingTop: topBarOffset + 18 },
+              isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
+            ]}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
               <View style={styles.listHeader}>

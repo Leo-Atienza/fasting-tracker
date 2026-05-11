@@ -18,6 +18,7 @@ import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import type { DietPreferenceId } from '@/src/domain/types';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
+import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import {
   ONBOARDING_STEPS,
   advanceStep,
@@ -66,6 +67,7 @@ export default function OnboardingScreen() {
   const palette = FastCoachPalette[scheme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isWide = useBreakpoint() !== 'phone';
 
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const skipOnboarding = useAppStore((s) => s.skipOnboarding);
@@ -169,7 +171,11 @@ export default function OnboardingScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 180 }]}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingBottom: insets.bottom + 180 },
+            isWide && { maxWidth: 560, alignSelf: 'center', width: '100%' },
+          ]}
           showsVerticalScrollIndicator={false}>
           {currentId === 'fasting' ? (
             <FastingStep

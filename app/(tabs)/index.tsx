@@ -21,6 +21,7 @@ import type { EatPhase, EatSuggestion, FoodCategory } from '@/src/domain/types';
 import { pickEatSuggestions } from '@/src/features/eat/selectSuggestions';
 import { computeElapsedMs, computeRingProgress } from '@/src/features/fast/elapsed';
 import { getFastingStage } from '@/src/features/fast/fastingStage';
+import { useBreakpoint, type Breakpoint } from '@/src/hooks/useBreakpoint';
 import { formatElapsed, formatElapsedShort, formatTargetHm } from '@/src/lib/time';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -33,7 +34,7 @@ const TARGET_CHOICES: { label: string; minutes: number | null }[] = [
   { label: '24 h', minutes: 24 * 60 },
 ];
 
-const RING = 264;
+const RING_SIZE_BY_BP: Record<Breakpoint, number> = { phone: 264, tablet: 320, large: 360 };
 const RING_STROKE = 12;
 
 type MealIcon = 'leaf' | 'fish' | 'bowl-mix' | 'food-apple' | 'cup-water' | 'tea' | 'rice' | 'food-drumstick' | 'food-variant';
@@ -85,6 +86,9 @@ export default function FastHomeScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const bp = useBreakpoint();
+  const ringSize = RING_SIZE_BY_BP[bp];
+  const bentoMinWidth: '47%' | '31%' = bp === 'phone' ? '47%' : '31%';
 
   const activeFast = useAppStore((s) => s.activeFast);
   const startFast = useAppStore((s) => s.startFast);
@@ -148,7 +152,7 @@ export default function FastHomeScreen() {
           <View style={styles.ringWrap}>
             <View style={[styles.ringHalo, { shadowColor: palette.primaryFixedDim }]}>
               <CircularRing
-                size={RING}
+                size={ringSize}
                 stroke={RING_STROKE}
                 progress={activeFast ? Math.max(0.04, ringProgress) : 0.03}
                 svgGradientId="fastCoachRing"
@@ -160,8 +164,8 @@ export default function FastHomeScreen() {
                     styles.ringInner,
                     {
                       backgroundColor: scheme === 'dark' ? 'rgba(26,28,31,0.86)' : 'rgba(255,255,255,0.92)',
-                      width: RING - RING_STROKE * 2 - 24,
-                      height: RING - RING_STROKE * 2 - 24,
+                      width: ringSize - RING_STROKE * 2 - 24,
+                      height: ringSize - RING_STROKE * 2 - 24,
                     },
                   ]}>
                   <Text style={[styles.ringEyebrow, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
@@ -311,7 +315,11 @@ export default function FastHomeScreen() {
                     onPress={hasDetails ? () => setOpenMeal(item) : undefined}
                     accessibilityRole="button"
                     accessibilityLabel={accessibilityLabel}
-                    style={({ pressed }) => [styles.mealCard, pressed && hasDetails && { opacity: 0.92 }]}>
+                    style={({ pressed }) => [
+                      styles.mealCard,
+                      { minWidth: bentoMinWidth },
+                      pressed && hasDetails && { opacity: 0.92 },
+                    ]}>
                     <GlassCard palette={palette} radius={22} style={styles.mealCardInner}>
                       <View
                         style={[
@@ -374,6 +382,7 @@ export default function FastHomeScreen() {
           meal={openMeal}
           palette={palette}
           scheme={scheme}
+          bp={bp}
           onClose={() => setOpenMeal(null)}
         />
       </SafeAreaView>
@@ -385,17 +394,25 @@ function MealDetailSheet({
   meal,
   palette,
   scheme,
+  bp,
   onClose,
 }: {
   meal: EatSuggestion | null;
   palette: PaletteColors;
   scheme: ColorSchemeName;
+  bp: Breakpoint;
   onClose: () => void;
 }) {
   return (
     <Modal visible={meal != null} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.sheetBackdrop} onPress={onClose} accessibilityLabel="Close meal details">
-        <Pressable style={[styles.sheetCard, { backgroundColor: scheme === 'dark' ? '#1B1D20' : '#FFFFFF' }]} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={[
+            styles.sheetCard,
+            { backgroundColor: scheme === 'dark' ? '#1B1D20' : '#FFFFFF' },
+            bp !== 'phone' && { maxWidth: 600, alignSelf: 'center', width: '100%' },
+          ]}
+          onPress={(e) => e.stopPropagation()}>
           <ScrollView contentContainerStyle={styles.sheetScroll}>
             <View style={styles.sheetHandle}>
               <View style={[styles.sheetGrabber, { backgroundColor: palette.outlineVariant }]} />

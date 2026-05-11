@@ -15,6 +15,7 @@ import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import { computeInsights, streakProgress } from '@/src/features/insights/computeInsights';
+import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { formatElapsedShort } from '@/src/lib/time';
 import { formatVolume } from '@/src/lib/units';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -37,6 +38,9 @@ export default function InsightsScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const bp = useBreakpoint();
+  const isWide = bp !== 'phone';
+  const barsHeight = isWide ? 140 : 100;
 
   const sessions = useAppStore((s) => s.sessions);
   const waterEntries = useAppStore((s) => s.waterEntries);
@@ -67,7 +71,11 @@ export default function InsightsScreen() {
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Insights" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 20 }]}
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingTop: topBarOffset + 20 },
+            isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
+          ]}
           showsVerticalScrollIndicator={false}>
           <SectionLabel palette={palette} tone="primary">YOUR WEEKLY VIEW</SectionLabel>
 
@@ -197,7 +205,7 @@ export default function InsightsScreen() {
                 Goal {formatVolume(goalMl, waterUnit)}
               </Text>
             </View>
-            <View style={styles.bars} accessibilityRole="image" accessibilityLabel="Bar chart of daily water intake over the last 7 days">
+            <View style={[styles.bars, { height: barsHeight }]} accessibilityRole="image" accessibilityLabel="Bar chart of daily water intake over the last 7 days">
               {snapshot.water7d.map((ml, i) => {
                 const met = ml >= goalMl && goalMl > 0;
                 const heightPct = waterPeak > 0 ? Math.max(2, (ml / waterPeak) * 100) : 2;
@@ -233,7 +241,7 @@ export default function InsightsScreen() {
                 {empty ? 'No fasts yet' : `${snapshot.fasts7d.reduce((a, b) => a + b, 0)} this week`}
               </Text>
             </View>
-            <View style={styles.bars}>
+            <View style={[styles.bars, { height: barsHeight }]}>
               {snapshot.fasts7d.map((n, i) => {
                 const heightPct = fastsPeak > 0 ? Math.max(2, (n / fastsPeak) * 100) : 2;
                 return (
