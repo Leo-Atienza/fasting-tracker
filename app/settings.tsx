@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
@@ -17,6 +17,7 @@ import { TouchSlider } from '@/src/components/fastCoach/TouchSlider';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
+import { useNotificationPermissionStatus } from '@/src/hooks/useNotificationPermissionStatus';
 import { formatVolume, mlToOz, ozToMl } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
@@ -39,6 +40,8 @@ export default function SettingsScreen() {
   const premiumDismissed = useAppStore((s) => s.premiumDismissed);
   const setPremiumDismissed = useAppStore((s) => s.setPremiumDismissed);
   const clearAllData = useAppStore((s) => s.clearAllData);
+  const permissionStatus = useNotificationPermissionStatus();
+  const showPermissionBlockedChip = remindersEnabled && permissionStatus === 'denied';
 
   const [dietPickerOpen, setDietPickerOpen] = useState(false);
 
@@ -181,6 +184,35 @@ export default function SettingsScreen() {
                 accessibilityLabel="Toggle fasting reminders"
               />
             </View>
+
+            {showPermissionBlockedChip ? (
+              <>
+                <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Notifications are blocked at the system level"
+                  accessibilityHint="Opens system settings."
+                  onPress={() => {
+                    Linking.openSettings().catch(() => undefined);
+                  }}
+                  style={({ pressed }) => [
+                    styles.permissionChip,
+                    { borderLeftColor: palette.error },
+                    pressed && { opacity: 0.86 },
+                  ]}>
+                  <MaterialCommunityIcons name="alert-circle-outline" size={22} color={palette.error} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.permissionEyebrow, { color: palette.error, fontFamily: FastCoachFonts.label }]}>
+                      NOTIFICATIONS BLOCKED
+                    </Text>
+                    <Text style={[styles.permissionBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                      Reminders won&apos;t fire until you re-enable them in system settings.
+                    </Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={20} />
+                </Pressable>
+              </>
+            ) : null}
           </GlassCard>
 
           {/* HYDRATION */}
@@ -419,6 +451,16 @@ const styles = StyleSheet.create({
   rowTitle: { fontSize: 15, fontWeight: '600' },
   rowSub: { fontSize: 12, marginTop: 2 },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 16 },
+  permissionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderLeftWidth: 4,
+  },
+  permissionEyebrow: { fontSize: 11, letterSpacing: 1.6, fontWeight: '800' },
+  permissionBody: { fontSize: 13, marginTop: 2, lineHeight: 18 },
   goalValue: { fontSize: 18, fontWeight: '800' },
   sliderWrap: { paddingHorizontal: 16, paddingBottom: 12 },
   sliderRange: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
