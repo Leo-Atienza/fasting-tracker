@@ -2,7 +2,7 @@
   "expo": {
     "name": "Fasting Tracker",
     "slug": "fasting-tracker",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fastingtracker",
@@ -31,7 +31,7 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
-      "versionCode": 10007
+      "versionCode": 10008
     },
     "web": {
       "bundler": "metro",
