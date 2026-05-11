@@ -21,6 +21,34 @@ next major upgrade.
 - **Why we don't patch it now.** A plugin to rewrite a template file is real
   maintenance burden for a problem the upstream is already solving.
 
+## Test strategy deviations from R6 plan
+
+### Onboarding — extracted state machine, not jsdom component test
+
+R6 P2 originally proposed adding `jsdom` + `@testing-library/react-native` so
+the onboarding screen could be mounted in a test environment. We deviated to
+extract a pure state-machine module
+([src/features/onboarding/state.ts](src/features/onboarding/state.ts)) and
+refactor [app/onboarding.tsx](app/onboarding.tsx) to delegate every transition,
+seed, and payload assembly to it.
+
+Why the deviation:
+
+- Onboarding pulls in `BlurView`, `MaterialCommunityIcons`, `expo-router`,
+  `react-native-safe-area-context`, `ScreenBackground`, `GlassCard`, and
+  `IOSToggle`. Each would need a jsdom-compatible mock. That's a lot of mock
+  surface for tests that ultimately verify pure logic.
+- The actually load-bearing logic (step advance/back, seed → state derivation,
+  reminders-permission gating in the payload) is now tested directly at
+  `src/features/onboarding/state.test.ts` with 13 cases under the existing
+  node environment.
+- The jsdom infrastructure is still worth adding when we have a screen whose
+  *rendering* (not just logic) needs coverage. Defer it to that point.
+
+If a future screen needs visual / interactive coverage, revisit
+`vitest.config.ts` to add `environmentMatchGlobs` for `*.tsx.test.ts` and
+`setupFiles` that stub the native-only modules listed above.
+
 ## Build gotchas (Windows host)
 
 - `assembleRelease` is blocked by the Windows long-path limit — `ninja.exe`

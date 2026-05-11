@@ -18,16 +18,16 @@ import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import type { DietPreferenceId } from '@/src/domain/types';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
+import {
+  ONBOARDING_STEPS,
+  advanceStep,
+  backStep,
+  buildOnboardingPayload,
+  currentStepId,
+  initialOnboardingState,
+  isLastStep as isLastStepFn,
+} from '@/src/features/onboarding/state';
 import { useAppStore } from '@/src/store/useAppStore';
-
-type StepId = 'fasting' | 'diet' | 'water' | 'reminders';
-
-const STEPS: { id: StepId; label: string }[] = [
-  { id: 'fasting', label: 'Fasting Goal' },
-  { id: 'diet', label: 'Dietary Profile' },
-  { id: 'water', label: 'Hydration Goal' },
-  { id: 'reminders', label: 'Reminders' },
-];
 
 const FAST_GOAL_OPTIONS: { minutes: number | null; label: string; sub: string; icon: 'weather-sunset-up' | 'chart-timeline-variant' | 'fire' | 'recycle' | 'infinity' }[] = [
   { minutes: 12 * 60, label: '12 hours', sub: 'Gentle — overnight + a little extra.', icon: 'weather-sunset-up' },
@@ -70,53 +70,57 @@ export default function OnboardingScreen() {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const skipOnboarding = useAppStore((s) => s.skipOnboarding);
 
-  const initialState = useAppStore.getState();
-  const [stepIndex, setStepIndex] = useState(0);
-  const [fastingTargetMinutes, setFastingTargetMinutes] = useState<number | null>(
-    initialState.defaultFastTargetMinutes ?? 16 * 60,
+  const [state, setState] = useState(() =>
+    initialOnboardingState({
+      defaultFastTargetMinutes: useAppStore.getState().defaultFastTargetMinutes,
+      dietPreferenceId: useAppStore.getState().dietPreferenceId,
+      waterDailyGoalMl: useAppStore.getState().waterDailyGoalMl,
+      fastingRemindersEnabled: useAppStore.getState().fastingRemindersEnabled,
+    }),
   );
-  const [selectedDiet, setSelectedDiet] = useState<DietPreferenceId>(
-    initialState.dietPreferenceId ?? 'omnivore',
-  );
-  const [waterGoalMl, setWaterGoalMl] = useState<number>(initialState.waterDailyGoalMl ?? 2500);
-  const [remindersOn, setRemindersOn] = useState<boolean>(initialState.fastingRemindersEnabled ?? true);
   const [working, setWorking] = useState(false);
 
-  const currentStep = STEPS[stepIndex]!;
-  const isLastStep = stepIndex === STEPS.length - 1;
+  const stepIndex = state.stepIndex;
+  const fastingTargetMinutes = state.fastingTargetMinutes;
+  const selectedDiet = state.selectedDiet;
+  const waterGoalMl = state.waterGoalMl;
+  const remindersOn = state.remindersOn;
+  const currentStep = ONBOARDING_STEPS[stepIndex]!;
+  const isLastStep = isLastStepFn(state);
+  const currentId = currentStepId(state);
+
+  const setFastingTargetMinutes = (v: number | null) =>
+    setState((s) => ({ ...s, fastingTargetMinutes: v }));
+  const setSelectedDiet = (v: DietPreferenceId) =>
+    setState((s) => ({ ...s, selectedDiet: v }));
+  const setWaterGoalMl = (v: number) => setState((s) => ({ ...s, waterGoalMl: v }));
+  const setRemindersOn = (v: boolean) => setState((s) => ({ ...s, remindersOn: v }));
 
   function back() {
-    if (stepIndex === 0) return;
-    setStepIndex((i) => i - 1);
+    setState((s) => backStep(s));
   }
 
   async function next() {
     if (working) return;
     if (!isLastStep) {
-      setStepIndex((i) => i + 1);
+      setState((s) => advanceStep(s));
       return;
     }
     setWorking(true);
     try {
       // If reminders were chosen, attempt to obtain OS permission. We still
       // persist the user's preference either way — they can re-enable later.
-      let effectiveReminders = remindersOn;
+      let permissionGranted = true;
       if (remindersOn) {
-        const ok = await ensureNotificationsPermission();
-        if (!ok) {
-          effectiveReminders = false;
+        permissionGranted = await ensureNotificationsPermission();
+        if (!permissionGranted) {
           Alert.alert(
             'Notifications are blocked',
             'You can enable reminders any time from Settings once the OS permission is granted.',
           );
         }
       }
-      completeOnboarding({
-        dietPreferenceId: selectedDiet,
-        defaultFastTargetMinutes: fastingTargetMinutes,
-        waterDailyGoalMl: waterGoalMl,
-        fastingRemindersEnabled: effectiveReminders,
-      });
+      completeOnboarding(buildOnboardingPayload(state, permissionGranted));
       router.replace('/');
     } finally {
       setWorking(false);
@@ -150,7 +154,7 @@ export default function OnboardingScreen() {
 
         {/* Progress bar */}
         <View style={styles.progressRow}>
-          {STEPS.map((s, i) => (
+          {ONBOARDING_STEPS.map((s, i) => (
             <View
               key={s.id}
               style={[
@@ -167,15 +171,15 @@ export default function OnboardingScreen() {
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 180 }]}
           showsVerticalScrollIndicator={false}>
-          {currentStep.id === 'fasting' ? (
+          {currentId === 'fasting' ? (
             <FastingStep
               palette={palette}
               selected={fastingTargetMinutes}
               onSelect={setFastingTargetMinutes}
             />
-          ) : currentStep.id === 'diet' ? (
+          ) : currentId === 'diet' ? (
             <DietStep palette={palette} selected={selectedDiet} onSelect={setSelectedDiet} />
-          ) : currentStep.id === 'water' ? (
+          ) : currentId === 'water' ? (
             <WaterStep palette={palette} selected={waterGoalMl} onSelect={setWaterGoalMl} />
           ) : (
             <RemindersStep palette={palette} value={remindersOn} onChange={setRemindersOn} />
@@ -245,7 +249,7 @@ export default function OnboardingScreen() {
             </Pressable>
           </View>
           <Text style={[styles.step, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label }]}>
-            {`STEP ${stepIndex + 1} OF ${STEPS.length} · ${currentStep.label.toUpperCase()}`}
+            {`STEP ${stepIndex + 1} OF ${ONBOARDING_STEPS.length} · ${currentStep.label.toUpperCase()}`}
           </Text>
         </View>
       </SafeAreaView>
