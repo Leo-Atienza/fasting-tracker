@@ -111,7 +111,7 @@ export default function WaterScreen() {
   return (
     <ScreenBackground palette={palette} accent="water">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
-        <FixedTopBar title="Fast Coach" palette={palette} isDark={scheme === 'dark'} />
+        <FixedTopBar title="Fasting Tracker" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 28 }]}
           showsVerticalScrollIndicator={false}>

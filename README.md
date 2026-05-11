@@ -10,9 +10,12 @@ builds are wired but not regularly tested.
 
 ## Features
 
-- **Fast Coach** — circular timer with goal-length presets (Open / 12h / 14h /
+- **Fasting timer** — circular timer with goal-length presets (Open / 12h / 14h /
   16h / 18h / 24h). Live "current phase" card explains what the body is
   doing (glycogen depletion → ketosis → autophagy etc.).
+- **Four-step onboarding** — pick a default fasting goal, a dietary profile,
+  a daily water target, and opt into local milestone reminders. Selections
+  prefill across the app and remain editable in Settings.
 - **Eat suggestions** — meal/snack ideas filtered by the diet preference you
   set at onboarding (omnivore, vegetarian, vegan, pescatarian, meat-forward),
   shuffleable, with separate ideas for during-fast vs. eating-window phases.
@@ -20,6 +23,9 @@ builds are wired but not regularly tested.
   amount entry, ml/oz toggle, edit mode for removing entries.
 - **Insights** — 7-day fasts and water bar charts, current streak, totals.
 - **History** — full session log with per-row delete and clear-all.
+- **Local milestone reminders** — opt-in notifications at 12h / 16h / 20h
+  into an active fast (via `expo-notifications`). Scheduled on-device only —
+  no servers, no push tokens.
 - **Accessibility** — every interactive element has a role and label; honors
   the OS "Reduce motion" toggle (animations collapse to instant transitions).
 - **Persistence** — zustand + AsyncStorage with a versioned schema and

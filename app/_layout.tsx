@@ -24,6 +24,8 @@ import {
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { PersistErrorBanner } from '@/src/components/PersistErrorBanner';
+import { startNotificationOrchestrator } from '@/src/features/notifications/orchestrate';
+import { setupNotificationHandler } from '@/src/features/notifications/scheduler';
 import { useStoreHydrated } from '@/src/hooks/useStoreHydrated';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -96,6 +98,15 @@ export default function RootLayout() {
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, hydrated]);
+
+  useEffect(() => {
+    setupNotificationHandler();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    return startNotificationOrchestrator();
+  }, [hydrated]);
 
   if (!fontsLoaded || !hydrated) {
     return null;

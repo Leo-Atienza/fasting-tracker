@@ -10,6 +10,8 @@ import type {
 export interface PersistedSlice {
   hasCompletedOnboarding: boolean;
   dietPreferenceId: DietPreferenceId;
+  /** User's preferred default fast length in minutes (chosen at onboarding). `null` = open-ended. */
+  defaultFastTargetMinutes: number | null;
   eatShuffleNonce: number;
   activeFast: ActiveFast | null;
   sessions: FastSession[];

@@ -34,7 +34,7 @@ describe('coercePersistedAppSlice', () => {
 
   it('clamps water goal on hydrate', () => {
     expect(coercePersistedAppSlice({ waterDailyGoalMl: 50 }).waterDailyGoalMl).toBe(250);
-    expect(coercePersistedAppSlice({ waterDailyGoalMl: 999999 }).waterDailyGoalMl).toBe(20000);
+    expect(coercePersistedAppSlice({ waterDailyGoalMl: 999999 }).waterDailyGoalMl).toBe(5000);
   });
 
   it('clears active fast when timestamps or target minutes are invalid', () => {
@@ -91,6 +91,25 @@ describe('coercePersistedAppSlice', () => {
       favoriteFactIds: ['a', 1, null, 'b', { x: 1 }, 'c'],
     });
     expect(out.favoriteFactIds).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps a finite defaultFastTargetMinutes and normalizes it', () => {
+    expect(coercePersistedAppSlice({ defaultFastTargetMinutes: 16 * 60 }).defaultFastTargetMinutes).toBe(960);
+    expect(coercePersistedAppSlice({ defaultFastTargetMinutes: 16.7 * 60 }).defaultFastTargetMinutes).toBe(Math.floor(16.7 * 60));
+  });
+
+  it('accepts an explicit null defaultFastTargetMinutes (open-ended preference)', () => {
+    expect(coercePersistedAppSlice({ defaultFastTargetMinutes: null }).defaultFastTargetMinutes).toBeNull();
+  });
+
+  it('clamps an absurd defaultFastTargetMinutes to the 7-day cap', () => {
+    const out = coercePersistedAppSlice({ defaultFastTargetMinutes: 1e9 });
+    expect(out.defaultFastTargetMinutes).toBe(10080);
+  });
+
+  it('drops non-numeric defaultFastTargetMinutes', () => {
+    expect(coercePersistedAppSlice({ defaultFastTargetMinutes: 'sixteen' }).defaultFastTargetMinutes).toBeUndefined();
+    expect(coercePersistedAppSlice({ defaultFastTargetMinutes: Number.NaN }).defaultFastTargetMinutes).toBeNull();
   });
 });
 

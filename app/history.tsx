@@ -170,7 +170,7 @@ export default function HistoryScreen() {
     <ScreenBackground palette={palette} accent="history">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar
-          title="Fast Coach"
+          title="Fasting Tracker"
           palette={palette}
           isDark={scheme === 'dark'}
           showHistory={false}

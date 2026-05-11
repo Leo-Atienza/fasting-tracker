@@ -25,6 +25,8 @@ export type FastCoachPalette = {
   onSecondaryFixed: string;
   tertiary: string;
   onTertiary: string;
+  tertiaryContainer: string;
+  onTertiaryContainer: string;
   error: string;
   onError: string;
   outline: string;
@@ -60,6 +62,8 @@ export const FastCoachPalette: Record<ColorSchemeName, FastCoachPalette> = {
     onSecondaryFixed: '#001a41',
     tertiary: '#4f4ccd',
     onTertiary: '#ffffff',
+    tertiaryContainer: '#a6a5ff',
+    onTertiaryContainer: '#302aaf',
     error: '#ba1a1a',
     onError: '#ffffff',
     outline: '#6d7b6b',
@@ -93,6 +97,8 @@ export const FastCoachPalette: Record<ColorSchemeName, FastCoachPalette> = {
     onSecondaryFixed: '#d8e2ff',
     tertiary: '#a6a5ff',
     onTertiary: '#0c006a',
+    tertiaryContainer: '#302aaf',
+    onTertiaryContainer: '#e2dfff',
     error: '#ffb4ab',
     onError: '#690005',
     outline: '#6d7b6b',

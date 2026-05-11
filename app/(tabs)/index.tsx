@@ -35,12 +35,28 @@ const TARGET_CHOICES: { label: string; minutes: number | null }[] = [
 const RING = 264;
 const RING_STROKE = 12;
 
-const MEAL_ACCENTS: { from: string; to: string; icon: 'leaf' | 'fish' | 'bowl-mix' | 'food-apple' }[] = [
-  { from: 'rgba(114,254,136,0.40)', to: 'rgba(0,110,40,0.18)', icon: 'leaf' },
-  { from: 'rgba(173,198,255,0.45)', to: 'rgba(0,88,188,0.18)', icon: 'fish' },
-  { from: 'rgba(226,223,255,0.55)', to: 'rgba(79,76,205,0.18)', icon: 'bowl-mix' },
-  { from: 'rgba(255,224,178,0.55)', to: 'rgba(186,90,16,0.18)', icon: 'food-apple' },
+type MealIcon = 'leaf' | 'fish' | 'bowl-mix' | 'food-apple' | 'cup-water' | 'tea' | 'rice' | 'food-drumstick' | 'food-variant';
+
+const MEAL_ACCENTS: { from: string; to: string }[] = [
+  { from: 'rgba(114,254,136,0.40)', to: 'rgba(0,110,40,0.18)' },
+  { from: 'rgba(173,198,255,0.45)', to: 'rgba(0,88,188,0.18)' },
+  { from: 'rgba(226,223,255,0.55)', to: 'rgba(79,76,205,0.18)' },
+  { from: 'rgba(255,224,178,0.55)', to: 'rgba(186,90,16,0.18)' },
 ];
+
+/** Pick an icon that matches the suggestion title's content, falling back to the index rotation. */
+function iconForSuggestion(title: string, idx: number): MealIcon {
+  const t = title.toLowerCase();
+  if (t.includes('hydrat') || t.includes('water')) return 'cup-water';
+  if (t.includes('tea') || t.includes('coffee') || t.includes('electrolyte')) return 'tea';
+  if (t.includes('vegan') || t.includes('plant') || t.includes('vegetable')) return 'leaf';
+  if (t.includes('fish') || t.includes('seafood') || t.includes('pescatar')) return 'fish';
+  if (t.includes('meat') || t.includes('protein')) return 'food-drumstick';
+  if (t.includes('rice') || t.includes('grain') || t.includes('soup') || t.includes('broth') || t.includes('bowl')) return 'bowl-mix';
+  if (t.includes('fruit') || t.includes('apple')) return 'food-apple';
+  const cycle: MealIcon[] = ['leaf', 'fish', 'bowl-mix', 'food-apple', 'food-variant'];
+  return cycle[idx % cycle.length]!;
+}
 
 function formatTargetLabel(minutes: number): string {
   if (minutes % 60 === 0 && minutes >= 120) return `${minutes / 60} hours`;
@@ -63,10 +79,16 @@ export default function FastHomeScreen() {
   const dietPreferenceId = useAppStore((s) => s.dietPreferenceId);
   const shuffleNonce = useAppStore((s) => s.eatShuffleNonce);
   const bumpSuggestionShuffle = useAppStore((s) => s.bumpSuggestionShuffle);
+  const defaultFastTargetMinutes = useAppStore((s) => s.defaultFastTargetMinutes);
+
+  const initialTargetChoice = useMemo(() => {
+    const match = TARGET_CHOICES.find((c) => c.minutes === defaultFastTargetMinutes);
+    return match ?? TARGET_CHOICES[3] ?? { label: 'Open', minutes: null };
+  }, [defaultFastTargetMinutes]);
 
   const [now, setNow] = useState(() => Date.now());
   const [targetChoice, setTargetChoice] =
-    useState<(typeof TARGET_CHOICES)[number]>(TARGET_CHOICES[3] ?? { label: 'Open', minutes: null });
+    useState<(typeof TARGET_CHOICES)[number]>(initialTargetChoice);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -106,7 +128,7 @@ export default function FastHomeScreen() {
   return (
     <ScreenBackground palette={palette} accent="fast">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
-        <FixedTopBar title="Fast Coach" palette={palette} isDark={scheme === 'dark'} />
+        <FixedTopBar title="Fasting Tracker" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 36 }]} showsVerticalScrollIndicator={false}>
           {/* Hero ring */}
           <View style={styles.ringWrap}>
@@ -261,6 +283,7 @@ export default function FastHomeScreen() {
             ) : (
               eats.map((item, idx) => {
                 const accent = MEAL_ACCENTS[idx % MEAL_ACCENTS.length]!;
+                const icon = iconForSuggestion(item.title, idx);
                 const calories = 380 + ((idx * 73) % 240);
                 return (
                   <GlassCard palette={palette} radius={22} key={item.id} style={styles.mealCard}>
@@ -270,12 +293,13 @@ export default function FastHomeScreen() {
                         { backgroundColor: accent.from, borderBottomColor: palette.glassBorder },
                       ]}>
                       <View style={[styles.mealArtOverlay, { backgroundColor: accent.to }]} />
-                      <MaterialCommunityIcons
-                        name={accent.icon}
-                        size={48}
-                        color={palette.primary}
-                        style={{ opacity: 0.7 }}
-                      />
+                      <View style={[styles.mealIconHalo, { backgroundColor: palette.surfaceContainerLowest }]}>
+                        <MaterialCommunityIcons
+                          name={icon}
+                          size={32}
+                          color={palette.primary}
+                        />
+                      </View>
                     </View>
                     <View style={styles.mealBody}>
                       <Text style={[styles.mealTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]} numberOfLines={1}>
@@ -420,6 +444,18 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   mealArtOverlay: { ...StyleSheet.absoluteFillObject },
+  mealIconHalo: {
+    width: 64,
+    height: 64,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
   mealBody: { padding: 14, gap: 4 },
   mealTitle: { fontSize: 15, fontWeight: '700', letterSpacing: -0.1 },
   mealKcal: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },

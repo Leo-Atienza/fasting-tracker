@@ -25,9 +25,18 @@ function randomId(): string {
   return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+export type OnboardingPayload = {
+  dietPreferenceId: DietPreferenceId;
+  defaultFastTargetMinutes: number | null;
+  waterDailyGoalMl: number;
+  fastingRemindersEnabled: boolean;
+};
+
 interface AppSlice {
   hasCompletedOnboarding: boolean;
   dietPreferenceId: DietPreferenceId;
+  /** User's preferred default fast length (chosen at onboarding). Drives the home-screen goal chip default. */
+  defaultFastTargetMinutes: number | null;
   /** Incremented when user taps shuffle on eat suggestions (for deterministic pick). */
   eatShuffleNonce: number;
   sessions: FastSession[];
@@ -36,7 +45,7 @@ interface AppSlice {
   waterUnit: WaterUnit;
   favoriteFactIds: string[];
   activeFast: ActiveFast | null;
-  /** UI mock preference — settings shows a toggle but app doesn't yet schedule notifications. */
+  /** Local notification scheduling — wired through src/features/notifications. */
   fastingRemindersEnabled: boolean;
   /** Dismissed the premium hero in Settings. */
   premiumDismissed: boolean;
@@ -44,8 +53,9 @@ interface AppSlice {
 
 interface AppActions {
   skipOnboarding: () => void;
-  completeOnboarding: (pref: DietPreferenceId) => void;
+  completeOnboarding: (payload: OnboardingPayload) => void;
   setDietPreferenceId: (pref: DietPreferenceId) => void;
+  setDefaultFastTargetMinutes: (mins: number | null) => void;
   startFast: (opts?: { targetDurationMinutes?: number | null }) => void;
   endFast: () => void;
   removeFastSession: (id: string) => void;
@@ -68,6 +78,7 @@ export const useAppStore = create<AppStore>()(
     (set, get) => ({
       hasCompletedOnboarding: false,
       dietPreferenceId: 'omnivore',
+      defaultFastTargetMinutes: 16 * 60,
       eatShuffleNonce: 0,
       activeFast: null,
       sessions: [],
@@ -78,9 +89,23 @@ export const useAppStore = create<AppStore>()(
       fastingRemindersEnabled: true,
       premiumDismissed: false,
       skipOnboarding: () => set({ hasCompletedOnboarding: true }),
-      completeOnboarding: (pref) =>
-        set({ hasCompletedOnboarding: true, dietPreferenceId: pref }),
+      completeOnboarding: (payload) =>
+        set({
+          hasCompletedOnboarding: true,
+          dietPreferenceId: payload.dietPreferenceId,
+          defaultFastTargetMinutes:
+            payload.defaultFastTargetMinutes == null
+              ? null
+              : (normalizeTargetDurationMinutes(payload.defaultFastTargetMinutes) ?? null),
+          waterDailyGoalMl: clampWaterGoalMl(payload.waterDailyGoalMl),
+          fastingRemindersEnabled: payload.fastingRemindersEnabled,
+        }),
       setDietPreferenceId: (pref) => set({ dietPreferenceId: pref }),
+      setDefaultFastTargetMinutes: (mins) =>
+        set({
+          defaultFastTargetMinutes:
+            mins == null ? null : (normalizeTargetDurationMinutes(mins) ?? null),
+        }),
       startFast: (opts) => {
         if (get().activeFast) return;
         const raw = opts?.targetDurationMinutes;
@@ -149,6 +174,7 @@ export const useAppStore = create<AppStore>()(
         set({
           hasCompletedOnboarding: false,
           dietPreferenceId: 'omnivore',
+          defaultFastTargetMinutes: 16 * 60,
           eatShuffleNonce: 0,
           activeFast: null,
           sessions: [],
@@ -168,6 +194,7 @@ export const useAppStore = create<AppStore>()(
       partialize: (s) => ({
         hasCompletedOnboarding: s.hasCompletedOnboarding,
         dietPreferenceId: s.dietPreferenceId,
+        defaultFastTargetMinutes: s.defaultFastTargetMinutes,
         eatShuffleNonce: s.eatShuffleNonce,
         activeFast: s.activeFast,
         sessions: trimSessionsNewestFirst(s.sessions),

@@ -16,6 +16,7 @@ import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import { TouchSlider } from '@/src/components/fastCoach/TouchSlider';
 import { DIET_OPTIONS } from '@/src/constants/diets';
 import { WATER_GOAL_MIN_ML } from '@/src/constants/waterGoals';
+import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
 import { formatVolume, mlToOz, ozToMl } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
@@ -48,6 +49,22 @@ export default function SettingsScreen() {
 
   function onSliderChange(next: number) {
     setGoal(Math.round(next));
+  }
+
+  async function onRemindersToggle(next: boolean) {
+    if (!next) {
+      setRemindersEnabled(false);
+      return;
+    }
+    const ok = await ensureNotificationsPermission();
+    if (!ok) {
+      Alert.alert(
+        'Notifications are blocked',
+        'Reminders are turned off at the OS level. Open system settings and enable notifications for Fasting Tracker, then toggle this on again.',
+      );
+      return;
+    }
+    setRemindersEnabled(true);
   }
 
   function confirmClearAll() {
@@ -112,7 +129,7 @@ export default function SettingsScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.profileName, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-                Fast Coach User
+                Fasting Tracker User
               </Text>
               <Text style={[styles.profileSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 Personalized fasting profile
@@ -160,7 +177,7 @@ export default function SettingsScreen() {
               <IOSToggle
                 palette={palette}
                 value={remindersEnabled}
-                onValueChange={setRemindersEnabled}
+                onValueChange={onRemindersToggle}
                 accessibilityLabel="Toggle fasting reminders"
               />
             </View>
@@ -288,7 +305,7 @@ export default function SettingsScreen() {
           </GlassCard>
 
           <Text style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
-            Fast Coach v{Constants.expoConfig?.version ?? '1.0.0'}{'\n'}Made for steadier rhythms.
+            Fasting Tracker v{Constants.expoConfig?.version ?? '1.0.0'}{'\n'}Made for steadier rhythms.
           </Text>
         </ScrollView>
 

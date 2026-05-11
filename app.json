@@ -2,7 +2,7 @@
   "expo": {
     "name": "Fasting Tracker",
     "slug": "fasting-tracker",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fastingtracker",
@@ -27,7 +27,11 @@
       "permissions": [
         "INTERNET"
       ],
-      "versionCode": 10005
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "versionCode": 10006
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +40,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          "color": "#34c759",
+          "defaultChannel": "fasting-milestones"
+        }
+      ],
       "./plugins/withStandaloneDebugApk"
     ],
     "experiments": {

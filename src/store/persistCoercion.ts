@@ -29,6 +29,13 @@ export function coercePersistedAppSlice(raw: unknown): Partial<PersistedSlice> {
   const diet = DIET_PREFERENCE_IDS.find((id) => id === o.dietPreferenceId);
   if (diet) partial.dietPreferenceId = diet;
 
+  if (o.defaultFastTargetMinutes === null) {
+    partial.defaultFastTargetMinutes = null;
+  } else if (typeof o.defaultFastTargetMinutes === 'number') {
+    const norm = normalizeTargetDurationMinutes(o.defaultFastTargetMinutes);
+    partial.defaultFastTargetMinutes = norm;
+  }
+
   if (typeof o.eatShuffleNonce === 'number' && Number.isFinite(o.eatShuffleNonce))
     partial.eatShuffleNonce = Math.max(0, Math.floor(o.eatShuffleNonce));
 
