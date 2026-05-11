@@ -10,7 +10,7 @@ import {
   type FastCoachPalette as FastCoachPaletteColors,
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
@@ -34,6 +34,7 @@ function todayWeekdayShortNames(now: Date): string[] {
 export default function InsightsScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
 
   const sessions = useAppStore((s) => s.sessions);
   const waterEntries = useAppStore((s) => s.waterEntries);
@@ -55,7 +56,7 @@ export default function InsightsScreen() {
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Insights" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 20 }]}
+          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 20 }]}
           showsVerticalScrollIndicator={false}>
           <SectionLabel palette={palette} tone="primary">YOUR WEEKLY VIEW</SectionLabel>
 

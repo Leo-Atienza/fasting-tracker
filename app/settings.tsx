@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { IOSToggle } from '@/src/components/fastCoach/IOSToggle';
 import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
@@ -24,6 +24,7 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const scheme = (colorScheme === 'dark' ? 'dark' : 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
 
   const dietPreferenceId = useAppStore((s) => s.dietPreferenceId);
   const setDiet = useAppStore((s) => s.setDietPreferenceId);
@@ -102,7 +103,7 @@ export default function SettingsScreen() {
         />
 
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 20 }]}
+          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 20 }]}
           showsVerticalScrollIndicator={false}>
           {/* Profile mini-card */}
           <GlassCard palette={palette} radius={24} tone="mid" style={styles.profileCard}>

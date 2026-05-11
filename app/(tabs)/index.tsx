@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { CircularRing } from '@/src/components/fastCoach/CircularRing';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import type { EatPhase } from '@/src/domain/types';
@@ -55,6 +55,7 @@ function previewLine(text: string): string {
 export default function FastHomeScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
 
   const activeFast = useAppStore((s) => s.activeFast);
   const startFast = useAppStore((s) => s.startFast);
@@ -106,7 +107,7 @@ export default function FastHomeScreen() {
     <ScreenBackground palette={palette} accent="fast">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Fast Coach" palette={palette} isDark={scheme === 'dark'} />
-        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 36 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 36 }]} showsVerticalScrollIndicator={false}>
           {/* Hero ring */}
           <View style={styles.ringWrap}>
             <View style={[styles.ringHalo, { shadowColor: palette.primaryFixedDim }]}>

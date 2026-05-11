@@ -11,7 +11,7 @@ import {
   type FastCoachPalette as CoachPaletteColors,
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
@@ -74,6 +74,7 @@ export default function HistoryScreen() {
   const removeFastSession = useAppStore((s) => s.removeFastSession);
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
   const [visibleCount, setVisibleCount] = useState(PAGE);
 
   function confirmRemove(item: FastSession) {
@@ -186,7 +187,7 @@ export default function HistoryScreen() {
           hideRight={false}
         />
         {sessions.length === 0 ? (
-          <View style={[styles.empty, { paddingTop: FIXED_TOP_BAR_HEIGHT + 80 }]}>
+          <View style={[styles.empty, { paddingTop: topBarOffset + 80 }]}>
             <MaterialCommunityIcons name="calendar-clock" size={48} color={palette.outline} />
             <Text style={[styles.emptyTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
               No completed fasts yet
@@ -199,7 +200,7 @@ export default function HistoryScreen() {
           <FlatList
             data={viewport}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.list, { paddingTop: FIXED_TOP_BAR_HEIGHT + 18 }]}
+            contentContainerStyle={[styles.list, { paddingTop: topBarOffset + 18 }]}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
               <View style={styles.listHeader}>

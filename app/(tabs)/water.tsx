@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { CircularRing } from '@/src/components/fastCoach/CircularRing';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import type { WaterLogEntry } from '@/src/domain/types';
@@ -52,6 +52,7 @@ function labelForPresetId(id: string | undefined): string {
 export default function WaterScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
 
   const unit = useAppStore((s) => s.waterUnit);
   const waterEntries = useAppStore((s) => s.waterEntries);
@@ -112,7 +113,7 @@ export default function WaterScreen() {
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Fast Coach" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 28 }]}
+          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 28 }]}
           showsVerticalScrollIndicator={false}>
           {/* Hydration ring */}
           <View style={styles.ringWrap}>

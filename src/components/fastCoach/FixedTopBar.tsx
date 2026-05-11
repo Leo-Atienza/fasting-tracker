@@ -94,8 +94,18 @@ export function FixedTopBar({
   );
 }
 
-/** Use this to size content padding under the fixed top bar. */
+/** The inner row height of the top bar (excludes the status-bar safe area). */
 export const FIXED_TOP_BAR_HEIGHT = 56;
+
+/**
+ * Returns the total visual height of the FixedTopBar including the device's
+ * status-bar inset — use this as `paddingTop` for scroll content.
+ * Add your desired breathing gap on top: `useTopBarOffset() + 24`.
+ */
+export function useTopBarOffset(): number {
+  const { top } = useSafeAreaInsets();
+  return Math.max(top, 12) + FIXED_TOP_BAR_HEIGHT;
+}
 
 const styles = StyleSheet.create({
   wrap: {

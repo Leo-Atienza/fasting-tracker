@@ -7,7 +7,7 @@ import factsDataset from '@/assets/data/fasting-facts.json';
 
 import { FastCoachFonts, FastCoachPalette, type ColorSchemeName } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
-import { FixedTopBar, FIXED_TOP_BAR_HEIGHT } from '@/src/components/fastCoach/FixedTopBar';
+import { FixedTopBar, useTopBarOffset } from '@/src/components/fastCoach/FixedTopBar';
 import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
@@ -43,6 +43,7 @@ function countByBucket(): Record<Bucket, number> {
 export default function FactsScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
+  const topBarOffset = useTopBarOffset();
 
   const [shuffle, setShuffle] = useState(0);
   const [filterBucket, setFilterBucket] = useState<Bucket | null>(null);
@@ -86,7 +87,7 @@ export default function FactsScreen() {
     <ScreenBackground palette={palette} accent="facts">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Facts" palette={palette} isDark={scheme === 'dark'} rightAccessory={headerShuffle} showHistory={false} />
-        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: FIXED_TOP_BAR_HEIGHT + 18 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 18 }]} showsVerticalScrollIndicator={false}>
           <SectionLabel palette={palette} tone="primary">FACT OF THE DAY</SectionLabel>
 
           {/* Hero glass fact */}
