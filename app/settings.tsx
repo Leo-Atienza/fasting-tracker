@@ -40,6 +40,7 @@ export default function SettingsScreen() {
   const premiumDismissed = useAppStore((s) => s.premiumDismissed);
   const setPremiumDismissed = useAppStore((s) => s.setPremiumDismissed);
   const clearAllData = useAppStore((s) => s.clearAllData);
+  const replayOnboarding = useAppStore((s) => s.replayOnboarding);
   const permissionStatus = useNotificationPermissionStatus();
   const showPermissionBlockedChip = remindersEnabled && permissionStatus === 'denied';
 
@@ -68,6 +69,17 @@ export default function SettingsScreen() {
       return;
     }
     setRemindersEnabled(true);
+  }
+
+  function confirmReplayOnboarding() {
+    Alert.alert(
+      'Replay onboarding?',
+      "Your fast history, water log, and favorites stay intact. You'll just walk through the welcome flow again with your current choices preselected.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Replay', onPress: () => replayOnboarding() },
+      ],
+    );
   }
 
   function confirmClearAll() {
@@ -213,6 +225,28 @@ export default function SettingsScreen() {
                 </Pressable>
               </>
             ) : null}
+
+            <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Replay setup"
+              accessibilityHint="Re-runs the 4-step welcome flow; your data stays intact."
+              onPress={confirmReplayOnboarding}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.primary}1A` }]}>
+                <MaterialCommunityIcons name="restart" color={palette.primary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Replay setup
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  Re-run the 4-step welcome flow
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
+            </Pressable>
           </GlassCard>
 
           {/* HYDRATION */}

@@ -67,6 +67,8 @@ interface AppActions {
   bumpSuggestionShuffle: () => void;
   setFastingRemindersEnabled: (next: boolean) => void;
   setPremiumDismissed: (next: boolean) => void;
+  /** Re-run the welcome flow without losing any user data. */
+  replayOnboarding: () => void;
   /** Hard reset to initial state. Wipes persist on next write. */
   clearAllData: () => void;
 }
@@ -170,6 +172,7 @@ export const useAppStore = create<AppStore>()(
         set((s) => ({ eatShuffleNonce: s.eatShuffleNonce + 1 })),
       setFastingRemindersEnabled: (next) => set({ fastingRemindersEnabled: next }),
       setPremiumDismissed: (next) => set({ premiumDismissed: next }),
+      replayOnboarding: () => set({ hasCompletedOnboarding: false }),
       clearAllData: () =>
         set({
           hasCompletedOnboarding: false,

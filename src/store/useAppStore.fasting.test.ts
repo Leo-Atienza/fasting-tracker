@@ -181,6 +181,59 @@ describe('useAppStore — clearAllData (W18.1)', () => {
   });
 });
 
+describe('useAppStore — replayOnboarding (R5.P3)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('flips hasCompletedOnboarding to false', () => {
+    useAppStore.setState({ hasCompletedOnboarding: true });
+    useAppStore.getState().replayOnboarding();
+    expect(useAppStore.getState().hasCompletedOnboarding).toBe(false);
+  });
+
+  it('preserves every other persisted field', () => {
+    useAppStore.setState({
+      hasCompletedOnboarding: true,
+      dietPreferenceId: 'vegan',
+      defaultFastTargetMinutes: 18 * 60,
+      eatShuffleNonce: 7,
+      activeFast: { startedAt: new Date('2026-05-10T12:00:00.000Z').toISOString(), targetDurationMinutes: 14 * 60 },
+      sessions: [
+        { id: 'a', startedAt: '2026-05-09T08:00:00.000Z', endedAt: '2026-05-09T20:00:00.000Z', targetDurationMinutes: 720 },
+      ],
+      waterEntries: [{ id: 'w1', at: '2026-05-10T09:30:00.000Z', ml: 250 }],
+      waterDailyGoalMl: 3000,
+      waterUnit: 'oz',
+      favoriteFactIds: ['fact-1', 'fact-2'],
+      fastingRemindersEnabled: false,
+      premiumDismissed: true,
+    });
+
+    useAppStore.getState().replayOnboarding();
+    const s = useAppStore.getState();
+
+    expect(s.hasCompletedOnboarding).toBe(false);
+    expect(s.dietPreferenceId).toBe('vegan');
+    expect(s.defaultFastTargetMinutes).toBe(18 * 60);
+    expect(s.eatShuffleNonce).toBe(7);
+    expect(s.activeFast).toEqual({
+      startedAt: '2026-05-10T12:00:00.000Z',
+      targetDurationMinutes: 14 * 60,
+    });
+    expect(s.sessions.length).toBe(1);
+    expect(s.sessions[0]!.id).toBe('a');
+    expect(s.waterEntries.length).toBe(1);
+    expect(s.waterEntries[0]!.id).toBe('w1');
+    expect(s.waterDailyGoalMl).toBe(3000);
+    expect(s.waterUnit).toBe('oz');
+    expect(s.favoriteFactIds).toEqual(['fact-1', 'fact-2']);
+    expect(s.fastingRemindersEnabled).toBe(false);
+    expect(s.premiumDismissed).toBe(true);
+  });
+});
+
 describe('selectWaterTodayMl — cross-midnight (W7.2 + W8.2)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
