@@ -26,7 +26,12 @@ import {
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { PersistErrorBanner } from '@/src/components/PersistErrorBanner';
-import { ACTION_PAUSE, ACTION_SNOOZE } from '@/src/features/notifications/milestones';
+import {
+  ACTION_PAUSE,
+  ACTION_RESUME,
+  ACTION_SNOOZE,
+  PAUSED_REMINDER_KIND,
+} from '@/src/features/notifications/milestones';
 import { startNotificationOrchestrator } from '@/src/features/notifications/orchestrate';
 import { setupNotificationHandler, snoozeMilestone } from '@/src/features/notifications/scheduler';
 import { useStoreHydrated } from '@/src/hooks/useStoreHydrated';
@@ -121,11 +126,17 @@ export default function RootLayout() {
           | { kind?: string; hours?: number }
           | null
           | undefined;
-        if (!data || data.kind !== 'fasting-milestone') return;
-        if (action === ACTION_PAUSE) {
-          useAppStore.getState().pauseRemindersForCurrentFast();
-        } else if (action === ACTION_SNOOZE && typeof data.hours === 'number') {
-          void snoozeMilestone(data.hours);
+        if (!data) return;
+        if (data.kind === 'fasting-milestone') {
+          if (action === ACTION_PAUSE) {
+            useAppStore.getState().pauseRemindersForCurrentFast();
+          } else if (action === ACTION_SNOOZE && typeof data.hours === 'number') {
+            void snoozeMilestone(data.hours);
+          }
+        } else if (data.kind === PAUSED_REMINDER_KIND) {
+          if (action === ACTION_RESUME) {
+            useAppStore.getState().clearReminderMute();
+          }
         }
       });
     } catch {

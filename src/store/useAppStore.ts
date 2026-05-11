@@ -53,6 +53,8 @@ interface AppSlice {
    * scoped to the current fast — a brand new fast always nudges.
    */
   mutedFastStartedAt: string | null;
+  /** Milestone hours the user has opted in to. Defaults to `[12, 16, 20]`. */
+  enabledMilestones: number[];
   /** User-chosen streak target in days. `null` until the user picks one. */
   streakTargetDays: number | null;
   /** Dismissed the premium hero in Settings. */
@@ -74,6 +76,8 @@ interface AppActions {
   toggleFavoriteFact: (id: string) => void;
   bumpSuggestionShuffle: () => void;
   setFastingRemindersEnabled: (next: boolean) => void;
+  /** Enable or disable a single milestone (12 / 16 / 20). No-op if invalid hours. */
+  setMilestoneEnabled: (hours: number, enabled: boolean) => void;
   /** Pause reminders for the active fast only — next fast nudges again. */
   pauseRemindersForCurrentFast: () => void;
   /** Clear the per-fast mute set by pauseRemindersForCurrentFast. */
@@ -104,6 +108,7 @@ export const useAppStore = create<AppStore>()(
       favoriteFactIds: [],
       fastingRemindersEnabled: true,
       mutedFastStartedAt: null,
+      enabledMilestones: [12, 16, 20],
       streakTargetDays: null,
       premiumDismissed: false,
       skipOnboarding: () => set({ hasCompletedOnboarding: true }),
@@ -189,6 +194,17 @@ export const useAppStore = create<AppStore>()(
       bumpSuggestionShuffle: () =>
         set((s) => ({ eatShuffleNonce: s.eatShuffleNonce + 1 })),
       setFastingRemindersEnabled: (next) => set({ fastingRemindersEnabled: next }),
+      setMilestoneEnabled: (hours, enabled) => {
+        if (![12, 16, 20].includes(hours)) return;
+        set((state) => {
+          const has = state.enabledMilestones.includes(hours);
+          if (enabled === has) return state;
+          const next = enabled
+            ? [...state.enabledMilestones, hours].sort((a, b) => a - b)
+            : state.enabledMilestones.filter((h) => h !== hours);
+          return { enabledMilestones: next };
+        });
+      },
       pauseRemindersForCurrentFast: () => {
         const active = get().activeFast;
         if (!active) return;
@@ -219,6 +235,7 @@ export const useAppStore = create<AppStore>()(
           favoriteFactIds: [],
           fastingRemindersEnabled: true,
           mutedFastStartedAt: null,
+          enabledMilestones: [12, 16, 20],
           streakTargetDays: null,
           premiumDismissed: false,
         }),
@@ -241,6 +258,7 @@ export const useAppStore = create<AppStore>()(
         favoriteFactIds: s.favoriteFactIds,
         fastingRemindersEnabled: s.fastingRemindersEnabled,
         mutedFastStartedAt: s.mutedFastStartedAt,
+        enabledMilestones: s.enabledMilestones,
         streakTargetDays: s.streakTargetDays,
         premiumDismissed: s.premiumDismissed,
       }),

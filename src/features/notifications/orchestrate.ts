@@ -1,6 +1,8 @@
 import {
   cancelFastingMilestones,
+  dismissPausedReminder,
   ensureNotificationsPermission,
+  postPausedReminder,
   scheduleFastingMilestones,
 } from './scheduler';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -21,6 +23,7 @@ type Slice = {
   activeFast: { startedAt: string } | null;
   fastingRemindersEnabled: boolean;
   mutedFastStartedAt: string | null;
+  enabledMilestones: number[];
 };
 
 function selectSlice(s: ReturnType<typeof useAppStore.getState>): Slice {
@@ -28,6 +31,7 @@ function selectSlice(s: ReturnType<typeof useAppStore.getState>): Slice {
     activeFast: s.activeFast,
     fastingRemindersEnabled: s.fastingRemindersEnabled,
     mutedFastStartedAt: s.mutedFastStartedAt,
+    enabledMilestones: s.enabledMilestones,
   };
 }
 
@@ -53,22 +57,42 @@ async function reconcile(prev: Slice | null, next: Slice): Promise<void> {
   const becameOff = prev?.fastingRemindersEnabled === true && next.fastingRemindersEnabled === false;
   const startedAtChanged =
     (prev?.activeFast?.startedAt ?? null) !== (next.activeFast?.startedAt ?? null);
+  const fastEnded = startedAtChanged && next.activeFast == null;
   const wasMuted = prev ? isMutedForFast(prev) : false;
   const isMuted = isMutedForFast(next);
   const justMuted = !wasMuted && isMuted;
+  const muteCleared = wasMuted && !isMuted;
+  const enabledMilestonesChanged = prev != null && prev.enabledMilestones !== next.enabledMilestones;
 
-  // Off-states: reminders disabled, fast ended, or user just paused this fast.
-  if (becameOff || (startedAtChanged && next.activeFast == null) || justMuted) {
+  // Pause taken → cancel milestones, post a sticky "Reminders paused" follow-up.
+  if (justMuted) {
     await cancelFastingMilestones();
+    await postPausedReminder();
     return;
   }
 
-  // Currently muted → never reschedule. Snoozed re-fires arrive on their own.
+  // Master toggle off or fast ended → cancel milestones AND clean up any paused reminder.
+  if (becameOff || fastEnded) {
+    await cancelFastingMilestones();
+    await dismissPausedReminder();
+    return;
+  }
+
+  // Still muted (no transition this tick) → leave both schedules alone.
   if (isMuted) return;
 
-  if (next.fastingRemindersEnabled && next.activeFast && (startedAtChanged || prev == null || (wasMuted && !isMuted))) {
+  if (
+    next.fastingRemindersEnabled &&
+    next.activeFast &&
+    (startedAtChanged || prev == null || muteCleared || enabledMilestonesChanged)
+  ) {
+    // Mute just cleared (Resume tapped, or a new fast started while a prior mute lingered) →
+    // dismiss the paused reminder before rescheduling so the tray doesn't show stale state.
+    if (muteCleared) {
+      await dismissPausedReminder();
+    }
     const ok = await ensureNotificationsPermission();
     if (!ok) return;
-    await scheduleFastingMilestones(next.activeFast.startedAt);
+    await scheduleFastingMilestones(next.activeFast.startedAt, next.enabledMilestones);
   }
 }

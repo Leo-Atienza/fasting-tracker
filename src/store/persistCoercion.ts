@@ -71,6 +71,14 @@ export function coercePersistedAppSlice(raw: unknown): Partial<PersistedSlice> {
   } else if (typeof o.mutedFastStartedAt === 'string' && isValidIsoTimestamp(o.mutedFastStartedAt)) {
     partial.mutedFastStartedAt = o.mutedFastStartedAt;
   }
+  if (Array.isArray(o.enabledMilestones)) {
+    const validHours = [12, 16, 20];
+    const filtered = o.enabledMilestones.filter(
+      (x): x is number =>
+        typeof x === 'number' && Number.isFinite(x) && validHours.includes(x),
+    );
+    partial.enabledMilestones = [...new Set(filtered)].sort((a, b) => a - b);
+  }
   if (o.streakTargetDays === null) {
     partial.streakTargetDays = null;
   } else if (

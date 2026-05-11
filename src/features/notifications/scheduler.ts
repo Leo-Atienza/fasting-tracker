@@ -3,12 +3,16 @@ import { Platform } from 'react-native';
 
 import {
   ACTION_PAUSE,
+  ACTION_RESUME,
   ACTION_SNOOZE,
   findMilestoneByHours,
   isMilestoneIdentifier,
   makeSnoozedMilestoneId,
   milestonesToScheduleFrom,
   NOTIF_CATEGORY,
+  NOTIF_CATEGORY_PAUSED,
+  PAUSED_REMINDER_ID,
+  PAUSED_REMINDER_KIND,
   snoozedFireAt,
 } from './milestones';
 
@@ -24,6 +28,7 @@ import {
  */
 
 const ANDROID_CHANNEL_ID = 'fasting-milestones';
+const ANDROID_PAUSED_CHANNEL_ID = 'fasting-paused-reminder';
 
 let handlerInstalled = false;
 
@@ -62,6 +67,17 @@ export function setupNotificationHandler(): void {
   } catch {
     /* web / unsupported — ignore */
   }
+  try {
+    void Notifications.setNotificationCategoryAsync(NOTIF_CATEGORY_PAUSED, [
+      {
+        identifier: ACTION_RESUME,
+        buttonTitle: 'Resume',
+        options: { isAuthenticationRequired: false, opensAppToForeground: false },
+      },
+    ]);
+  } catch {
+    /* web / unsupported — ignore */
+  }
 }
 
 /**
@@ -77,6 +93,24 @@ async function ensureAndroidChannel(): Promise<void> {
       sound: 'default',
       vibrationPattern: [0, 180, 120, 180],
       enableVibrate: true,
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Low-importance Android channel for the sticky "Reminders paused" follow-up.
+ * Silent + no vibration — it's a status banner, not a nudge.
+ */
+async function ensureAndroidPausedChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  try {
+    await Notifications.setNotificationChannelAsync(ANDROID_PAUSED_CHANNEL_ID, {
+      name: 'Reminders paused',
+      importance: Notifications.AndroidImportance.LOW,
+      vibrationPattern: [0],
+      enableVibrate: false,
     });
   } catch {
     /* ignore */
@@ -110,13 +144,19 @@ export async function ensureNotificationsPermission(): Promise<boolean> {
  * Schedule the milestone reminder set from a given fast start.
  * Only milestones that lie in the future are scheduled. Existing fasting
  * reminders are cancelled first so re-starts don't pile up.
+ *
+ * `enabledHours` filters which milestones are scheduled (e.g. `[12, 20]`
+ * silences the 16h nudge). Omit to schedule the full set.
  */
-export async function scheduleFastingMilestones(startedAtIso: string): Promise<void> {
+export async function scheduleFastingMilestones(
+  startedAtIso: string,
+  enabledHours?: readonly number[],
+): Promise<void> {
   try {
     await ensureAndroidChannel();
     await cancelFastingMilestones();
 
-    const planned = milestonesToScheduleFrom(startedAtIso, Date.now());
+    const planned = milestonesToScheduleFrom(startedAtIso, Date.now(), enabledHours);
     for (const m of planned) {
       await Notifications.scheduleNotificationAsync({
         identifier: m.id,
@@ -178,6 +218,7 @@ export async function snoozeMilestone(hours: number, tappedAt: number = Date.now
 
 /**
  * Cancel the entire milestone set. Safe to call when none are scheduled.
+ * Does NOT touch the paused-reminder notification — that has its own lifecycle.
  */
 export async function cancelFastingMilestones(): Promise<void> {
   try {
@@ -189,5 +230,48 @@ export async function cancelFastingMilestones(): Promise<void> {
     );
   } catch {
     /* ignore */
+  }
+}
+
+/**
+ * Post the sticky "Reminders paused" follow-up notification. Idempotent — calls
+ * dismiss first so multiple Pause taps don't pile up.
+ */
+export async function postPausedReminder(): Promise<void> {
+  try {
+    await ensureAndroidPausedChannel();
+    await dismissPausedReminder();
+    await Notifications.scheduleNotificationAsync({
+      identifier: PAUSED_REMINDER_ID,
+      content: {
+        title: 'Reminders paused',
+        body: 'Tap Resume to bring back milestone nudges for this fast.',
+        sound: false,
+        categoryIdentifier: NOTIF_CATEGORY_PAUSED,
+        sticky: true,
+        autoDismiss: false,
+        data: { kind: PAUSED_REMINDER_KIND },
+      },
+      trigger: null,
+    });
+  } catch {
+    /* permission revoked or native module missing — silently skip */
+  }
+}
+
+/**
+ * Dismiss / cancel the paused-reminder notification. Safe to call when none is
+ * present (both scheduled and presented are swept).
+ */
+export async function dismissPausedReminder(): Promise<void> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(PAUSED_REMINDER_ID);
+  } catch {
+    /* not scheduled — ignore */
+  }
+  try {
+    await Notifications.dismissNotificationAsync(PAUSED_REMINDER_ID);
+  } catch {
+    /* not presented or native module missing — ignore */
   }
 }

@@ -44,6 +44,13 @@ export const NOTIF_CATEGORY = 'fasting-milestone';
 export const ACTION_SNOOZE = 'snooze-1h';
 export const ACTION_PAUSE = 'pause';
 
+/** Category and id for the sticky "Reminders paused" follow-up notification. */
+export const NOTIF_CATEGORY_PAUSED = 'fasting-paused';
+export const ACTION_RESUME = 'resume';
+export const PAUSED_REMINDER_ID = 'fasting-pause-reminder';
+/** `data.kind` value carried by the paused reminder — distinguishes it from milestone responses. */
+export const PAUSED_REMINDER_KIND = 'fasting-pause-reminder';
+
 /** How far ahead a "Snooze 1h" tap re-fires a milestone. */
 export const SNOOZE_OFFSET_MS = 60 * 60 * 1000;
 
@@ -84,19 +91,28 @@ export type PlannedMilestone = {
   body: string;
 };
 
+/** All milestone hours we know about — convenience for callers/defaults. */
+export const ALL_MILESTONE_HOURS: readonly number[] = MILESTONES.map((m) => m.hours);
+
 /**
  * Returns milestones whose fire time is strictly more than MIN_LEAD_MS in the
  * future relative to `now`. Invalid ISO input yields an empty list.
+ *
+ * `enabledHours` filters the schedule to a subset of `[12, 16, 20]`. Defaults
+ * to all known milestones so existing callers keep their behavior unchanged.
  */
 export function milestonesToScheduleFrom(
   startedAtIso: string,
   now: number,
+  enabledHours: readonly number[] = ALL_MILESTONE_HOURS,
 ): PlannedMilestone[] {
   const startedAt = Date.parse(startedAtIso);
   if (!Number.isFinite(startedAt)) return [];
 
+  const enabledSet = new Set(enabledHours);
   const planned: PlannedMilestone[] = [];
   for (const m of MILESTONES) {
+    if (!enabledSet.has(m.hours)) continue;
     const fireAtMs = startedAt + m.hours * 60 * 60 * 1000;
     if (fireAtMs - now < MIN_LEAD_MS) continue;
     planned.push({

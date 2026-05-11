@@ -36,6 +36,7 @@ function freshState() {
     waterUnit: 'ml',
     favoriteFactIds: [],
     mutedFastStartedAt: null,
+    enabledMilestones: [12, 16, 20],
     streakTargetDays: null,
   });
 }
@@ -336,6 +337,54 @@ describe('useAppStore — streak target (R6.P4)', () => {
     useAppStore.getState().setStreakTargetDays(30);
     useAppStore.getState().clearAllData();
     expect(useAppStore.getState().streakTargetDays).toBeNull();
+  });
+});
+
+describe('useAppStore — per-milestone toggles (R7.P3a)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('defaults to [12, 16, 20] on a fresh store', () => {
+    expect(useAppStore.getState().enabledMilestones).toEqual([12, 16, 20]);
+  });
+
+  it('setMilestoneEnabled(12, false) removes 12 from the array', () => {
+    useAppStore.getState().setMilestoneEnabled(12, false);
+    expect(useAppStore.getState().enabledMilestones).toEqual([16, 20]);
+  });
+
+  it('setMilestoneEnabled(12, true) re-adds it and keeps the array sorted', () => {
+    useAppStore.getState().setMilestoneEnabled(12, false);
+    useAppStore.getState().setMilestoneEnabled(20, false);
+    useAppStore.getState().setMilestoneEnabled(12, true);
+    useAppStore.getState().setMilestoneEnabled(20, true);
+    expect(useAppStore.getState().enabledMilestones).toEqual([12, 16, 20]);
+  });
+
+  it('setMilestoneEnabled is idempotent when the requested state already holds', () => {
+    const before = useAppStore.getState().enabledMilestones;
+    useAppStore.getState().setMilestoneEnabled(12, true); // already on
+    expect(useAppStore.getState().enabledMilestones).toBe(before);
+    useAppStore.getState().setMilestoneEnabled(16, false);
+    const after = useAppStore.getState().enabledMilestones;
+    useAppStore.getState().setMilestoneEnabled(16, false); // already off
+    expect(useAppStore.getState().enabledMilestones).toBe(after);
+  });
+
+  it('setMilestoneEnabled ignores unknown hour values', () => {
+    useAppStore.getState().setMilestoneEnabled(7, true);
+    expect(useAppStore.getState().enabledMilestones).toEqual([12, 16, 20]);
+    useAppStore.getState().setMilestoneEnabled(99, false);
+    expect(useAppStore.getState().enabledMilestones).toEqual([12, 16, 20]);
+  });
+
+  it('clearAllData resets enabledMilestones to the full set', () => {
+    useAppStore.getState().setMilestoneEnabled(12, false);
+    useAppStore.getState().setMilestoneEnabled(16, false);
+    useAppStore.getState().clearAllData();
+    expect(useAppStore.getState().enabledMilestones).toEqual([12, 16, 20]);
   });
 });
 

@@ -53,6 +53,36 @@ describe('milestonesToScheduleFrom', () => {
   });
 });
 
+describe('milestonesToScheduleFrom — enabledHours filter (R7.P3a)', () => {
+  it('returns no milestones when enabledHours is empty', () => {
+    const now = Date.UTC(2026, 4, 11, 12, 0, 0);
+    const startedAt = new Date(now - 1_000).toISOString();
+    expect(milestonesToScheduleFrom(startedAt, now, [])).toEqual([]);
+  });
+
+  it('returns only the enabled milestone subset', () => {
+    const now = Date.UTC(2026, 4, 11, 12, 0, 0);
+    const startedAt = new Date(now - 1_000).toISOString();
+    const planned = milestonesToScheduleFrom(startedAt, now, [16]);
+    expect(planned.map((p) => p.hours)).toEqual([16]);
+  });
+
+  it('honors enabledHours together with past-milestone filtering', () => {
+    const now = Date.UTC(2026, 4, 11, 12, 0, 0);
+    // Fast started 13h ago — 12h has passed; 16h and 20h are still future.
+    const startedAt = new Date(now - 13 * 60 * 60 * 1000).toISOString();
+    const planned = milestonesToScheduleFrom(startedAt, now, [12, 20]);
+    expect(planned.map((p) => p.hours)).toEqual([20]);
+  });
+
+  it('defaults to scheduling every milestone when enabledHours is omitted', () => {
+    const now = Date.UTC(2026, 4, 11, 12, 0, 0);
+    const startedAt = new Date(now - 1_000).toISOString();
+    const planned = milestonesToScheduleFrom(startedAt, now);
+    expect(planned.map((p) => p.hours)).toEqual([12, 16, 20]);
+  });
+});
+
 describe('milestone identifiers', () => {
   it('makeMilestoneId / isMilestoneIdentifier round-trip cleanly', () => {
     const id = makeMilestoneId(16);

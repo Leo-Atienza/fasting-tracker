@@ -46,6 +46,18 @@ describe('coercePersistedAppSlice', () => {
     ).toBeNull();
   });
 
+  it('coerces enabledMilestones — drops invalid hours, dedupes, sorts', () => {
+    const out = coercePersistedAppSlice({
+      enabledMilestones: [20, 12, 7, 20, '16', null, 99],
+    });
+    expect(out.enabledMilestones).toEqual([12, 20]);
+  });
+
+  it('omits enabledMilestones when persisted shape is not an array (initial state default kicks in)', () => {
+    expect(coercePersistedAppSlice({}).enabledMilestones).toBeUndefined();
+    expect(coercePersistedAppSlice({ enabledMilestones: 'all' }).enabledMilestones).toBeUndefined();
+  });
+
   it('drops invalid diet id', () => {
     expect(coercePersistedAppSlice({ dietPreferenceId: 'keto_undefined' }).dietPreferenceId).toBeUndefined();
     expect(coercePersistedAppSlice({ dietPreferenceId: 'vegan' }).dietPreferenceId).toBe('vegan');

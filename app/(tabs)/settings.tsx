@@ -26,6 +26,13 @@ import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
 const SUGGESTIONS = rawSuggestions as EatSuggestion[];
 
+type MilestoneIcon = 'weather-sunset-up' | 'fire' | 'recycle';
+const MILESTONE_OPTIONS: { hours: number; title: string; sub: string; icon: MilestoneIcon }[] = [
+  { hours: 12, title: 'First milestone (12 h)', sub: 'Gentle metabolic-glide nudge.', icon: 'weather-sunset-up' },
+  { hours: 16, title: 'Classic 16:8 (16 h)', sub: 'The popular checkpoint.', icon: 'fire' },
+  { hours: 20, title: 'Long-window (20 h)', sub: 'Celebrate a longer hold.', icon: 'recycle' },
+];
+
 export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
@@ -45,6 +52,8 @@ export default function SettingsScreen() {
   const mutedFastStartedAt = useAppStore((s) => s.mutedFastStartedAt);
   const activeFastStartedAt = useAppStore((s) => s.activeFast?.startedAt ?? null);
   const clearReminderMute = useAppStore((s) => s.clearReminderMute);
+  const enabledMilestones = useAppStore((s) => s.enabledMilestones);
+  const setMilestoneEnabled = useAppStore((s) => s.setMilestoneEnabled);
   const premiumDismissed = useAppStore((s) => s.premiumDismissed);
   const setPremiumDismissed = useAppStore((s) => s.setPremiumDismissed);
   const clearAllData = useAppStore((s) => s.clearAllData);
@@ -193,6 +202,30 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
 
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Replay setup"
+              accessibilityHint="Re-runs the 4-step welcome flow; your data stays intact."
+              onPress={confirmReplayOnboarding}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
+              <View style={[styles.rowOrb, { backgroundColor: `${palette.primary}1A` }]}>
+                <MaterialCommunityIcons name="restart" color={palette.primary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                  Replay setup
+                </Text>
+                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                  Re-run the 4-step welcome flow
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
+            </Pressable>
+          </GlassCard>
+
+          {/* REMINDERS */}
+          <SectionLabel palette={palette}>REMINDERS</SectionLabel>
+          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
             <View style={styles.row}>
               <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
                 <MaterialCommunityIcons name="bell-ring" color={palette.tertiary} size={20} />
@@ -261,7 +294,7 @@ export default function SettingsScreen() {
                       PAUSED THIS FAST
                     </Text>
                     <Text style={[styles.permissionBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
-                      Reminders resume on your next fast — or tap to clear now.
+                      Reminders resume on your next fast — or pull down notifications and tap Resume.
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={20} />
@@ -271,25 +304,40 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Replay setup"
-              accessibilityHint="Re-runs the 4-step welcome flow; your data stays intact."
-              onPress={confirmReplayOnboarding}
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
-              <View style={[styles.rowOrb, { backgroundColor: `${palette.primary}1A` }]}>
-                <MaterialCommunityIcons name="restart" color={palette.primary} size={20} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
-                  Replay setup
-                </Text>
-                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
-                  Re-run the 4-step welcome flow
-                </Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
-            </Pressable>
+            <Text style={[styles.subSectionTitle, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.label, marginTop: 12, letterSpacing: 1.4 }]}>
+              CHOOSE YOUR MILESTONES
+            </Text>
+
+            {MILESTONE_OPTIONS.map((opt, idx) => {
+              const isOn = enabledMilestones.includes(opt.hours);
+              const isLast = idx === MILESTONE_OPTIONS.length - 1;
+              return (
+                <React.Fragment key={opt.hours}>
+                  <View style={[styles.row, !remindersEnabled && { opacity: 0.55 }]}>
+                    <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
+                      <MaterialCommunityIcons name={opt.icon} color={palette.tertiary} size={20} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                        {opt.title}
+                      </Text>
+                      <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                        {opt.sub}
+                      </Text>
+                    </View>
+                    <IOSToggle
+                      palette={palette}
+                      value={isOn}
+                      onValueChange={(next) => setMilestoneEnabled(opt.hours, next)}
+                      accessibilityLabel={`Toggle ${opt.hours} hour milestone`}
+                    />
+                  </View>
+                  {!isLast ? (
+                    <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
           </GlassCard>
 
           {/* HYDRATION */}
