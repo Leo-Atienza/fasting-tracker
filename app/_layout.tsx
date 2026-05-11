@@ -12,6 +12,7 @@ import {
 } from '@expo-google-fonts/hanken-grotesk';
 import { Inter_300Light, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
@@ -25,8 +26,9 @@ import {
 } from '@/constants/FastCoachTheme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { PersistErrorBanner } from '@/src/components/PersistErrorBanner';
+import { ACTION_PAUSE, ACTION_SNOOZE } from '@/src/features/notifications/milestones';
 import { startNotificationOrchestrator } from '@/src/features/notifications/orchestrate';
-import { setupNotificationHandler } from '@/src/features/notifications/scheduler';
+import { setupNotificationHandler, snoozeMilestone } from '@/src/features/notifications/scheduler';
 import { useStoreHydrated } from '@/src/hooks/useStoreHydrated';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -107,6 +109,35 @@ export default function RootLayout() {
   useEffect(() => {
     if (!hydrated) return;
     return startNotificationOrchestrator();
+  }, [hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let sub: { remove: () => void } | null = null;
+    try {
+      sub = Notifications.addNotificationResponseReceivedListener((response) => {
+        const action = response.actionIdentifier;
+        const data = response.notification.request.content.data as
+          | { kind?: string; hours?: number }
+          | null
+          | undefined;
+        if (!data || data.kind !== 'fasting-milestone') return;
+        if (action === ACTION_PAUSE) {
+          useAppStore.getState().pauseRemindersForCurrentFast();
+        } else if (action === ACTION_SNOOZE && typeof data.hours === 'number') {
+          void snoozeMilestone(data.hours);
+        }
+      });
+    } catch {
+      /* native module unavailable — listener is best-effort */
+    }
+    return () => {
+      try {
+        sub?.remove();
+      } catch {
+        /* ignore */
+      }
+    };
   }, [hydrated]);
 
   if (!fontsLoaded || !hydrated) {

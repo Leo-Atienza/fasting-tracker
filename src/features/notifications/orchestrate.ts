@@ -11,38 +11,62 @@ import { useAppStore } from '@/src/store/useAppStore';
  * hydration completes so we operate on real state, not defaults.
  *
  * Rules:
- * - active fast appears AND reminders on → schedule milestones
+ * - active fast appears AND reminders on AND not muted → schedule milestones
  * - active fast disappears → cancel milestones
  * - reminders turn off → cancel milestones
- * - reminders turn on AND a fast is active → schedule
+ * - the current fast is muted (pauseRemindersForCurrentFast) → cancel
+ * - the mute is cleared AND a fast is still active → reschedule
  */
-export function startNotificationOrchestrator(): () => void {
-  type Slice = { activeFast: { startedAt: string } | null; fastingRemindersEnabled: boolean };
+type Slice = {
+  activeFast: { startedAt: string } | null;
+  fastingRemindersEnabled: boolean;
+  mutedFastStartedAt: string | null;
+};
 
-  const select = (s: ReturnType<typeof useAppStore.getState>): Slice => ({
+function selectSlice(s: ReturnType<typeof useAppStore.getState>): Slice {
+  return {
     activeFast: s.activeFast,
     fastingRemindersEnabled: s.fastingRemindersEnabled,
-  });
+    mutedFastStartedAt: s.mutedFastStartedAt,
+  };
+}
 
+function isMutedForFast(slice: Slice): boolean {
+  return (
+    slice.activeFast != null &&
+    slice.mutedFastStartedAt != null &&
+    slice.activeFast.startedAt === slice.mutedFastStartedAt
+  );
+}
+
+export function startNotificationOrchestrator(): () => void {
   // Run once with current state so we re-schedule after a cold launch with an
   // already-active fast.
-  void reconcile(null, select(useAppStore.getState()));
+  void reconcile(null, selectSlice(useAppStore.getState()));
 
   return useAppStore.subscribe((state, prev) => {
-    void reconcile(select(prev), select(state));
+    void reconcile(selectSlice(prev), selectSlice(state));
   });
 }
 
-async function reconcile(prev: { activeFast: { startedAt: string } | null; fastingRemindersEnabled: boolean } | null, next: { activeFast: { startedAt: string } | null; fastingRemindersEnabled: boolean }): Promise<void> {
+async function reconcile(prev: Slice | null, next: Slice): Promise<void> {
   const becameOff = prev?.fastingRemindersEnabled === true && next.fastingRemindersEnabled === false;
-  const startedAtChanged = (prev?.activeFast?.startedAt ?? null) !== (next.activeFast?.startedAt ?? null);
+  const startedAtChanged =
+    (prev?.activeFast?.startedAt ?? null) !== (next.activeFast?.startedAt ?? null);
+  const wasMuted = prev ? isMutedForFast(prev) : false;
+  const isMuted = isMutedForFast(next);
+  const justMuted = !wasMuted && isMuted;
 
-  if (becameOff || (startedAtChanged && next.activeFast == null)) {
+  // Off-states: reminders disabled, fast ended, or user just paused this fast.
+  if (becameOff || (startedAtChanged && next.activeFast == null) || justMuted) {
     await cancelFastingMilestones();
     return;
   }
 
-  if (next.fastingRemindersEnabled && next.activeFast && (startedAtChanged || prev == null)) {
+  // Currently muted → never reschedule. Snoozed re-fires arrive on their own.
+  if (isMuted) return;
+
+  if (next.fastingRemindersEnabled && next.activeFast && (startedAtChanged || prev == null || (wasMuted && !isMuted))) {
     const ok = await ensureNotificationsPermission();
     if (!ok) return;
     await scheduleFastingMilestones(next.activeFast.startedAt);

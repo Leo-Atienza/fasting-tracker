@@ -47,6 +47,12 @@ interface AppSlice {
   activeFast: ActiveFast | null;
   /** Local notification scheduling — wired through src/features/notifications. */
   fastingRemindersEnabled: boolean;
+  /**
+   * ISO of the activeFast.startedAt the user paused reminders for. `null` when
+   * not muted. Cleared by startFast/endFast/clearAllData so the mute is strictly
+   * scoped to the current fast — a brand new fast always nudges.
+   */
+  mutedFastStartedAt: string | null;
   /** Dismissed the premium hero in Settings. */
   premiumDismissed: boolean;
 }
@@ -66,6 +72,10 @@ interface AppActions {
   toggleFavoriteFact: (id: string) => void;
   bumpSuggestionShuffle: () => void;
   setFastingRemindersEnabled: (next: boolean) => void;
+  /** Pause reminders for the active fast only — next fast nudges again. */
+  pauseRemindersForCurrentFast: () => void;
+  /** Clear the per-fast mute set by pauseRemindersForCurrentFast. */
+  clearReminderMute: () => void;
   setPremiumDismissed: (next: boolean) => void;
   /** Re-run the welcome flow without losing any user data. */
   replayOnboarding: () => void;
@@ -89,6 +99,7 @@ export const useAppStore = create<AppStore>()(
       waterUnit: 'ml',
       favoriteFactIds: [],
       fastingRemindersEnabled: true,
+      mutedFastStartedAt: null,
       premiumDismissed: false,
       skipOnboarding: () => set({ hasCompletedOnboarding: true }),
       completeOnboarding: (payload) =>
@@ -120,6 +131,7 @@ export const useAppStore = create<AppStore>()(
             startedAt: new Date().toISOString(),
             targetDurationMinutes,
           },
+          mutedFastStartedAt: null,
         });
       },
       endFast: () => {
@@ -134,6 +146,7 @@ export const useAppStore = create<AppStore>()(
         };
         set((state) => ({
           activeFast: null,
+          mutedFastStartedAt: null,
           sessions: trimSessionsNewestFirst([session, ...state.sessions]),
         }));
       },
@@ -171,6 +184,12 @@ export const useAppStore = create<AppStore>()(
       bumpSuggestionShuffle: () =>
         set((s) => ({ eatShuffleNonce: s.eatShuffleNonce + 1 })),
       setFastingRemindersEnabled: (next) => set({ fastingRemindersEnabled: next }),
+      pauseRemindersForCurrentFast: () => {
+        const active = get().activeFast;
+        if (!active) return;
+        set({ mutedFastStartedAt: active.startedAt });
+      },
+      clearReminderMute: () => set({ mutedFastStartedAt: null }),
       setPremiumDismissed: (next) => set({ premiumDismissed: next }),
       replayOnboarding: () => set({ hasCompletedOnboarding: false }),
       clearAllData: () =>
@@ -186,6 +205,7 @@ export const useAppStore = create<AppStore>()(
           waterUnit: 'ml',
           favoriteFactIds: [],
           fastingRemindersEnabled: true,
+          mutedFastStartedAt: null,
           premiumDismissed: false,
         }),
     }),
@@ -206,6 +226,7 @@ export const useAppStore = create<AppStore>()(
         waterUnit: s.waterUnit,
         favoriteFactIds: s.favoriteFactIds,
         fastingRemindersEnabled: s.fastingRemindersEnabled,
+        mutedFastStartedAt: s.mutedFastStartedAt,
         premiumDismissed: s.premiumDismissed,
       }),
       /** Manual rehydrate in useStoreHydrated — avoids web/native races with splash gate. */

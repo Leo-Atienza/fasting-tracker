@@ -20,5 +20,7 @@ export interface PersistedSlice {
   waterUnit: WaterUnit;
   favoriteFactIds: string[];
   fastingRemindersEnabled: boolean;
+  /** ISO of the activeFast.startedAt that the user paused reminders for. `null` when not muted. */
+  mutedFastStartedAt: string | null;
   premiumDismissed: boolean;
 }

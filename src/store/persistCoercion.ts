@@ -66,6 +66,11 @@ export function coercePersistedAppSlice(raw: unknown): Partial<PersistedSlice> {
 
   if (typeof o.fastingRemindersEnabled === 'boolean')
     partial.fastingRemindersEnabled = o.fastingRemindersEnabled;
+  if (o.mutedFastStartedAt === null) {
+    partial.mutedFastStartedAt = null;
+  } else if (typeof o.mutedFastStartedAt === 'string' && isValidIsoTimestamp(o.mutedFastStartedAt)) {
+    partial.mutedFastStartedAt = o.mutedFastStartedAt;
+  }
   if (typeof o.premiumDismissed === 'boolean')
     partial.premiumDismissed = o.premiumDismissed;
 

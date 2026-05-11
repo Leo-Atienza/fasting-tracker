@@ -35,6 +35,7 @@ function freshState() {
     waterDailyGoalMl: 2500,
     waterUnit: 'ml',
     favoriteFactIds: [],
+    mutedFastStartedAt: null,
   });
 }
 
@@ -231,6 +232,62 @@ describe('useAppStore — replayOnboarding (R5.P3)', () => {
     expect(s.favoriteFactIds).toEqual(['fact-1', 'fact-2']);
     expect(s.fastingRemindersEnabled).toBe(false);
     expect(s.premiumDismissed).toBe(true);
+  });
+});
+
+describe('useAppStore — reminder mute (R6.P3)', () => {
+  beforeEach(() => {
+    storage.clear();
+    freshState();
+  });
+
+  it('pauseRemindersForCurrentFast sets mutedFastStartedAt to the active fast start', () => {
+    useAppStore.getState().startFast({ targetDurationMinutes: 16 * 60 });
+    const started = useAppStore.getState().activeFast!.startedAt;
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    expect(useAppStore.getState().mutedFastStartedAt).toBe(started);
+  });
+
+  it('pauseRemindersForCurrentFast is a no-op when no fast is active', () => {
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
+  });
+
+  it('clearReminderMute resets mutedFastStartedAt to null', () => {
+    useAppStore.getState().startFast();
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    expect(useAppStore.getState().mutedFastStartedAt).not.toBeNull();
+    useAppStore.getState().clearReminderMute();
+    expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
+  });
+
+  it('endFast clears mutedFastStartedAt (mute is per-fast)', () => {
+    useAppStore.getState().startFast();
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    expect(useAppStore.getState().mutedFastStartedAt).not.toBeNull();
+    useAppStore.getState().endFast();
+    expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
+  });
+
+  it('startFast clears mutedFastStartedAt — a brand new fast always nudges', () => {
+    useAppStore.setState({ mutedFastStartedAt: '2026-05-01T00:00:00.000Z' });
+    useAppStore.getState().startFast();
+    expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
+  });
+
+  it('replayOnboarding leaves mutedFastStartedAt alone (mute is per-fast, replay is per-onboarding)', () => {
+    useAppStore.getState().startFast();
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    const muted = useAppStore.getState().mutedFastStartedAt;
+    useAppStore.getState().replayOnboarding();
+    expect(useAppStore.getState().mutedFastStartedAt).toBe(muted);
+  });
+
+  it('clearAllData wipes mutedFastStartedAt along with everything else', () => {
+    useAppStore.getState().startFast();
+    useAppStore.getState().pauseRemindersForCurrentFast();
+    useAppStore.getState().clearAllData();
+    expect(useAppStore.getState().mutedFastStartedAt).toBeNull();
   });
 });
 

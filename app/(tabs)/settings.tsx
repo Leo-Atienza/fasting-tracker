@@ -37,12 +37,21 @@ export default function SettingsScreen() {
   const setWaterUnit = useAppStore((s) => s.setWaterUnit);
   const remindersEnabled = useAppStore((s) => s.fastingRemindersEnabled);
   const setRemindersEnabled = useAppStore((s) => s.setFastingRemindersEnabled);
+  const mutedFastStartedAt = useAppStore((s) => s.mutedFastStartedAt);
+  const activeFastStartedAt = useAppStore((s) => s.activeFast?.startedAt ?? null);
+  const clearReminderMute = useAppStore((s) => s.clearReminderMute);
   const premiumDismissed = useAppStore((s) => s.premiumDismissed);
   const setPremiumDismissed = useAppStore((s) => s.setPremiumDismissed);
   const clearAllData = useAppStore((s) => s.clearAllData);
   const replayOnboarding = useAppStore((s) => s.replayOnboarding);
   const permissionStatus = useNotificationPermissionStatus();
   const showPermissionBlockedChip = remindersEnabled && permissionStatus === 'denied';
+  const showPausedChip =
+    remindersEnabled &&
+    !showPermissionBlockedChip &&
+    activeFastStartedAt !== null &&
+    mutedFastStartedAt !== null &&
+    mutedFastStartedAt === activeFastStartedAt;
 
   const [dietPickerOpen, setDietPickerOpen] = useState(false);
 
@@ -219,6 +228,33 @@ export default function SettingsScreen() {
                     </Text>
                     <Text style={[styles.permissionBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                       Reminders won&apos;t fire until you re-enable them in system settings.
+                    </Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={20} />
+                </Pressable>
+              </>
+            ) : null}
+
+            {showPausedChip ? (
+              <>
+                <View style={[styles.divider, { backgroundColor: `${palette.outlineVariant}55` }]} />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Reminders paused for this fast"
+                  accessibilityHint="Tap to clear the pause and resume milestone nudges now."
+                  onPress={clearReminderMute}
+                  style={({ pressed }) => [
+                    styles.permissionChip,
+                    { borderLeftColor: palette.outline },
+                    pressed && { opacity: 0.86 },
+                  ]}>
+                  <MaterialCommunityIcons name="bell-sleep-outline" size={22} color={palette.outline} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.permissionEyebrow, { color: palette.outline, fontFamily: FastCoachFonts.label }]}>
+                      PAUSED THIS FAST
+                    </Text>
+                    <Text style={[styles.permissionBody, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
+                      Reminders resume on your next fast — or tap to clear now.
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={20} />

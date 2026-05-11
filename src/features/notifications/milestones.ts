@@ -37,6 +37,15 @@ export const MILESTONES: readonly Milestone[] = [
 ];
 
 export const MILESTONE_ID_PREFIX = 'fasting-milestone-';
+export const MILESTONE_SNOOZED_SUFFIX = '-snoozed';
+
+/** Action category attached to scheduled milestones — drives Snooze/Pause buttons. */
+export const NOTIF_CATEGORY = 'fasting-milestone';
+export const ACTION_SNOOZE = 'snooze-1h';
+export const ACTION_PAUSE = 'pause';
+
+/** How far ahead a "Snooze 1h" tap re-fires a milestone. */
+export const SNOOZE_OFFSET_MS = 60 * 60 * 1000;
 
 /** Minimum lead time before a milestone fires; below this, skip the schedule. */
 const MIN_LEAD_MS = 5_000;
@@ -45,8 +54,26 @@ export function makeMilestoneId(hours: number): string {
   return `${MILESTONE_ID_PREFIX}${hours}h`;
 }
 
+export function makeSnoozedMilestoneId(hours: number): string {
+  return `${makeMilestoneId(hours)}${MILESTONE_SNOOZED_SUFFIX}`;
+}
+
 export function isMilestoneIdentifier(id: string): boolean {
   return id.startsWith(MILESTONE_ID_PREFIX);
+}
+
+export function isSnoozedMilestoneIdentifier(id: string): boolean {
+  return id.startsWith(MILESTONE_ID_PREFIX) && id.endsWith(MILESTONE_SNOOZED_SUFFIX);
+}
+
+/** Time at which the snoozed re-fire should land, given a tap timestamp. */
+export function snoozedFireAt(tappedAt: number): Date {
+  return new Date(tappedAt + SNOOZE_OFFSET_MS);
+}
+
+/** Lookup helper — find the milestone metadata for a given hour count. */
+export function findMilestoneByHours(hours: number): Milestone | undefined {
+  return MILESTONES.find((m) => m.hours === hours);
 }
 
 export type PlannedMilestone = {

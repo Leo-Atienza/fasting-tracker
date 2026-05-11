@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  findMilestoneByHours,
   isMilestoneIdentifier,
+  isSnoozedMilestoneIdentifier,
   makeMilestoneId,
+  makeSnoozedMilestoneId,
   mapPermissionStatus,
   milestonesToScheduleFrom,
   MILESTONE_ID_PREFIX,
+  MILESTONE_SNOOZED_SUFFIX,
+  SNOOZE_OFFSET_MS,
+  snoozedFireAt,
 } from '@/src/features/notifications/milestones';
 
 describe('milestonesToScheduleFrom', () => {
@@ -58,6 +64,45 @@ describe('milestone identifiers', () => {
     expect(isMilestoneIdentifier('foo')).toBe(false);
     expect(isMilestoneIdentifier('')).toBe(false);
     expect(isMilestoneIdentifier('fasting-other-12h')).toBe(false);
+  });
+});
+
+describe('snoozedFireAt', () => {
+  it('lands exactly one hour ahead of the tap timestamp', () => {
+    const t = Date.UTC(2026, 4, 11, 12, 0, 0);
+    expect(snoozedFireAt(t).getTime()).toBe(t + SNOOZE_OFFSET_MS);
+    expect(SNOOZE_OFFSET_MS).toBe(60 * 60 * 1000);
+  });
+});
+
+describe('snoozed milestone identifiers', () => {
+  it('round-trips through makeSnoozedMilestoneId / isSnoozedMilestoneIdentifier', () => {
+    const id = makeSnoozedMilestoneId(16);
+    expect(id).toBe(`${MILESTONE_ID_PREFIX}16h${MILESTONE_SNOOZED_SUFFIX}`);
+    expect(isSnoozedMilestoneIdentifier(id)).toBe(true);
+    expect(isMilestoneIdentifier(id)).toBe(true);
+  });
+
+  it('does not classify the original milestone as snoozed', () => {
+    expect(isSnoozedMilestoneIdentifier(makeMilestoneId(12))).toBe(false);
+  });
+
+  it('rejects unrelated identifiers', () => {
+    expect(isSnoozedMilestoneIdentifier('foo-snoozed')).toBe(false);
+    expect(isSnoozedMilestoneIdentifier('')).toBe(false);
+  });
+});
+
+describe('findMilestoneByHours', () => {
+  it('returns the milestone metadata for known hours', () => {
+    expect(findMilestoneByHours(12)?.title).toMatch(/12 hours/);
+    expect(findMilestoneByHours(16)?.title).toMatch(/16 hours/);
+    expect(findMilestoneByHours(20)?.title).toMatch(/20 hours/);
+  });
+
+  it('returns undefined for unknown hours', () => {
+    expect(findMilestoneByHours(7)).toBeUndefined();
+    expect(findMilestoneByHours(0)).toBeUndefined();
   });
 });
 

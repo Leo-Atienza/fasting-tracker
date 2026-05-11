@@ -2,8 +2,14 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import {
+  ACTION_PAUSE,
+  ACTION_SNOOZE,
+  findMilestoneByHours,
   isMilestoneIdentifier,
+  makeSnoozedMilestoneId,
   milestonesToScheduleFrom,
+  NOTIF_CATEGORY,
+  snoozedFireAt,
 } from './milestones';
 
 /**
@@ -39,6 +45,22 @@ export function setupNotificationHandler(): void {
     });
   } catch {
     /* native module not present — ignore */
+  }
+  try {
+    void Notifications.setNotificationCategoryAsync(NOTIF_CATEGORY, [
+      {
+        identifier: ACTION_SNOOZE,
+        buttonTitle: 'Snooze 1h',
+        options: { isAuthenticationRequired: false, opensAppToForeground: false },
+      },
+      {
+        identifier: ACTION_PAUSE,
+        buttonTitle: 'Pause',
+        options: { isDestructive: false, opensAppToForeground: false },
+      },
+    ]);
+  } catch {
+    /* web / unsupported — ignore */
   }
 }
 
@@ -102,6 +124,7 @@ export async function scheduleFastingMilestones(startedAtIso: string): Promise<v
           title: m.title,
           body: m.body,
           sound: false,
+          categoryIdentifier: NOTIF_CATEGORY,
           data: { kind: 'fasting-milestone', hours: m.hours },
         },
         trigger: {
@@ -113,6 +136,43 @@ export async function scheduleFastingMilestones(startedAtIso: string): Promise<v
     }
   } catch {
     /* permission revoked or native module missing — silently skip */
+  }
+}
+
+/**
+ * Re-fire a single milestone an hour from `tappedAt`. Uses a snoozed identifier
+ * so the original `cancelFastingMilestones()` sweep still finds it (both ids
+ * share the milestone prefix).
+ */
+export async function snoozeMilestone(hours: number, tappedAt: number = Date.now()): Promise<void> {
+  try {
+    await ensureAndroidChannel();
+    const m = findMilestoneByHours(hours);
+    if (!m) return;
+    const id = makeSnoozedMilestoneId(hours);
+    // Replace any prior snooze for this milestone.
+    try {
+      await Notifications.cancelScheduledNotificationAsync(id);
+    } catch {
+      /* ignore */
+    }
+    await Notifications.scheduleNotificationAsync({
+      identifier: id,
+      content: {
+        title: m.title,
+        body: m.body,
+        sound: false,
+        categoryIdentifier: NOTIF_CATEGORY,
+        data: { kind: 'fasting-milestone', hours: m.hours, snoozed: true },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: snoozedFireAt(tappedAt),
+        ...(Platform.OS === 'android' ? { channelId: ANDROID_CHANNEL_ID } : null),
+      },
+    });
+  } catch {
+    /* ignore */
   }
 }
 
