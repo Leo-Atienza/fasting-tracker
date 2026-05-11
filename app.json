@@ -43,6 +43,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/notification-icon.png",
           "color": "#34c759",
           "defaultChannel": "fasting-milestones"
         }

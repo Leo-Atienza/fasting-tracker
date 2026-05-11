@@ -1,0 +1,5 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monochrome hourglass for Android notification small icon.
+       Android tints the alpha mask; we ship pure white-on-transparent. -->
+  <path fill="#FFFFFF" d="M7 2.5h10a1.25 1.25 0 0 1 1.25 1.25v3a2.5 2.5 0 0 1-0.85 1.88L13.6 12l3.8 3.37a2.5 2.5 0 0 1 0.85 1.88v3A1.25 1.25 0 0 1 17 21.5H7a1.25 1.25 0 0 1-1.25-1.25v-3a2.5 2.5 0 0 1 0.85-1.88L10.4 12 6.6 8.63a2.5 2.5 0 0 1-0.85-1.88v-3A1.25 1.25 0 0 1 7 2.5Zm8.75 2H8.25v2.25l3.75 3.32 3.75-3.32V4.5ZM12 13.66 8.25 17v2.5h7.5V17L12 13.66Z"/>
+</svg>
