@@ -17,6 +17,7 @@ import { ScalePressable } from '@/src/components/fastCoach/ScalePressable';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import type { FastSession } from '@/src/domain/types';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { formatElapsedShort, formatTimeOnly, relativeDayHeading } from '@/src/lib/time';
 import { sortedSessionsDescending } from '@/src/store/selectors';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -77,6 +78,7 @@ export default function HistoryScreen() {
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
   const isWide = useBreakpoint() !== 'phone';
+  const s = useResponsiveSpacing();
   const [visibleCount, setVisibleCount] = useState(PAGE);
 
   function confirmRemove(item: FastSession) {
@@ -112,8 +114,7 @@ export default function HistoryScreen() {
         accessibilityLabel={`${badge.label} fast, ${formatElapsedShort(dur)}, ${heading}`}
         accessibilityHint="Long-press to remove this fast from history."
         onLongPress={() => confirmRemove(item)}
-        delayLongPress={350}
-        style={{ marginBottom: 14 }}>
+        delayLongPress={350}>
         <GlassCard
           palette={palette}
           radius={24}
@@ -204,12 +205,17 @@ export default function HistoryScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={[
               styles.list,
-              { paddingTop: topBarOffset + 18 },
+              {
+                paddingHorizontal: s.gutter,
+                paddingBottom: s.tabBarBottom,
+                paddingTop: topBarOffset + s.hero,
+              },
               isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
             ]}
             showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={{ height: s.stackMd }} />}
             ListHeaderComponent={
-              <View style={styles.listHeader}>
+              <View style={[styles.listHeader, { marginBottom: s.stackLg }]}>
                 <Text style={[styles.title, { color: palette.primary, fontFamily: FastCoachFonts.headlineLg }]}>
                   History
                 </Text>
@@ -265,8 +271,9 @@ function Metric({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  list: { paddingHorizontal: 22, paddingBottom: 140 },
-  listHeader: { marginBottom: 14, gap: 6 },
+  /** Static slot — paddings driven inline by `useResponsiveSpacing()`. */
+  list: {},
+  listHeader: { gap: 6 },
   title: { fontSize: 32, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { fontSize: 15, lineHeight: 22 },
   card: { padding: 20, overflow: 'hidden', position: 'relative', gap: 16 },

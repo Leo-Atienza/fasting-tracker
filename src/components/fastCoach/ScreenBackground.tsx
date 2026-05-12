@@ -38,14 +38,14 @@ function Blob({
   color,
   size,
   position,
-  intensity = 1,
+  intensity,
 }: {
   id: string;
   color: string;
   size: number;
   position: ViewStyle;
-  /** Multiplies the center stop's opacity — preserves the previous solid-blob density profile. */
-  intensity?: number;
+  /** Multiplies the center stop's opacity. */
+  intensity: number;
 }) {
   return (
     <View style={[styles.blobWrap, position, { width: size, height: size }]} pointerEvents="none">
@@ -63,21 +63,24 @@ function Blob({
 }
 
 /**
- * Layered backdrop matching Stitch "High-Performance Zen":
- * a subtle linear-gradient base + three radial-gradient mesh blobs pinned
- * off-frame at the corners. The radial falloff replaces the previous solid-
- * circle approach so the corners feel like light bleed instead of flat
- * stickers.
+ * Layered backdrop matching Stitch "High-Performance Zen": a nearly-flat
+ * off-white linear gradient base plus two subtle radial-gradient blobs at
+ * opposite corners. The blobs read as gentle light bleed rather than visible
+ * discs — pushed far enough off-frame that only the soft falloff is on-screen.
+ *
+ * Previously rendered three blobs at 0.7–0.85 intensity, which made the field
+ * feel busy. The current pass softens the gradient stops toward
+ * `palette.background` and drops blob intensity to 0.45 / 0.55, matching the
+ * Stitch reference `linear-gradient(135deg, #f9f9fe 0%, #ededf2 100%)`.
  */
 export function ScreenBackground({ palette, accent = 'fast', children }: Props) {
   const conf = ACCENTS[accent];
   const topColor = blobColor(palette, conf.top);
-  const altTopColor = blobColor(palette, conf.top === 'green' ? 'blue' : 'green');
   const bottomColor = blobColor(palette, conf.bottom);
 
   return (
     <LinearGradient
-      colors={[palette.background, palette.surfaceContainerLow, palette.surfaceContainer]}
+      colors={[palette.background, palette.surface, palette.surfaceContainerLow]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.gradient}>
@@ -85,23 +88,16 @@ export function ScreenBackground({ palette, accent = 'fast', children }: Props) 
         <Blob
           id={`bgblob-${accent}-tl`}
           color={topColor}
-          size={320}
-          position={{ top: -120, left: -80 }}
-          intensity={0.85}
-        />
-        <Blob
-          id={`bgblob-${accent}-tr`}
-          color={altTopColor}
-          size={260}
-          position={{ top: -100, right: -70 }}
-          intensity={0.7}
+          size={420}
+          position={{ top: -180, left: -140 }}
+          intensity={0.45}
         />
         <Blob
           id={`bgblob-${accent}-br`}
           color={bottomColor}
-          size={360}
-          position={{ bottom: -160, right: -100 }}
-          intensity={0.85}
+          size={460}
+          position={{ bottom: -220, right: -160 }}
+          intensity={0.55}
         />
       </View>
       {children}

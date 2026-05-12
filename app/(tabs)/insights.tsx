@@ -16,6 +16,7 @@ import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import { computeInsights, streakProgress } from '@/src/features/insights/computeInsights';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { formatElapsedShort } from '@/src/lib/time';
 import { formatVolume } from '@/src/lib/units';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -40,6 +41,7 @@ export default function InsightsScreen() {
   const topBarOffset = useTopBarOffset();
   const bp = useBreakpoint();
   const isWide = bp !== 'phone';
+  const s = useResponsiveSpacing();
   const barsHeight = isWide ? 140 : 100;
 
   const sessions = useAppStore((s) => s.sessions);
@@ -73,14 +75,20 @@ export default function InsightsScreen() {
         <ScrollView
           contentContainerStyle={[
             styles.scroll,
-            { paddingTop: topBarOffset + 20 },
+            {
+              paddingHorizontal: s.gutter,
+              paddingBottom: s.tabBarBottom,
+              paddingTop: topBarOffset + s.hero,
+              gap: s.stackLg,
+            },
             isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
           ]}
           showsVerticalScrollIndicator={false}>
-          <SectionLabel palette={palette} tone="primary">YOUR WEEKLY VIEW</SectionLabel>
+          {/* YOUR WEEKLY VIEW — label + weekly cards under one section, stackMd between cards. */}
+          <View style={{ gap: s.stackMd }}>
+            <SectionLabel palette={palette} tone="primary">YOUR WEEKLY VIEW</SectionLabel>
 
-          {/* Streak hero */}
-          <GlassCard palette={palette} radius={26} tone="high" style={styles.streakCard}>
+            <GlassCard palette={palette} radius={26} tone="high" style={styles.streakCard}>
             <View style={[styles.streakBlob, { backgroundColor: `${palette.primaryFixed}55` }]} pointerEvents="none" />
             <View style={[styles.streakIcon, { backgroundColor: `${palette.primaryContainer}33` }]}>
               <MaterialCommunityIcons
@@ -264,11 +272,13 @@ export default function InsightsScreen() {
                 );
               })}
             </View>
-          </GlassCard>
+            </GlassCard>
+          </View>
 
-          {/* Monthly summary */}
-          <SectionLabel palette={palette} tone="primary">THIS MONTH</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.chartCard}>
+          {/* THIS MONTH — label + monthly card in one tight section. */}
+          <View style={{ gap: s.stackMd }}>
+            <SectionLabel palette={palette} tone="primary">THIS MONTH</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.chartCard}>
             <View style={styles.chartHeader}>
               <Text style={[styles.chartEyebrow, { color: palette.primary, fontFamily: FastCoachFonts.label }]}>
                 {monthly.monthLabel.toUpperCase()}
@@ -316,7 +326,8 @@ export default function InsightsScreen() {
                 );
               })}
             </View>
-          </GlassCard>
+            </GlassCard>
+          </View>
 
           {empty ? (
             <Text style={[styles.emptyHint, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
@@ -388,7 +399,8 @@ function Tile({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
+  /** Static slot — spacing values driven inline by `useResponsiveSpacing()`. */
+  scroll: {},
   streakCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -402,7 +414,7 @@ const styles = StyleSheet.create({
   streakEyebrow: { fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: '800' },
   streakValue: { fontSize: 28, letterSpacing: -0.5, fontWeight: '800' },
   streakSub: { fontSize: 13, marginTop: 2, lineHeight: 18 },
-  tileRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  tileRow: { flexDirection: 'row', gap: 10 },
   tile: { flex: 1, padding: 14, gap: 6 },
   tileIcon: { width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   tileEyebrow: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '800', marginTop: 4 },

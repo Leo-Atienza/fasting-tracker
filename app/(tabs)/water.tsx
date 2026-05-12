@@ -20,6 +20,7 @@ import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import type { WaterLogEntry } from '@/src/domain/types';
 import { WATER_PRESETS, WATER_PRIMARY_PRESET_IDS, presetsByPrimaryThenRest } from '@/src/features/water/presets';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { dayKeyForIso, formatTimeOnly } from '@/src/lib/time';
 import { formatVolume, ozToMl } from '@/src/lib/units';
 import { selectWaterTodayMl } from '@/src/store/selectors';
@@ -53,6 +54,7 @@ export default function WaterScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const s = useResponsiveSpacing();
 
   const unit = useAppStore((s) => s.waterUnit);
   const waterEntries = useAppStore((s) => s.waterEntries);
@@ -113,7 +115,15 @@ export default function WaterScreen() {
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Fasting Tracker" palette={palette} isDark={scheme === 'dark'} />
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 28 }]}
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingHorizontal: s.gutter,
+              paddingBottom: s.tabBarBottom,
+              paddingTop: topBarOffset + s.hero,
+              gap: s.stackLg,
+            },
+          ]}
           showsVerticalScrollIndicator={false}>
           {/* Hydration ring */}
           <View style={styles.ringWrap}>
@@ -152,85 +162,88 @@ export default function WaterScreen() {
             </Text>
           </View>
 
-          {/* Quick Add 3-col grid */}
-          <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-            Quick Add
-          </Text>
-          <View style={styles.quickGrid}>
-            {primary.map((p) => presetCard(p))}
-          </View>
-
-          {/* Custom entry CTA */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open custom water entry"
-            onPress={() => {
-              setCustomDraft('');
-              setCustomOpen(true);
-            }}
-            style={({ pressed }) => [
-              styles.cta,
-              {
-                backgroundColor: palette.secondaryContainer,
-                shadowColor: palette.secondary,
-                opacity: pressed ? 0.9 : 1,
-              },
-            ]}>
-            <MaterialCommunityIcons name="cup-water" color={palette.onSecondaryContainer} size={22} />
-            <Text style={[styles.ctaText, { color: palette.onSecondaryContainer, fontFamily: FastCoachFonts.headlineMd }]}>
-              Custom Entry
-            </Text>
-          </Pressable>
-
-          {/* Extra presets (compact) */}
-          {extra.length > 0 ? (
-            <View style={styles.extraRow}>
-              {extra.map((preset) => {
-                const iconName = ICON_BY_PRESET[preset.id] ?? 'water';
-                return (
-                  <Pressable
-                    key={preset.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${formatVolume(preset.ml, unit)} (${preset.label})`}
-                    onPress={() => addWater(preset.ml, { presetId: preset.id })}
-                    style={({ pressed }) => [
-                      styles.extraChip,
-                      {
-                        borderColor: palette.outlineVariant,
-                        backgroundColor: scheme === 'dark' ? 'rgba(26,28,31,0.55)' : 'rgba(255,255,255,0.70)',
-                      },
-                      pressed && { opacity: 0.85 },
-                    ]}>
-                    <MaterialCommunityIcons name={iconName} size={18} color={palette.secondary} />
-                    <Text style={{ color: palette.onSurface, fontFamily: FastCoachFonts.body, fontSize: 13 }}>
-                      {preset.label}
-                    </Text>
-                    <Text style={{ color: palette.outline, fontFamily: FastCoachFonts.label, fontSize: 11 }}>
-                      {formatVolume(preset.ml, unit)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
-
-          {/* Today's Log */}
-          <View style={styles.logHeading}>
+          {/* Quick Add section — heading, grid, CTA, and extras share a single section with stackMd internal breath. */}
+          <View style={{ gap: s.stackMd }}>
             <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-              {"Today's Log"}
+              Quick Add
             </Text>
+            <View style={styles.quickGrid}>
+              {primary.map((p) => presetCard(p))}
+            </View>
+
+            {/* Custom entry CTA */}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={editMode ? 'Finish editing hydration log' : 'Edit hydration log'}
-              hitSlop={10}
-              onPress={() => setEditMode((e) => !e)}>
-              <Text style={[styles.editLink, { color: palette.secondary, fontFamily: FastCoachFonts.label }]}>
-                {editMode ? 'Done' : 'Edit'}
+              accessibilityLabel="Open custom water entry"
+              onPress={() => {
+                setCustomDraft('');
+                setCustomOpen(true);
+              }}
+              style={({ pressed }) => [
+                styles.cta,
+                {
+                  backgroundColor: palette.secondaryContainer,
+                  shadowColor: palette.secondary,
+                  opacity: pressed ? 0.9 : 1,
+                },
+              ]}>
+              <MaterialCommunityIcons name="cup-water" color={palette.onSecondaryContainer} size={22} />
+              <Text style={[styles.ctaText, { color: palette.onSecondaryContainer, fontFamily: FastCoachFonts.headlineMd }]}>
+                Custom Entry
               </Text>
             </Pressable>
+
+            {/* Extra presets (compact) */}
+            {extra.length > 0 ? (
+              <View style={styles.extraRow}>
+                {extra.map((preset) => {
+                  const iconName = ICON_BY_PRESET[preset.id] ?? 'water';
+                  return (
+                    <Pressable
+                      key={preset.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add ${formatVolume(preset.ml, unit)} (${preset.label})`}
+                      onPress={() => addWater(preset.ml, { presetId: preset.id })}
+                      style={({ pressed }) => [
+                        styles.extraChip,
+                        {
+                          borderColor: palette.outlineVariant,
+                          backgroundColor: scheme === 'dark' ? 'rgba(26,28,31,0.55)' : 'rgba(255,255,255,0.70)',
+                        },
+                        pressed && { opacity: 0.85 },
+                      ]}>
+                      <MaterialCommunityIcons name={iconName} size={18} color={palette.secondary} />
+                      <Text style={{ color: palette.onSurface, fontFamily: FastCoachFonts.body, fontSize: 13 }}>
+                        {preset.label}
+                      </Text>
+                      <Text style={{ color: palette.outline, fontFamily: FastCoachFonts.label, fontSize: 11 }}>
+                        {formatVolume(preset.ml, unit)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
           </View>
 
-          <GlassCard palette={palette} radius={26} style={styles.logCard}>
+          {/* Today's Log section */}
+          <View style={{ gap: s.stackMd }}>
+            <View style={styles.logHeading}>
+              <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                {"Today's Log"}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={editMode ? 'Finish editing hydration log' : 'Edit hydration log'}
+                hitSlop={10}
+                onPress={() => setEditMode((e) => !e)}>
+                <Text style={[styles.editLink, { color: palette.secondary, fontFamily: FastCoachFonts.label }]}>
+                  {editMode ? 'Done' : 'Edit'}
+                </Text>
+              </Pressable>
+            </View>
+
+            <GlassCard palette={palette} radius={26} style={styles.logCard}>
             {log.length === 0 ? (
               <Text style={[styles.emptyLog, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
                 No pours yet — tap a quick add tile or craft a custom amount.
@@ -289,19 +302,23 @@ export default function WaterScreen() {
                 </View>
               ))
             )}
-          </GlassCard>
+            </GlassCard>
+          </View>
         </ScrollView>
 
         <Modal transparent visible={customOpen} animationType="fade" onRequestClose={() => setCustomOpen(false)}>
-          <Pressable
-            style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}
-            onPress={() => setCustomOpen(false)}>
+          {/* Sibling backdrop — see MealDetailSheet in app/(tabs)/index.tsx for rationale. */}
+          <View style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}>
             <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setCustomOpen(false)}
+              accessibilityLabel="Close custom pour"
+            />
+            <View
               style={[
                 styles.sheet,
                 { backgroundColor: palette.surfaceContainerLowest, borderColor: palette.glassBorder },
-              ]}
-              onPress={() => undefined}>
+              ]}>
               <Text style={[styles.sheetTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
                 Custom pour
               </Text>
@@ -325,8 +342,8 @@ export default function WaterScreen() {
                   Add to log
                 </Text>
               </Pressable>
-            </Pressable>
-          </Pressable>
+            </View>
+          </View>
         </Modal>
       </SafeAreaView>
     </ScreenBackground>
@@ -335,7 +352,8 @@ export default function WaterScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 18 },
+  /** Static slot — spacing values driven inline by `useResponsiveSpacing()`. */
+  scroll: {},
   ringWrap: { alignItems: 'center', gap: 14 },
   ringHalo: {
     borderRadius: 9999,
@@ -357,7 +375,7 @@ const styles = StyleSheet.create({
   pctTiny: { fontSize: 24, fontWeight: '700' },
   ringSub: { fontSize: 16 },
   motivate: { textAlign: 'center', fontSize: 15, lineHeight: 22, maxWidth: 280, marginTop: 2 },
-  sectionH: { fontSize: 22, letterSpacing: -0.3, fontWeight: '700', marginTop: 6 },
+  sectionH: { fontSize: 24, letterSpacing: -0.3, fontWeight: '700', lineHeight: 30 },
   quickGrid: {
     flexDirection: 'row',
     gap: 12,
@@ -379,10 +397,9 @@ const styles = StyleSheet.create({
     shadowRadius: 22,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
-    marginTop: 6,
   },
   ctaText: { fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
-  extraRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  extraRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   extraChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -396,7 +413,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
-    marginTop: 4,
   },
   editLink: { fontSize: 14, fontWeight: '700' },
   logCard: { padding: 0, overflow: 'hidden' },

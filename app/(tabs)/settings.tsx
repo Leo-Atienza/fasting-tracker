@@ -22,6 +22,7 @@ import { aggregateMedicalSources } from '@/src/features/eat/aggregateSources';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useNotificationPermissionStatus } from '@/src/hooks/useNotificationPermissionStatus';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { formatVolume, mlToOz } from '@/src/lib/units';
 import { useAppStore, type WaterUnit } from '@/src/store/useAppStore';
 
@@ -42,6 +43,7 @@ export default function SettingsScreen() {
   const topBarOffset = useTopBarOffset();
   const bp = useBreakpoint();
   const isWide = bp !== 'phone';
+  const s = useResponsiveSpacing();
 
   const dietPreferenceId = useAppStore((s) => s.dietPreferenceId);
   const setDiet = useAppStore((s) => s.setDietPreferenceId);
@@ -165,29 +167,19 @@ export default function SettingsScreen() {
         <ScrollView
           contentContainerStyle={[
             styles.scroll,
-            { paddingTop: topBarOffset + 20 },
+            {
+              paddingHorizontal: s.gutter,
+              paddingBottom: s.tabBarBottom,
+              paddingTop: topBarOffset + s.hero,
+              gap: s.stackLg,
+            },
             isWide && { maxWidth: 720, alignSelf: 'center', width: '100%' },
           ]}
           showsVerticalScrollIndicator={false}>
-          {/* Profile mini-card */}
-          <GlassCard palette={palette} radius={24} tone="mid" style={styles.profileCard}>
-            <View style={[styles.avatar, { backgroundColor: palette.primaryContainer }]}>
-              <MaterialCommunityIcons name="account" size={28} color={palette.onPrimaryContainer} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.profileName, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-                Fasting Tracker User
-              </Text>
-              <Text style={[styles.profileSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
-                Personalized fasting profile
-              </Text>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
-          </GlassCard>
-
           {/* PREFERENCES */}
-          <SectionLabel palette={palette}>PREFERENCES</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette}>PREFERENCES</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Change diet preference"
@@ -228,15 +220,17 @@ export default function SettingsScreen() {
               </View>
               <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
             </Pressable>
-          </GlassCard>
+            </GlassCard>
+          </View>
 
           {/* REMINDERS */}
-          <SectionLabel palette={palette}>REMINDERS</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
-            <View style={styles.row}>
-              <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
-                <MaterialCommunityIcons name="bell-ring" color={palette.tertiary} size={20} />
-              </View>
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette}>REMINDERS</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+              <View style={styles.row}>
+                <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
+                  <MaterialCommunityIcons name="bell-ring" color={palette.tertiary} size={20} />
+                </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
                   Fasting Reminders
@@ -345,11 +339,13 @@ export default function SettingsScreen() {
                 </React.Fragment>
               );
             })}
-          </GlassCard>
+            </GlassCard>
+          </View>
 
           {/* HYDRATION */}
-          <SectionLabel palette={palette}>HYDRATION</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette}>HYDRATION</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
             <View style={[styles.row, { paddingBottom: 6 }]}>
               <View style={[styles.rowOrb, { backgroundColor: `${palette.secondary}1A` }]}>
                 <MaterialCommunityIcons name="water" color={palette.secondary} size={20} />
@@ -415,7 +411,8 @@ export default function SettingsScreen() {
                 </ScalePressable>
               ))}
             </View>
-          </GlassCard>
+            </GlassCard>
+          </View>
 
           {/* COACH NOTE / PREMIUM placeholder */}
           {!premiumDismissed ? (
@@ -446,68 +443,74 @@ export default function SettingsScreen() {
           ) : null}
 
           {/* ABOUT */}
-          <SectionLabel palette={palette}>ABOUT</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open sources and credits"
-              accessibilityHint="See every medical source cited by the meal presets."
-              onPress={() => router.push('/credits')}
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
-              <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
-                <MaterialCommunityIcons name="book-open-variant" color={palette.tertiary} size={20} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
-                  Sources & credits
-                </Text>
-                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
-                  {sourcesCount} medical reference{sourcesCount === 1 ? '' : 's'} used in meal presets
-                </Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
-            </Pressable>
-          </GlassCard>
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette}>ABOUT</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open sources and credits"
+                accessibilityHint="See every medical source cited by the meal presets."
+                onPress={() => router.push('/credits')}
+                style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
+                <View style={[styles.rowOrb, { backgroundColor: `${palette.tertiary}1A` }]}>
+                  <MaterialCommunityIcons name="book-open-variant" color={palette.tertiary} size={20} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.rowTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.body }]}>
+                    Sources & credits
+                  </Text>
+                  <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                    {sourcesCount} medical reference{sourcesCount === 1 ? '' : 's'} used in meal presets
+                  </Text>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" color={palette.outline} size={22} />
+              </Pressable>
+            </GlassCard>
+          </View>
 
           {/* DANGER ZONE */}
-          <SectionLabel palette={palette}>DANGER ZONE</SectionLabel>
-          <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Clear all data, restarts onboarding"
-              accessibilityHint="Double-confirm dialog will follow."
-              onPress={confirmClearAll}
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}>
-              <View style={[styles.rowOrb, { backgroundColor: `${palette.error}1A` }]}>
-                <MaterialCommunityIcons name="trash-can-outline" color={palette.error} size={20} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.rowTitle, { color: palette.error, fontFamily: FastCoachFonts.body }]}>
-                  Clear all data
-                </Text>
-                <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
-                  Erases fasts, water, favorites, preferences.
-                </Text>
-              </View>
-            </Pressable>
-          </GlassCard>
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette}>DANGER ZONE</SectionLabel>
+            <GlassCard palette={palette} radius={22} style={styles.sectionCard}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear all data, restarts onboarding"
+                accessibilityHint="Double-confirm dialog will follow."
+                onPress={confirmClearAll}
+                style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}>
+                <View style={[styles.rowOrb, { backgroundColor: `${palette.error}1A` }]}>
+                  <MaterialCommunityIcons name="trash-can-outline" color={palette.error} size={20} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.rowTitle, { color: palette.error, fontFamily: FastCoachFonts.body }]}>
+                    Clear all data
+                  </Text>
+                  <Text style={[styles.rowSub, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.bodyLight }]}>
+                    Erases fasts, water, favorites, preferences.
+                  </Text>
+                </View>
+              </Pressable>
+            </GlassCard>
+          </View>
 
           <Text style={[styles.versionFooter, { color: palette.outline, fontFamily: FastCoachFonts.body }]}>
             Fasting Tracker v{Constants.expoConfig?.version ?? '1.0.0'}{'\n'}Made for steadier rhythms.
           </Text>
         </ScrollView>
 
-        {/* Diet picker modal */}
+        {/* Diet picker modal — sibling backdrop, see MealDetailSheet in app/(tabs)/index.tsx for rationale. */}
         <Modal transparent visible={dietPickerOpen} animationType="fade" onRequestClose={() => setDietPickerOpen(false)}>
-          <Pressable
-            style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}
-            onPress={() => setDietPickerOpen(false)}>
+          <View style={[styles.modalBackdrop, { backgroundColor: `${palette.inverseSurface}66` }]}>
             <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setDietPickerOpen(false)}
+              accessibilityLabel="Close diet picker"
+            />
+            <View
               style={[
                 styles.sheet,
                 { backgroundColor: palette.surfaceContainerLowest, borderColor: palette.glassBorder },
-              ]}
-              onPress={() => undefined}>
+              ]}>
               <Text style={[styles.sheetTitle, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
                 Diet preference
               </Text>
@@ -556,8 +559,8 @@ export default function SettingsScreen() {
                   Done
                 </Text>
               </Pressable>
-            </Pressable>
-          </Pressable>
+            </View>
+          </View>
         </Modal>
       </SafeAreaView>
     </ScreenBackground>
@@ -566,7 +569,8 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
+  /** Static slot — spacing values driven inline by `useResponsiveSpacing()`. */
+  scroll: {},
   iconBtn: {
     width: 40,
     height: 40,
@@ -574,21 +578,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    padding: 18,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileName: { fontSize: 18, fontWeight: '800' },
-  profileSub: { fontSize: 13, marginTop: 2 },
   sectionCard: { padding: 0 },
   row: {
     flexDirection: 'row',

@@ -132,10 +132,30 @@ export const FastCoachRadii = {
   full: 9999,
 };
 
+/**
+ * Spacing scale aligned to Stitch "Fast Coach Design System" (4 px soft grid).
+ *
+ * - `gutter`: horizontal page padding (24 dp canonical).
+ * - `stackLg`: vertical breath between distinct sections — the headline rule
+ *   from Stitch's DESIGN.md §Layout & Spacing ("Vertical stacks use a 40px
+ *   gap between distinct sections to prevent information overload").
+ * - `stackMd`: between a section heading and its first card, or between sibling cards.
+ * - `stackSm` / `stackXs`: row-level gaps and tight inline gaps.
+ * - `glassPad`: internal padding for `GlassCard` surfaces.
+ * - `hero`: extra top padding below the FixedTopBar before a hero element.
+ * - `tabBarBottom`: scroll padding to clear the floating tab bar.
+ *
+ * Use `useResponsiveSpacing()` (src/hooks/useResponsiveSpacing.ts) when the
+ * gutter / stackLg should adapt to phone width — these constants are the
+ * canonical 24/40 px reference used on standard phones (360–413 dp).
+ */
 export const FastCoachSpacing = {
   gutter: 24,
   stackLg: 40,
   stackMd: 24,
   stackSm: 12,
+  stackXs: 8,
   glassPad: 20,
+  hero: 32,
+  tabBarBottom: 120,
 };

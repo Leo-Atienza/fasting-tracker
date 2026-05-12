@@ -12,6 +12,7 @@ import { GlassCard } from '@/src/components/fastCoach/GlassCard';
 import { ScreenBackground } from '@/src/components/fastCoach/ScreenBackground';
 import { SectionLabel } from '@/src/components/fastCoach/SectionLabel';
 import type { Fact, FactTheme } from '@/src/domain/types';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { hashString } from '@/src/lib/hash';
 import { dayKey } from '@/src/lib/time';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -44,6 +45,7 @@ export default function FactsScreen() {
   const scheme = (useColorScheme() ?? 'light') as ColorSchemeName;
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
+  const s = useResponsiveSpacing();
 
   const [shuffle, setShuffle] = useState(0);
   const [filterBucket, setFilterBucket] = useState<Bucket | null>(null);
@@ -87,11 +89,22 @@ export default function FactsScreen() {
     <ScreenBackground palette={palette} accent="facts">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Facts" palette={palette} isDark={scheme === 'dark'} rightAccessory={headerShuffle} showHistory={false} />
-        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 18 }]} showsVerticalScrollIndicator={false}>
-          <SectionLabel palette={palette} tone="primary">FACT OF THE DAY</SectionLabel>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingHorizontal: s.gutter,
+              paddingBottom: s.tabBarBottom,
+              paddingTop: topBarOffset + s.hero,
+              gap: s.stackLg,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}>
+          {/* FACT OF THE DAY — eyebrow + hero in one tight section. */}
+          <View style={{ gap: s.stackSm }}>
+            <SectionLabel palette={palette} tone="primary">FACT OF THE DAY</SectionLabel>
 
-          {/* Hero glass fact */}
-          <GlassCard palette={palette} radius={28} tone="high" style={styles.hero}>
+            <GlassCard palette={palette} radius={28} tone="high" style={styles.hero}>
             <View style={[styles.heroBlob, { backgroundColor: `${palette.primaryFixed}55` }]} pointerEvents="none" />
             <View style={styles.heroRow}>
               <View style={[styles.boltOrb, { backgroundColor: palette.primaryContainer }]}>
@@ -127,7 +140,8 @@ export default function FactsScreen() {
                 </Text>
               </View>
             </View>
-          </GlassCard>
+            </GlassCard>
+          </View>
 
           {/* Hydration / Health bento */}
           <View style={styles.bentoRow}>
@@ -163,19 +177,20 @@ export default function FactsScreen() {
             </Pressable>
           </View>
 
-          {/* Your Favorites */}
-          <Text style={[styles.favHd, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-            Your Favorites
-          </Text>
+          {/* Your Favorites — heading + content as one section with stackMd internal breath. */}
+          <View style={{ gap: s.stackMd }}>
+            <Text style={[styles.favHd, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+              Your Favorites
+            </Text>
 
-          {favoritesAll.length === 0 ? (
-            <GlassCard palette={palette} radius={22} style={{ padding: 22, marginTop: 4 }}>
-              <Text style={{ color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body, lineHeight: 22 }}>
-                Tap the bookmark on the Fact of the Day or any fact you want to revisit — they show up here.
-              </Text>
-            </GlassCard>
-          ) : (
-            <View style={{ gap: 12 }}>
+            {favoritesAll.length === 0 ? (
+              <GlassCard palette={palette} radius={22} style={{ padding: 22 }}>
+                <Text style={{ color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body, lineHeight: 22 }}>
+                  Tap the bookmark on the Fact of the Day or any fact you want to revisit — they show up here.
+                </Text>
+              </GlassCard>
+            ) : (
+              <View style={{ gap: 12 }}>
               {shownFavorites.map((fact) => (
                 <GlassCard palette={palette} radius={22} key={fact.id} tone="low" style={styles.favCard}>
                   <Pressable
@@ -223,7 +238,8 @@ export default function FactsScreen() {
                 </Text>
               ) : null}
             </View>
-          )}
+            )}
+          </View>
 
           <GlassCard palette={palette} radius={20} tone="low" style={styles.banner}>
             <MaterialCommunityIcons name="shield-check" color={palette.primary} size={20} />
@@ -239,7 +255,8 @@ export default function FactsScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 14 },
+  /** Static slot — spacing values driven inline by `useResponsiveSpacing()`. */
+  scroll: {},
   shuffleFab: {
     width: 40,
     height: 40,
@@ -257,12 +274,12 @@ const styles = StyleSheet.create({
   tagRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
   tag: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
   tagText: { fontSize: 10, letterSpacing: 1.6, fontWeight: '800' },
-  bentoRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  bentoRow: { flexDirection: 'row', gap: 12 },
   bentoBtn: { flex: 1 },
   bentoCard: { padding: 18, gap: 6, minHeight: 110 },
   bentoLabel: { fontSize: 13, marginTop: 8 },
   bentoStat: { fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
-  favHd: { fontSize: 22, letterSpacing: -0.3, fontWeight: '700', marginTop: 14 },
+  favHd: { fontSize: 24, letterSpacing: -0.3, fontWeight: '700', lineHeight: 30 },
   favCard: { flexDirection: 'row', padding: 18, gap: 12, alignItems: 'flex-start' },
   favStar: { paddingTop: 2 },
   favTitle: { fontSize: 15, fontWeight: '600', lineHeight: 22 },
@@ -274,7 +291,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
-    marginTop: 6,
   },
   viewAllText: { fontSize: 14, fontWeight: '700' },
   banner: {
@@ -282,7 +298,6 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 18,
     alignItems: 'flex-start',
-    marginTop: 12,
   },
   bannerText: { flex: 1, fontSize: 13, lineHeight: 19 },
 });

@@ -19,6 +19,7 @@ import { DIET_OPTIONS } from '@/src/constants/diets';
 import type { DietPreferenceId } from '@/src/domain/types';
 import { ensureNotificationsPermission } from '@/src/features/notifications/scheduler';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
+import { useResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import {
   ONBOARDING_STEPS,
   advanceStep,
@@ -68,6 +69,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isWide = useBreakpoint() !== 'phone';
+  const sp = useResponsiveSpacing();
 
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const skipOnboarding = useAppStore((s) => s.skipOnboarding);
@@ -155,7 +157,7 @@ export default function OnboardingScreen() {
         </View>
 
         {/* Progress bar */}
-        <View style={styles.progressRow}>
+        <View style={[styles.progressRow, { paddingHorizontal: sp.gutter }]}>
           {ONBOARDING_STEPS.map((s, i) => (
             <View
               key={s.id}
@@ -173,7 +175,11 @@ export default function OnboardingScreen() {
         <ScrollView
           contentContainerStyle={[
             styles.scroll,
-            { paddingBottom: insets.bottom + 180 },
+            {
+              paddingHorizontal: sp.gutter,
+              paddingBottom: insets.bottom + 180,
+              gap: sp.stackMd,
+            },
             isWide && { maxWidth: 560, alignSelf: 'center', width: '100%' },
           ]}
           showsVerticalScrollIndicator={false}>
@@ -197,6 +203,7 @@ export default function OnboardingScreen() {
           style={[
             styles.bottomBar,
             {
+              paddingHorizontal: sp.gutter,
               paddingBottom: Math.max(insets.bottom + 8, 18),
               borderTopColor: palette.glassBorder,
             },
@@ -644,14 +651,14 @@ const styles = StyleSheet.create({
   progressRow: {
     flexDirection: 'row',
     gap: 6,
-    paddingHorizontal: 22,
     paddingVertical: 14,
   },
   progressDot: {
     height: 4,
     borderRadius: 999,
   },
-  scroll: { paddingHorizontal: 22, paddingTop: 4, gap: 18 },
+  /** `paddingHorizontal` and `gap` are driven inline by `useResponsiveSpacing()`. */
+  scroll: { paddingTop: 4 },
   heroWrap: { alignItems: 'center', marginBottom: 4, gap: 10 },
   heroIconWrap: {
     width: 96,
@@ -723,7 +730,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 22,
     paddingTop: 12,
     gap: 8,
     borderTopWidth: StyleSheet.hairlineWidth,

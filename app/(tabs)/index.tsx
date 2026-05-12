@@ -22,6 +22,7 @@ import { pickEatSuggestions } from '@/src/features/eat/selectSuggestions';
 import { computeElapsedMs, computeRingProgress } from '@/src/features/fast/elapsed';
 import { getFastingStage } from '@/src/features/fast/fastingStage';
 import { useBreakpoint, type Breakpoint } from '@/src/hooks/useBreakpoint';
+import { useResponsiveSpacing, type ResponsiveSpacing } from '@/src/hooks/useResponsiveSpacing';
 import { formatElapsed, formatElapsedShort, formatTargetHm } from '@/src/lib/time';
 import { useAppStore } from '@/src/store/useAppStore';
 
@@ -87,6 +88,7 @@ export default function FastHomeScreen() {
   const palette = FastCoachPalette[scheme];
   const topBarOffset = useTopBarOffset();
   const bp = useBreakpoint();
+  const s = useResponsiveSpacing();
   const ringSize = RING_SIZE_BY_BP[bp];
   const bentoMinWidth: '47%' | '31%' = bp === 'phone' ? '47%' : '31%';
 
@@ -147,7 +149,17 @@ export default function FastHomeScreen() {
     <ScreenBackground palette={palette} accent="fast">
       <SafeAreaView style={styles.flex} edges={['bottom']}>
         <FixedTopBar title="Fasting Tracker" palette={palette} isDark={scheme === 'dark'} />
-        <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: topBarOffset + 36 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingHorizontal: s.gutter,
+              paddingBottom: s.tabBarBottom,
+              paddingTop: topBarOffset + s.hero,
+              gap: s.stackLg,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}>
           {/* Hero ring */}
           <View style={styles.ringWrap}>
             <View style={[styles.ringHalo, { shadowColor: palette.primaryFixedDim }]}>
@@ -277,23 +289,24 @@ export default function FastHomeScreen() {
             </View>
           </GlassCard>
 
-          {/* Next Meal Ideas bento */}
-          <View style={styles.mealHeading}>
-            <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
-              {activeFast ? 'Next Meal Ideas' : 'Ideas Between Fasts'}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Shuffle meal ideas"
-              onPress={bumpSuggestionShuffle}
-              hitSlop={8}>
-              <Text style={[styles.viewAll, { color: palette.primary, fontFamily: FastCoachFonts.body }]}>Shuffle</Text>
-            </Pressable>
-          </View>
+          {/* Next Meal Ideas bento — heading + grid share a single section with stackMd internal breath. */}
+          <View style={{ gap: s.stackMd }}>
+            <View style={styles.mealHeading}>
+              <Text style={[styles.sectionH, { color: palette.onSurface, fontFamily: FastCoachFonts.headlineMd }]}>
+                {activeFast ? 'Next Meal Ideas' : 'Ideas Between Fasts'}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Shuffle meal ideas"
+                onPress={bumpSuggestionShuffle}
+                hitSlop={8}>
+                <Text style={[styles.viewAll, { color: palette.primary, fontFamily: FastCoachFonts.body }]}>Shuffle</Text>
+              </Pressable>
+            </View>
 
-          <View style={styles.bentoGrid}>
-            {eats.length === 0 ? (
-              <GlassCard palette={palette} style={{ flex: 1, padding: 20, minHeight: 140 }}>
+            <View style={styles.bentoGrid}>
+              {eats.length === 0 ? (
+                <GlassCard palette={palette} style={{ flex: 1, padding: 20, minHeight: 140 }}>
                 <Text style={{ color: palette.onSurface, fontFamily: FastCoachFonts.body }}>
                   No tips match this combo yet — adjust diet preference in Settings.
                 </Text>
@@ -371,6 +384,7 @@ export default function FastHomeScreen() {
                 );
               })
             )}
+            </View>
           </View>
 
           <Text style={[styles.disclaimer, { color: palette.onSurfaceVariant, fontFamily: FastCoachFonts.body }]}>
@@ -383,6 +397,7 @@ export default function FastHomeScreen() {
           palette={palette}
           scheme={scheme}
           bp={bp}
+          spacing={s}
           onClose={() => setOpenMeal(null)}
         />
       </SafeAreaView>
@@ -395,25 +410,48 @@ function MealDetailSheet({
   palette,
   scheme,
   bp,
+  spacing,
   onClose,
 }: {
   meal: EatSuggestion | null;
   palette: PaletteColors;
   scheme: ColorSchemeName;
   bp: Breakpoint;
+  spacing: ResponsiveSpacing;
   onClose: () => void;
 }) {
   return (
     <Modal visible={meal != null} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.sheetBackdrop} onPress={onClose} accessibilityLabel="Close meal details">
+      {/*
+       * Sibling-not-parent backdrop. The previous structure wrapped the
+       * ScrollView in a Pressable with `e.stopPropagation()`, which is a no-op
+       * on React Native gestures (only fires for synthetic web events). The
+       * outer Pressable then stole scroll gestures from the ScrollView on
+       * Android. Splitting the dismiss handler into an absolute-filled
+       * sibling Pressable behind the sheet keeps the sheet's touch responder
+       * clean while still closing on backdrop taps.
+       */}
+      <View style={styles.sheetBackdrop}>
         <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+          accessibilityLabel="Close meal details"
+        />
+        <View
           style={[
             styles.sheetCard,
-            { backgroundColor: scheme === 'dark' ? '#1B1D20' : '#FFFFFF' },
+            {
+              backgroundColor: scheme === 'dark' ? '#1B1D20' : '#FFFFFF',
+              paddingHorizontal: spacing.gutter,
+            },
             bp !== 'phone' && { maxWidth: 600, alignSelf: 'center', width: '100%' },
-          ]}
-          onPress={(e) => e.stopPropagation()}>
-          <ScrollView contentContainerStyle={styles.sheetScroll}>
+          ]}>
+          <ScrollView
+            contentContainerStyle={[styles.sheetScroll, { gap: spacing.stackMd }]}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            bounces>
             <View style={styles.sheetHandle}>
               <View style={[styles.sheetGrabber, { backgroundColor: palette.outlineVariant }]} />
             </View>
@@ -531,16 +569,17 @@ function MealDetailSheet({
               </>
             ) : null}
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingHorizontal: 22, paddingBottom: 140, gap: 22 },
-  ringWrap: { alignItems: 'center', gap: 12, marginTop: 12 },
+  /** Static slot — `paddingHorizontal`, `paddingBottom`, `paddingTop`, and `gap` are driven by `useResponsiveSpacing()`. */
+  scroll: {},
+  ringWrap: { alignItems: 'center', gap: 12 },
   ringHalo: {
     borderRadius: 9999,
     shadowOpacity: 0.18,
@@ -629,14 +668,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: 4,
   },
-  sectionH: { fontSize: 22, letterSpacing: -0.3, fontWeight: '700' },
+  sectionH: { fontSize: 24, letterSpacing: -0.3, fontWeight: '700', lineHeight: 30 },
   viewAll: { fontSize: 14, fontWeight: '600' },
   bentoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 16,
   },
   mealCard: {
     flex: 1,
@@ -693,7 +731,6 @@ const styles = StyleSheet.create({
   mealKcal: { fontSize: 10, letterSpacing: 1.4, fontWeight: '800' },
   mealSnippet: { fontSize: 12, lineHeight: 18, marginTop: 4 },
   disclaimer: {
-    marginTop: 4,
     fontSize: 12,
     lineHeight: 18,
     textAlign: 'center',
@@ -707,10 +744,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '85%',
-    paddingHorizontal: 22,
     paddingBottom: 30,
   },
-  sheetScroll: { paddingTop: 8, paddingBottom: 12, gap: 16 },
+  sheetScroll: { paddingTop: 8, paddingBottom: 12 },
   sheetHandle: { alignItems: 'center', paddingVertical: 6 },
   sheetGrabber: { width: 44, height: 5, borderRadius: 999 },
   sheetTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.4, lineHeight: 30 },
